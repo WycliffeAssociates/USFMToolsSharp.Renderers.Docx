@@ -57,23 +57,6 @@ namespace USFMToolsSharp.Renderers.Docx
             return newDoc;
 
         }
-        public void RenderTest(USFMDocument input,string filename= @"C:\Users\hob\Documents\out.docx")
-        {
-            
-            using (var fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
-            {
-
-                foreach (Marker marker in input.Contents)
-                {
-
-                        RenderMarker(marker);
-
-                }
-                
-                newDoc.Write(fs);
-            }
-
-        }
         private void RenderMarker(Marker input, XWPFParagraph parentParagraph = null, bool isBold = false, bool isItalics = false)
         {
             
