@@ -48,25 +48,12 @@ namespace USFMToolsSharp.Renderers.Docx
         public XWPFDocument Render(USFMDocument input)
         {
 
-            
+                foreach (Marker marker in input.Contents)
+                {
 
-            var p0 = newDoc.CreateParagraph();
-            p0.Alignment = ParagraphAlignment.LEFT;
-            XWPFRun r0 = p0.CreateRun();
-            r0.FontFamily = "宋体";
-            r0.FontSize = 18;
-            r0.IsBold = true;
-            r0.SetText("My new Document");
+                    RenderMarker(marker);
 
-
-
-
-            //foreach (Marker marker in input.Contents)
-            //{
-            //    newDoc.Append(RenderMarker(marker));
-            //}
-
-
+                }
             return newDoc;
 
         }
@@ -138,6 +125,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case QMarker qMarker:
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph();
+
+                    // Not sure if indentation works
                     poetryParagraph.IndentationLeft =qMarker.Depth;
 
                     foreach (Marker marker in input.Contents)
@@ -164,7 +153,6 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     break;
                 case BDMarker bdMarker:
-                    // How to send styling over to child markers ???
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker,parentParagraph,true);
@@ -233,7 +221,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case FQAEndMarker fQAEndMarker:
-                    //output.Append("</span>");
                     break;
                 case FEndMarker _:
                 case IDEMarker _:
@@ -245,7 +232,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     UnrenderableTags.Add(input.Identifier);
                     break;
             }
-            //return output.ToString();
         }
         private void RenderFootnotes()
         {
@@ -274,16 +260,6 @@ namespace USFMToolsSharp.Renderers.Docx
                 }
                 FootnoteTextTags.Clear();
             }
-        }
-
-        
-        private void RenderChapterMarker(Marker input)
-        {
-
-        }
-        private void RenderPoetryMarker(Marker input)
-        {
-
         }
         
 
