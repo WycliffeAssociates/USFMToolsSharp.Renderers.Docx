@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using USFMToolsSharp.Models.Markers;
 using NPOI.XWPF.UserModel;
-using System.IO;
-using USFMToolsSharp.Models;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
@@ -88,7 +86,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     
 
                     XWPFRun verseMarker = parentParagraph.CreateRun();
-                    verseMarker.SetText($"  {vMarker.VerseCharacter}  ");
+                    verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
 
