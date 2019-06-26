@@ -4,42 +4,33 @@ using System.Text;
 using USFMToolsSharp.Models.Markers;
 using NPOI.XWPF.UserModel;
 using System.IO;
+using USFMToolsSharp.Models;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
     public class DocxRenderer
     {
         public List<string> UnrenderableTags;
-        public Dictionary<string,List<Marker>> FootnoteTextTags;
-        
+        public Dictionary<string,Marker> FootnoteTextTags;
+        private DocxConfig configDocx;
         private XWPFDocument newDoc;
 
-        private bool isSingleSpaced = true;
-        private bool hasOneColumn = true;
-        private bool isL2RDirection = true;
-        private bool isTextJustified = false;
         private bool separateChapters = true;
-
-        public string FrontMatterDocx { get; set; }
-        public string InsertedFooter { get; set; }
-        public string InsertedHead { get; set; }
 
         public DocxRenderer()
         {
-            UnrenderableTags = new List<string>();
-            FootnoteTextTags = new Dictionary<string,List<Marker>>();
-            newDoc = new XWPFDocument();
-        }
-        public DocxRenderer(bool isSingleSpaced = true, bool hasOneColumn = true, bool isL2RDirection = true, bool isTextJustified = false, bool separateChapters = false)
-        {
-            this.isSingleSpaced = isSingleSpaced;
-            this.hasOneColumn = hasOneColumn;
-            this.isL2RDirection = isL2RDirection;
-            this.isTextJustified = isTextJustified;
-            this.separateChapters = separateChapters;
+            configDocx = new DocxConfig();
 
             UnrenderableTags = new List<string>();
-            FootnoteTextTags = new Dictionary<string, List<Marker>>();
+            FootnoteTextTags = new Dictionary<string,Marker>();
+            newDoc = new XWPFDocument();
+        }
+        public DocxRenderer(DocxConfig config)
+        {
+            configDocx = config;
+
+            UnrenderableTags = new List<string>();
+            FootnoteTextTags = new Dictionary<string,Marker>();
             newDoc = new XWPFDocument();
 
         }
@@ -73,7 +64,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case CMarker cMarker:
                     XWPFParagraph newChapter = newDoc.CreateParagraph();
                     XWPFRun chapterMarker = newChapter.CreateRun();
-                    chapterMarker.SetText($"{cMarker.Number}");
+                    chapterMarker.SetText(cMarker.Number.ToString());
 
                     chapterMarker.FontSize = 24;
 
@@ -138,7 +129,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case BDMarker bdMarker:
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker,parentParagraph,true);
+                        RenderMarker(marker,parentParagraph,isBold:true);
                     }
                     break;
                 case HMarker hMarker:
@@ -178,16 +169,11 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     XWPFRun footnoteMarker = parentParagraph.CreateRun();
 
-                    footnoteMarker.SetText($"{footnoteId}");
-                    footnoteMarker.Subscript = VerticalAlign.SUBSCRIPT;
+                    footnoteMarker.SetText(footnoteId);
+                    footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
-                    FootnoteTextTags[footnoteId] = new List<Marker>();
+                    FootnoteTextTags[footnoteId] = fMarker;
 
-                    foreach (Marker marker in input.Contents)
-                    {
-                        FootnoteTextTags[footnoteId].Add(marker);
-
-                    }
                     break;
                 case FTMarker fTMarker:
 
@@ -200,11 +186,10 @@ namespace USFMToolsSharp.Renderers.Docx
                 case FQAMarker fQAMarker:
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph,false,true);
+                        RenderMarker(marker, parentParagraph,isItalics:true);
                     }
                     break;
                 case FQAEndMarker fQAEndMarker:
-                    break;
                 case FEndMarker _:
                 case IDEMarker _:
                 case IDMarker _:
@@ -227,18 +212,19 @@ namespace USFMToolsSharp.Renderers.Docx
                 FootnoteHeader.SetText("Footnotes");
                 FootnoteHeader.FontSize = 24;
 
-                foreach(KeyValuePair<string,List<Marker>> footnoteKVP in FootnoteTextTags)
+                foreach(KeyValuePair<string,Marker> footnoteKVP in FootnoteTextTags)
                 {
                     XWPFParagraph renderFootnote = newDoc.CreateParagraph();
                     XWPFRun footnoteMarker = renderFootnote.CreateRun();
                     footnoteMarker.SetText(footnoteKVP.Key);
-                    footnoteMarker.Subscript = VerticalAlign.SUBSCRIPT;
+                    footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+
+                    foreach(Marker marker in footnoteKVP.Value.Contents)
+                    {
+                        RenderMarker(marker, renderFootnote);
+                    }
                     
 
-                    foreach(Marker input in footnoteKVP.Value)
-                    {
-                        RenderMarker(input, renderFootnote);
-                    }
                     
                 }
                 FootnoteTextTags.Clear();
