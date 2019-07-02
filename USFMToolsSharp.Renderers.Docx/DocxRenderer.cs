@@ -1,8 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using USFMToolsSharp.Models.Markers;
 using NPOI.XWPF.UserModel;
+using NPOI.XWPF.Model;
+using NPOI.OpenXmlFormats.Wordprocessing;
+using System;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
@@ -43,6 +45,11 @@ namespace USFMToolsSharp.Renderers.Docx
                     RenderMarker(marker);
 
                 }
+            setDocLineSpacing(2);
+            setDocTextJustify();
+            setStartPageNumber();
+            createFooter();
+            //setDocColumnCount();
             return newDoc;
 
         }
@@ -58,6 +65,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         {
                             RenderMarker(marker, newParagraph);
                         }
+                        
                     break;
                 case CMarker cMarker:
                     XWPFParagraph newChapter = newDoc.CreateParagraph();
@@ -76,16 +84,21 @@ namespace USFMToolsSharp.Renderers.Docx
                     RenderFootnotes();
 
                     // Page breaks after each chapter
-                    if (separateChapters)
+                    if (configDocx.separateChapters)
                     {
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
                     }
 
                     break;
                 case VMarker vMarker:
-                    
 
+                    if (configDocx.separateVerses)
+                    {
+                        XWPFRun newLine = parentParagraph.CreateRun();
+                        newLine.AddBreak(BreakType.TEXTWRAPPING);
+                    }
                     XWPFRun verseMarker = parentParagraph.CreateRun();
+
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
@@ -94,6 +107,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         RenderMarker(marker, parentParagraph);
                     }
+                    
                     break;
                 case QMarker qMarker:
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph();
@@ -141,7 +155,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         RenderMarker(marker);
                     }
-                    if (!separateChapters)   // No double page breaks before books
+                    if (!configDocx.separateChapters)   // No double page breaks before books
                     {
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
                     }
@@ -227,6 +241,91 @@ namespace USFMToolsSharp.Renderers.Docx
                 }
                 FootnoteTextTags.Clear();
             }
+        }
+        public void setDocLineSpacing(int num)
+        {
+            // Double Space
+            foreach (XWPFParagraph par in newDoc.Paragraphs)
+            {
+                par.SpacingBetween = num * 240;
+            }
+        }
+        public void setDocTextJustify()
+        {
+            // Justify Text
+            foreach (XWPFParagraph par in newDoc.Paragraphs)
+            {
+                par.Alignment = ParagraphAlignment.LEFT;
+            }
+        }
+        public void setDocColumnCount(int num)
+        {
+            newDoc.setColumnCount(num);
+        }
+        public void setDocTextDirection(ST_TextDirection direct)
+        {
+            // lrTb - left to right, top to bottom
+            // tbRl - top to bottom, right to left
+            newDoc.setTextDirection(direct);
+        }
+        public void createFooter()
+        {
+            // Footer Object
+            CT_Ftr footer = new CT_Ftr();
+            CT_P footerParagraph = footer.AddNewP();
+            CT_PPr ppr = footerParagraph.AddNewPPr();
+            CT_Jc align = ppr.AddNewJc();
+            align.val = ST_Jc.center;
+
+            // Page Number Format OOXML
+            footerParagraph.AddNewR().AddNewFldChar().fldCharType = ST_FldCharType.begin;
+            CT_Text pageNumber = footerParagraph.AddNewR().AddNewInstrText();
+            pageNumber.Value = "PAGE   \\* MERGEFORMAT";
+            pageNumber.space = "preserve";
+            footerParagraph.AddNewR().AddNewFldChar().fldCharType = ST_FldCharType.separate;
+
+            CT_R centerRun = footerParagraph.AddNewR();
+            centerRun.AddNewRPr().AddNewNoProof();
+            centerRun.AddNewT().Value = "2";
+
+            CT_R endRun= footerParagraph.AddNewR();
+            endRun.AddNewRPr().AddNewNoProof();
+            endRun.AddNewFldChar().fldCharType = ST_FldCharType.end;
+
+            // Linking to Footer Style Object to Document
+            XWPFRelation footerRelation = XWPFRelation.FOOTER;
+            XWPFFooter documentFooter = (XWPFFooter)newDoc.CreateRelationship(footerRelation, XWPFFactory.GetInstance(), newDoc.FooterList.Count + 1);
+            documentFooter.SetHeaderFooter(footer);
+            CT_HdrFtrRef footerRef = newDoc.Document.body.sectPr.AddNewFooterReference();
+            footerRef.type = ST_HdrFtr.@default;
+            footerRef.id = documentFooter.GetPackageRelationship().Id;
+
+
+
+        }
+        public void setStartPageNumber()
+        {
+            newDoc.Document.body.sectPr.pgNumType.fmt = ST_NumberFormat.@decimal;
+            newDoc.Document.body.sectPr.pgNumType.start = "0";
+        }
+        public void createBookHeaders()
+        {
+            //CT_Hdr header = new CT_Hdr();
+            //CT_P headerParagraph = header.AddNewP();
+            //CT_PPr ppr = headerParagraph.AddNewPPr();
+            //CT_Jc align = ppr.AddNewJc();
+            //align.val = ST_Jc.left;
+
+
+
+
+
+            //XWPFRelation headerRelation = XWPFRelation.HEADER;
+            //XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), newDoc.HeaderList.Count + 1);
+            //documentHeader.SetHeaderFooter(header);
+            //CT_HdrFtrRef headerRef = newDoc.Document.body.sectPr.AddNewHeaderReference();
+            //headerRef.type = ST_HdrFtr.@default;
+            //headerRef.id = documentHeader.GetPackageRelationship().Id;
         }
         
 

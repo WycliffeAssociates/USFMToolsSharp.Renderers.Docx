@@ -5,8 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NPOI" Version="2.4.1" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
     <PackageReference Include="USFMToolsSharp" Version="0.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\npoi\main\NPOI.Core.csproj" />
+    <ProjectReference Include="..\..\npoi\ooxml\NPOI.OOXML.Core.csproj" />
+    <ProjectReference Include="..\..\npoi\openxml4Net\NPOI.OpenXml4Net.Core.csproj" />
+    <ProjectReference Include="..\..\npoi\OpenXmlFormats\NPOI.OpenXmlFormats.Core.csproj" />
   </ItemGroup>
 
 </Project>
