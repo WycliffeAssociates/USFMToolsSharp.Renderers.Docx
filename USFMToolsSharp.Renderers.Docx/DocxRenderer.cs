@@ -4,7 +4,6 @@ using USFMToolsSharp.Models.Markers;
 using NPOI.XWPF.UserModel;
 using NPOI.XWPF.Model;
 using NPOI.OpenXmlFormats.Wordprocessing;
-using System;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
@@ -14,8 +13,6 @@ namespace USFMToolsSharp.Renderers.Docx
         public Dictionary<string,Marker> FootnoteTextTags;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
-
-        private bool separateChapters = true;
 
         public DocxRenderer()
         {
@@ -34,44 +31,33 @@ namespace USFMToolsSharp.Renderers.Docx
             newDoc = new XWPFDocument();
 
         }
-
-
         public XWPFDocument Render(USFMDocument input)
         {
-
-                foreach (Marker marker in input.Contents)
+            setStartPageNumber();
+            foreach (Marker marker in input.Contents)
                 {
 
                     RenderMarker(marker);
 
                 }
-            setDocLineSpacing(2);
-            setDocTextJustify();
-            setStartPageNumber();
-            createFooter();
-            //setDocColumnCount();
             return newDoc;
 
         }
         private void RenderMarker(Marker input, XWPFParagraph parentParagraph = null, bool isBold = false, bool isItalics = false)
         {
-            
             switch (input)
             {
                 case PMarker _:
-                    
                         XWPFParagraph newParagraph = newDoc.CreateParagraph();
                         foreach (Marker marker in input.Contents)
                         {
                             RenderMarker(marker, newParagraph);
                         }
-                        
                     break;
                 case CMarker cMarker:
                     XWPFParagraph newChapter = newDoc.CreateParagraph();
                     XWPFRun chapterMarker = newChapter.CreateRun();
                     chapterMarker.SetText(cMarker.Number.ToString());
-
                     chapterMarker.FontSize = 24;
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph();
@@ -79,11 +65,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         RenderMarker(marker, chapterVerses);
                     }
-                    
 
                     RenderFootnotes();
-
-                    // Page breaks after each chapter
                     if (configDocx.separateChapters)
                     {
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
@@ -102,24 +85,19 @@ namespace USFMToolsSharp.Renderers.Docx
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
-
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, parentParagraph);
                     }
-                    
                     break;
                 case QMarker qMarker:
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph();
-
-                    // Not sure if indentation works
-                    poetryParagraph.IndentationLeft =qMarker.Depth;
+                    poetryParagraph.IndentationLeft = qMarker.Depth;
 
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker,poetryParagraph);
                     }
-
                     break;
                 case MMarker mMarker:
                     break;
@@ -136,7 +114,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         blockText.IsItalic = true;
                     }
-
                     break;
                 case BDMarker bdMarker:
                     foreach (Marker marker in input.Contents)
@@ -160,7 +137,6 @@ namespace USFMToolsSharp.Renderers.Docx
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
                     }
                     break;
-
                 case FMarker fMarker:
                     StringBuilder footnote = new StringBuilder();
 
@@ -176,9 +152,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         default:
                             footnoteId = fMarker.FootNoteCaller;
                             break;
-
                     }
-
                     XWPFRun footnoteMarker = parentParagraph.CreateRun();
 
                     footnoteMarker.SetText(footnoteId);
@@ -215,7 +189,6 @@ namespace USFMToolsSharp.Renderers.Docx
         }
         private void RenderFootnotes()
         {
-            
 
             if (FootnoteTextTags.Count > 0)
             {
@@ -235,27 +208,23 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         RenderMarker(marker, renderFootnote);
                     }
-                    
-
-                    
+  
                 }
                 FootnoteTextTags.Clear();
             }
         }
         public void setDocLineSpacing(int num)
         {
-            // Double Space
             foreach (XWPFParagraph par in newDoc.Paragraphs)
             {
                 par.SpacingBetween = num * 240;
             }
         }
-        public void setDocTextJustify()
+        public void setDocTextAlignment(ParagraphAlignment align)
         {
-            // Justify Text
             foreach (XWPFParagraph par in newDoc.Paragraphs)
             {
-                par.Alignment = ParagraphAlignment.LEFT;
+                par.Alignment = align;
             }
         }
         public void setDocColumnCount(int num)
@@ -292,6 +261,7 @@ namespace USFMToolsSharp.Renderers.Docx
             endRun.AddNewRPr().AddNewNoProof();
             endRun.AddNewFldChar().fldCharType = ST_FldCharType.end;
 
+
             // Linking to Footer Style Object to Document
             XWPFRelation footerRelation = XWPFRelation.FOOTER;
             XWPFFooter documentFooter = (XWPFFooter)newDoc.CreateRelationship(footerRelation, XWPFFactory.GetInstance(), newDoc.FooterList.Count + 1);
@@ -310,22 +280,7 @@ namespace USFMToolsSharp.Renderers.Docx
         }
         public void createBookHeaders()
         {
-            //CT_Hdr header = new CT_Hdr();
-            //CT_P headerParagraph = header.AddNewP();
-            //CT_PPr ppr = headerParagraph.AddNewPPr();
-            //CT_Jc align = ppr.AddNewJc();
-            //align.val = ST_Jc.left;
-
-
-
-
-
-            //XWPFRelation headerRelation = XWPFRelation.HEADER;
-            //XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), newDoc.HeaderList.Count + 1);
-            //documentHeader.SetHeaderFooter(header);
-            //CT_HdrFtrRef headerRef = newDoc.Document.body.sectPr.AddNewHeaderReference();
-            //headerRef.type = ST_HdrFtr.@default;
-            //headerRef.id = documentHeader.GetPackageRelationship().Id;
+            
         }
         
 
