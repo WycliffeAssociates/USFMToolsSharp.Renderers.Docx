@@ -28,13 +28,8 @@ namespace USFMToolsSharp.Renderers.Docx
             
             fontSize = 12;
         }
-        public DocxConfig(int fontSize, Tuple<ParagraphAlignment, ST_TextDirection, int, double> styles, bool separateChapters = false, bool separateVerses = false)
+        public DocxConfig(int fontSize=12, bool separateChapters = false, bool separateVerses = false):this()
         {
-            textAlign = styles.Item1;
-            textDirection = styles.Item2;
-            columnCount = styles.Item3;
-            lineSpacing = styles.Item4;
-
             this.fontSize = fontSize;
             this.separateChapters = separateChapters;
             this.separateVerses = separateVerses;
