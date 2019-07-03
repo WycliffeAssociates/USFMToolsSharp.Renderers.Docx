@@ -13,6 +13,7 @@ namespace USFMToolsSharp.Renderers.Docx
         public Dictionary<string,Marker> FootnoteTextTags;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
+        private int bookNameCount=1;
 
         public DocxRenderer()
         {
@@ -34,6 +35,9 @@ namespace USFMToolsSharp.Renderers.Docx
         public XWPFDocument Render(USFMDocument input)
         {
             setStartPageNumber();
+            newDoc.setColumnCount(configDocx.columnCount);
+            newDoc.setTextDirection(configDocx.textDirection);
+
             foreach (Marker marker in input.Contents)
                 {
 
@@ -48,11 +52,15 @@ namespace USFMToolsSharp.Renderers.Docx
             switch (input)
             {
                 case PMarker _:
-                        XWPFParagraph newParagraph = newDoc.CreateParagraph();
-                        foreach (Marker marker in input.Contents)
-                        {
-                            RenderMarker(marker, newParagraph);
-                        }
+                    XWPFParagraph newParagraph = newDoc.CreateParagraph();
+
+                    newParagraph.Alignment = configDocx.textAlign;
+                    newParagraph.SpacingBetween = configDocx.lineSpacing;
+                        
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, newParagraph);
+                    }
                     break;
                 case CMarker cMarker:
                     XWPFParagraph newChapter = newDoc.CreateParagraph();
@@ -128,6 +136,9 @@ namespace USFMToolsSharp.Renderers.Docx
                     headerTitle.FontSize = 24;
                     break;
                 case MTMarker mTMarker:
+                    createBookHeaders(mTMarker.Title);
+
+
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker);
@@ -213,29 +224,10 @@ namespace USFMToolsSharp.Renderers.Docx
                 FootnoteTextTags.Clear();
             }
         }
-        public void setDocLineSpacing(int num)
+        public void setStartPageNumber()
         {
-            foreach (XWPFParagraph par in newDoc.Paragraphs)
-            {
-                par.SpacingBetween = num * 240;
-            }
-        }
-        public void setDocTextAlignment(ParagraphAlignment align)
-        {
-            foreach (XWPFParagraph par in newDoc.Paragraphs)
-            {
-                par.Alignment = align;
-            }
-        }
-        public void setDocColumnCount(int num)
-        {
-            newDoc.setColumnCount(num);
-        }
-        public void setDocTextDirection(ST_TextDirection direct)
-        {
-            // lrTb - left to right, top to bottom
-            // tbRl - top to bottom, right to left
-            newDoc.setTextDirection(direct);
+            newDoc.Document.body.sectPr.pgNumType.fmt = ST_NumberFormat.@decimal;
+            newDoc.Document.body.sectPr.pgNumType.start = "0";
         }
         public void createFooter()
         {
@@ -270,19 +262,31 @@ namespace USFMToolsSharp.Renderers.Docx
             footerRef.type = ST_HdrFtr.@default;
             footerRef.id = documentFooter.GetPackageRelationship().Id;
 
+        }
 
+        public void createBookHeaders(string bookname)
+        {
 
+            CT_Hdr header = new CT_Hdr();
+            CT_P headerParagraph = header.AddNewP();
+            CT_PPr ppr = headerParagraph.AddNewPPr();
+            CT_Jc align = ppr.AddNewJc();
+            align.val = ST_Jc.left;
+
+            headerParagraph.AddNewR().AddNewT().Value = bookname;
+
+            XWPFRelation headerRelation = XWPFRelation.HEADER;
+
+            // newDoc.HeaderList doesn't update with header additions
+            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), bookNameCount);
+            documentHeader.SetHeaderFooter(header);
+            CT_HdrFtrRef headerRef = newDoc.Document.body.sectPr.AddNewHeaderReference();
+            headerRef.type = ST_HdrFtr.@default;
+            headerRef.id = documentHeader.GetPackageRelationship().Id;
+
+            bookNameCount++;
         }
-        public void setStartPageNumber()
-        {
-            newDoc.Document.body.sectPr.pgNumType.fmt = ST_NumberFormat.@decimal;
-            newDoc.Document.body.sectPr.pgNumType.start = "0";
-        }
-        public void createBookHeaders()
-        {
-            
-        }
-        
+
 
     }
 }
