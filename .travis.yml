@@ -1,0 +1,7 @@
+language: csharp
+dist: bionic
+mono: none
+#must declare version
+dotnet: 2.2.401
+script:
+ - dotnet build
