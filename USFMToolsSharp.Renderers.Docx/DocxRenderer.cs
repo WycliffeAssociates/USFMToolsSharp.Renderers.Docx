@@ -137,8 +137,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     headerTitle.FontSize = 24;
                     break;
                 case MTMarker mTMarker:
-                    createBookHeaders(mTMarker.Title);
-
 
                     foreach (Marker marker in input.Contents)
                     {
@@ -148,6 +146,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
                     }
+                    createBookHeaders(mTMarker.Title);
                     break;
                 case FMarker fMarker:
                     StringBuilder footnote = new StringBuilder();
@@ -281,7 +280,8 @@ namespace USFMToolsSharp.Renderers.Docx
             // newDoc.HeaderList doesn't update with header additions
             XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), bookNameCount);
             documentHeader.SetHeaderFooter(header);
-            CT_HdrFtrRef headerRef = newDoc.Document.body.sectPr.AddNewHeaderReference();
+            CT_SectPr diffHeader = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
+            CT_HdrFtrRef headerRef = diffHeader.AddNewHeaderReference();
             headerRef.type = ST_HdrFtr.@default;
             headerRef.id = documentHeader.GetPackageRelationship().Id;
 
