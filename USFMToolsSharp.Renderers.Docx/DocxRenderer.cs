@@ -11,6 +11,7 @@ namespace USFMToolsSharp.Renderers.Docx
     {
         public List<string> UnrenderableTags;
         public Dictionary<string,Marker> FootnoteTextTags;
+        public Dictionary<string, Marker> CrossRefMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
         private int bookNameCount=1;
@@ -21,6 +22,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
             UnrenderableTags = new List<string>();
             FootnoteTextTags = new Dictionary<string,Marker>();
+            CrossRefMarkers = new Dictionary<string, Marker>();
             newDoc = new XWPFDocument();
         }
         public DocxRenderer(DocxConfig config)
@@ -29,6 +31,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
             UnrenderableTags = new List<string>();
             FootnoteTextTags = new Dictionary<string,Marker>();
+            CrossRefMarkers = new Dictionary<string, Marker>();
             newDoc = new XWPFDocument();
 
         }
@@ -48,7 +51,7 @@ namespace USFMToolsSharp.Renderers.Docx
             return newDoc;
 
         }
-        private void RenderMarker(Marker input, XWPFParagraph parentParagraph = null, bool isBold = false, bool isItalics = false)
+        private void RenderMarker(Marker input, XWPFParagraph parentParagraph = null, bool isBold = false, bool isItalics = false, int fontSize = 16)
         {
             switch (input)
             {
@@ -76,6 +79,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
 
                     RenderFootnotes();
+                    RenderCrossReferences();
                     if (configDocx.separateChapters)
                     {
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
@@ -186,7 +190,48 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, parentParagraph,isItalics:true);
                     }
                     break;
-                case FQAEndMarker fQAEndMarker:
+                // Cross References
+                case XMarker xMarker:
+                    string crossId;
+                    switch (xMarker.CrossRefCaller)
+                    {
+                        case "-":
+                            crossId = "";
+                            break;
+                        case "+":
+                            crossId = $"{CrossRefMarkers.Count + 1}";
+                            break;
+                        default:
+                            crossId = xMarker.CrossRefCaller;
+                            break;
+                    }
+                    XWPFRun crossRefMarker = parentParagraph.CreateRun();
+
+                    crossRefMarker.SetText(crossId);
+                    crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+
+                    CrossRefMarkers[crossId] = xMarker;
+                    break;
+                case XOMarker xOMarker:
+                    XWPFRun VerseReference = parentParagraph.CreateRun();
+                    VerseReference.SetText($" {xOMarker.OriginRef} ");
+                    VerseReference.IsBold = true;
+                    VerseReference.FontSize = fontSize;
+                    break;
+                case XTMarker xTMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, parentParagraph, fontSize: 12);
+                    }
+                    break;
+                case XQMarker xQMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, parentParagraph, isItalics: true, fontSize: 12);
+                    }
+                    break;
+                case XEndMarker _:
+                case FQAEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
                 case IDMarker _:
@@ -222,6 +267,30 @@ namespace USFMToolsSharp.Renderers.Docx
   
                 }
                 FootnoteTextTags.Clear();
+            }
+        }
+        private void RenderCrossReferences()
+        {
+
+            if (CrossRefMarkers.Count > 0)
+            {
+                XWPFParagraph renderCrossRefStart = newDoc.CreateParagraph();
+                renderCrossRefStart.BorderTop = Borders.Single;
+
+                foreach (KeyValuePair<string, Marker> crossRefKVP in CrossRefMarkers)
+                {
+                    XWPFParagraph renderCrossRef = newDoc.CreateParagraph();
+                    XWPFRun crossRefMarker = renderCrossRef.CreateRun();
+                    crossRefMarker.SetText(crossRefKVP.Key);
+                    crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+
+                    foreach (Marker marker in crossRefKVP.Value.Contents)
+                    {
+                        RenderMarker(marker, renderCrossRef, fontSize:12);
+                    }
+
+                }
+                CrossRefMarkers.Clear();
             }
         }
         public void setStartPageNumber()
