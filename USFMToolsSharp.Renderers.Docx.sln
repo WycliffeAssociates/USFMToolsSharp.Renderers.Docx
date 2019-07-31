@@ -1,16 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.705
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "USFMToolsSharp.Renderers.Docx", "USFMToolsSharp.Renderers.Docx\USFMToolsSharp.Renderers.Docx.csproj", "{F4D20D2A-EEAF-453B-8C9B-80929F656D98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "USFMToolsSharp.Renderers.Docx", "USFMToolsSharp.Renderers.Docx\USFMToolsSharp.Renderers.Docx.csproj", "{F4D20D2A-EEAF-453B-8C9B-80929F656D98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		.net 2 Release|Any CPU = .net 2 Release|Any CPU
+		.net 4 Release|Any CPU = .net 4 Release|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}..net 2 Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}..net 2 Release|Any CPU.Build.0 = Release|Any CPU
+		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}..net 4 Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}..net 4 Release|Any CPU.Build.0 = Release|Any CPU
 		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}.Release|Any CPU.ActiveCfg = Release|Any CPU
