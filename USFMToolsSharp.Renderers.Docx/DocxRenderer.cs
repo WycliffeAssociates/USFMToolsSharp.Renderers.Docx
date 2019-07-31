@@ -9,7 +9,7 @@ namespace USFMToolsSharp.Renderers.Docx
 {
     public class DocxRenderer
     {
-        public List<string> UnrenderableTags;
+        public List<string> UnrenderableMarkers;
         public Dictionary<string,Marker> FootnoteTextTags;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
@@ -19,7 +19,7 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             configDocx = new DocxConfig();
 
-            UnrenderableTags = new List<string>();
+            UnrenderableMarkers = new List<string>();
             FootnoteTextTags = new Dictionary<string,Marker>();
             newDoc = new XWPFDocument();
         }
@@ -27,7 +27,7 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             configDocx = config;
 
-            UnrenderableTags = new List<string>();
+            UnrenderableMarkers = new List<string>();
             FootnoteTextTags = new Dictionary<string,Marker>();
             newDoc = new XWPFDocument();
 
@@ -194,7 +194,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case VPEndMarker _:
                     break;
                 default:
-                    UnrenderableTags.Add(input.Identifier);
+                    UnrenderableMarkers.Add(input.Identifier);
                     break;
             }
         }
