@@ -188,8 +188,12 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFTable tableContainer = newDoc.CreateTable();
                     foreach (Marker marker in input.Contents)
                     {
-                        tableContainer.AddRow(getRenderedRows(marker, tableContainer));
+                        getRenderedRows(marker, tableContainer);
                     }
+                    break;
+                case BMarker bMarker:
+                    XWPFRun newLineBreak = parentParagraph.CreateRun();
+                    newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
                 case FQAEndMarker fQAEndMarker:
                 case FEndMarker _:
@@ -290,17 +294,15 @@ namespace USFMToolsSharp.Renderers.Docx
 
             bookNameCount++;
         }
-        public XWPFTableRow getRenderedRows(Marker input, XWPFTable parentTable)
+        public void getRenderedRows(Marker input, XWPFTable parentTable)
         {
             XWPFTableRow tableRowContainer = parentTable.CreateRow();
             foreach (Marker marker in input.Contents)
             {
-                XWPFTableCell tableCell = tableRowContainer.AddNewTableCell();
-                tableCell = getRenderedCell(marker, tableRowContainer);
+                getRenderedCell(marker, tableRowContainer);
             }
-            return tableRowContainer;
         }
-        public XWPFTableCell getRenderedCell(Marker input,XWPFTableRow parentRow)
+        public void getRenderedCell(Marker input,XWPFTableRow parentRow)
         {
             XWPFTableCell tableCellContainer = parentRow.CreateCell();
             XWPFParagraph cellContents = tableCellContainer.AddParagraph();
