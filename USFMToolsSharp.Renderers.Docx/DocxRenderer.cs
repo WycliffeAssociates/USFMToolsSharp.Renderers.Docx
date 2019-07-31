@@ -162,10 +162,16 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun footnoteMarker = parentParagraph.CreateRun(markerStyle);
 
                     footnoteMarker.SetText(footnoteId);
-                    footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+                    footnoteMarker.Subscript = VerticalAlign.SUBSCRIPT;
 
                     FootnoteMarkers[footnoteId] = fMarker;
 
+                    break;
+                case FPMarker fPMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, parentParagraph, fontSize: 12);
+                    }
                     break;
                 case FTMarker fTMarker:
 
@@ -175,6 +181,18 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
 
                     break;
+                case FRMarker fRMarker:
+                    XWPFRun VerseReference = parentParagraph.CreateRun();
+                    VerseReference.SetText(fRMarker.VerseReference);
+                    VerseReference.IsBold = true;
+                    VerseReference.FontSize = fontSize;
+                    break;
+                case FKMarker fKMarker:
+                    XWPFRun FootNoteKeyword = parentParagraph.CreateRun();
+                    FootNoteKeyword.SetText($" {fKMarker.FootNoteKeyword.ToUpper()}: ");
+                    FootNoteKeyword.FontSize = fontSize;
+                    break;
+                case FQMarker fQMarker:
                 case FQAMarker fQAMarker:
                     markerStyle.isItalics = true;
                     foreach (Marker marker in input.Contents)
@@ -182,6 +200,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
+                case FQEndMarker _:
                 case FQAEndMarker fQAEndMarker:
                 case FEndMarker _:
                 case IDEMarker _:
