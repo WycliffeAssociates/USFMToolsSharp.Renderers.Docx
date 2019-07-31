@@ -335,7 +335,6 @@ namespace USFMToolsSharp.Renderers.Docx
                 default:
                     break;
             }
-            return tableCellContainer;
         }
 
     }
