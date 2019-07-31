@@ -6,7 +6,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/WycliffeAssociates/USFMToolsSharp.Renderers.Docx</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Authors>@rbnswartz, @BryanHo10</Authors>
+    <Authors>@rbnswartz; @BryanHo10</Authors>
     <Company>Wycliffe Associates</Company>
     <PackageProjectUrl>https://github.com/WycliffeAssociates/USFMToolsSharp.Renderers.Docx</PackageProjectUrl>
   </PropertyGroup>
