@@ -35,8 +35,9 @@ namespace USFMToolsSharp.Renderers.Docx
         public XWPFDocument Render(USFMDocument input)
         {
             setStartPageNumber();
-            newDoc.setColumnCount(configDocx.columnCount);
-            newDoc.setTextDirection(configDocx.textDirection);
+
+            newDoc.ColumnCount = configDocx.columnCount;
+            newDoc.TextDirection= configDocx.textDirection;
 
             foreach (Marker marker in input.Contents)
                 {
