@@ -13,6 +13,7 @@ namespace USFMToolsSharp.Renderers.Docx
     {
         public List<string> UnrenderableMarkers;
         public Dictionary<string,Marker> FootnoteMarkers;
+        public Dictionary<string, Marker> CrossRefMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
         private int bookNameCount=1;
@@ -23,6 +24,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
             UnrenderableMarkers = new List<string>();
             FootnoteMarkers = new Dictionary<string,Marker>();
+            CrossRefMarkers = new Dictionary<string, Marker>();
             newDoc = new XWPFDocument();
         }
         public DocxRenderer(DocxConfig config)
@@ -31,6 +33,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
             UnrenderableMarkers = new List<string>();
             FootnoteMarkers = new Dictionary<string,Marker>();
+            CrossRefMarkers = new Dictionary<string, Marker>();
             newDoc = new XWPFDocument();
 
         }
@@ -80,6 +83,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
 
                     RenderFootnotes(markerStyle);
+                    RenderCrossReferences();
                     if (configDocx.separateChapters)
                     {
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
@@ -195,6 +199,47 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
+                // Cross References
+                case XMarker xMarker:
+                    string crossId;
+                    switch (xMarker.CrossRefCaller)
+                    {
+                        case "-":
+                            crossId = "";
+                            break;
+                        case "+":
+                            crossId = $"{CrossRefMarkers.Count + 1}";
+                            break;
+                        default:
+                            crossId = xMarker.CrossRefCaller;
+                            break;
+                    }
+                    XWPFRun crossRefMarker = parentParagraph.CreateRun();
+
+                    crossRefMarker.SetText(crossId);
+                    crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+
+                    CrossRefMarkers[crossId] = xMarker;
+                    break;
+                case XOMarker xOMarker:
+                    XWPFRun VerseReference = parentParagraph.CreateRun();
+                    VerseReference.SetText($" {xOMarker.OriginRef} ");
+                    VerseReference.IsBold = true;
+                    VerseReference.FontSize = fontSize;
+                    break;
+                case XTMarker xTMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, parentParagraph, fontSize: 12);
+                    }
+                    break;
+                case XQMarker xQMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, parentParagraph, isItalics: true, fontSize: 12);
+                    }
+                    break;
+                case XEndMarker _:
                 case FQEndMarker _:
                 case FQAEndMarker _:
                 case FEndMarker _:
@@ -230,6 +275,30 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                   }
                 FootnoteMarkers.Clear();
+            }
+        }
+        private void RenderCrossReferences()
+        {
+
+            if (CrossRefMarkers.Count > 0)
+            {
+                XWPFParagraph renderCrossRefStart = newDoc.CreateParagraph();
+                renderCrossRefStart.BorderTop = Borders.Single;
+
+                foreach (KeyValuePair<string, Marker> crossRefKVP in CrossRefMarkers)
+                {
+                    XWPFParagraph renderCrossRef = newDoc.CreateParagraph();
+                    XWPFRun crossRefMarker = renderCrossRef.CreateRun();
+                    crossRefMarker.SetText(crossRefKVP.Key);
+                    crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+
+                    foreach (Marker marker in crossRefKVP.Value.Contents)
+                    {
+                        RenderMarker(marker, renderCrossRef, fontSize: 12);
+                    }
+
+                }
+                CrossRefMarkers.Clear();
             }
         }
         public void setStartPageNumber()
