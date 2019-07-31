@@ -1,17 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.705
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "USFMToolsSharp.Renderers.Docx", "USFMToolsSharp.Renderers.Docx\USFMToolsSharp.Renderers.Docx.csproj", "{F4D20D2A-EEAF-453B-8C9B-80929F656D98}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPOI.OpenXml4Net.Core", "..\npoi\openxml4Net\NPOI.OpenXml4Net.Core.csproj", "{546CEBEE-469E-466D-8BB1-B6192EFF85C5}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPOI.Core", "..\npoi\main\NPOI.Core.csproj", "{234088BF-B945-4336-ADAA-46E34F3F4DEF}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPOI.OOXML.Core", "..\npoi\ooxml\NPOI.OOXML.Core.csproj", "{FCF68227-F9E7-4525-9C1D-E18F3E5F1795}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPOI.OpenXmlFormats.Core", "..\npoi\OpenXmlFormats\NPOI.OpenXmlFormats.Core.csproj", "{8D903684-B9EA-47C1-92A0-C7F74585767A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,38 +21,6 @@ Global
 		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}.Release|Any CPU.Build.0 = Release|Any CPU
-		{546CEBEE-469E-466D-8BB1-B6192EFF85C5}..net 2 Release|Any CPU.ActiveCfg = Release|Any CPU
-		{546CEBEE-469E-466D-8BB1-B6192EFF85C5}..net 2 Release|Any CPU.Build.0 = Release|Any CPU
-		{546CEBEE-469E-466D-8BB1-B6192EFF85C5}..net 4 Release|Any CPU.ActiveCfg = Release|Any CPU
-		{546CEBEE-469E-466D-8BB1-B6192EFF85C5}..net 4 Release|Any CPU.Build.0 = Release|Any CPU
-		{546CEBEE-469E-466D-8BB1-B6192EFF85C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{546CEBEE-469E-466D-8BB1-B6192EFF85C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{546CEBEE-469E-466D-8BB1-B6192EFF85C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{546CEBEE-469E-466D-8BB1-B6192EFF85C5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{234088BF-B945-4336-ADAA-46E34F3F4DEF}..net 2 Release|Any CPU.ActiveCfg = Release|Any CPU
-		{234088BF-B945-4336-ADAA-46E34F3F4DEF}..net 2 Release|Any CPU.Build.0 = Release|Any CPU
-		{234088BF-B945-4336-ADAA-46E34F3F4DEF}..net 4 Release|Any CPU.ActiveCfg = Release|Any CPU
-		{234088BF-B945-4336-ADAA-46E34F3F4DEF}..net 4 Release|Any CPU.Build.0 = Release|Any CPU
-		{234088BF-B945-4336-ADAA-46E34F3F4DEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{234088BF-B945-4336-ADAA-46E34F3F4DEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{234088BF-B945-4336-ADAA-46E34F3F4DEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{234088BF-B945-4336-ADAA-46E34F3F4DEF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FCF68227-F9E7-4525-9C1D-E18F3E5F1795}..net 2 Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FCF68227-F9E7-4525-9C1D-E18F3E5F1795}..net 2 Release|Any CPU.Build.0 = Release|Any CPU
-		{FCF68227-F9E7-4525-9C1D-E18F3E5F1795}..net 4 Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FCF68227-F9E7-4525-9C1D-E18F3E5F1795}..net 4 Release|Any CPU.Build.0 = Release|Any CPU
-		{FCF68227-F9E7-4525-9C1D-E18F3E5F1795}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FCF68227-F9E7-4525-9C1D-E18F3E5F1795}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FCF68227-F9E7-4525-9C1D-E18F3E5F1795}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FCF68227-F9E7-4525-9C1D-E18F3E5F1795}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8D903684-B9EA-47C1-92A0-C7F74585767A}..net 2 Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D903684-B9EA-47C1-92A0-C7F74585767A}..net 2 Release|Any CPU.Build.0 = Release|Any CPU
-		{8D903684-B9EA-47C1-92A0-C7F74585767A}..net 4 Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D903684-B9EA-47C1-92A0-C7F74585767A}..net 4 Release|Any CPU.Build.0 = Release|Any CPU
-		{8D903684-B9EA-47C1-92A0-C7F74585767A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8D903684-B9EA-47C1-92A0-C7F74585767A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8D903684-B9EA-47C1-92A0-C7F74585767A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D903684-B9EA-47C1-92A0-C7F74585767A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
