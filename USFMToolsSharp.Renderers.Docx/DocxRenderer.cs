@@ -182,6 +182,15 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
+
+            // Table Markers
+                case TableBlock table:
+                    XWPFTable tableContainer = newDoc.CreateTable();
+                    foreach (Marker marker in input.Contents)
+                    {
+                        tableContainer.AddRow(getRenderedRows(marker, tableContainer));
+                    }
+                    break;
                 case FQAEndMarker fQAEndMarker:
                 case FEndMarker _:
                 case IDEMarker _:
@@ -257,7 +266,7 @@ namespace USFMToolsSharp.Renderers.Docx
             footerRef.id = documentFooter.GetPackageRelationship().Id;
 
         }
-
+        
         public void createBookHeaders(string bookname)
         {
 
@@ -281,7 +290,51 @@ namespace USFMToolsSharp.Renderers.Docx
 
             bookNameCount++;
         }
-
+        public XWPFTableRow getRenderedRows(Marker input, XWPFTable parentTable)
+        {
+            XWPFTableRow tableRowContainer = parentTable.CreateRow();
+            foreach (Marker marker in input.Contents)
+            {
+                XWPFTableCell tableCell = tableRowContainer.AddNewTableCell();
+                tableCell = getRenderedCell(marker, tableRowContainer);
+            }
+            return tableRowContainer;
+        }
+        public XWPFTableCell getRenderedCell(Marker input,XWPFTableRow parentRow)
+        {
+            XWPFTableCell tableCellContainer = parentRow.CreateCell();
+            XWPFParagraph cellContents = tableCellContainer.AddParagraph();
+            switch (input)
+            {
+                case THMarker tHMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, parentParagraph: cellContents, isBold: true);
+                    }
+                    break;
+                case THRMarker tHRMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, parentParagraph: cellContents, isBold: true);
+                    }
+                    break;
+                case TCMarker tCMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, parentParagraph: cellContents);
+                    }
+                    break;
+                case TCRMarker tCRMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, parentParagraph: cellContents);
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return tableCellContainer;
+        }
 
     }
 }
