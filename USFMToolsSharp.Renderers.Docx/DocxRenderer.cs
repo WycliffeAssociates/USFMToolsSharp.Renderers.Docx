@@ -48,7 +48,7 @@ namespace USFMToolsSharp.Renderers.Docx
             return newDoc;
 
         }
-        private void RenderMarker(Marker input, XWPFParagraph parentParagraph = null, bool isBold = false, bool isItalics = false)
+        private void RenderMarker(Marker input, XWPFParagraph parentParagraph = null, bool isBold = false, bool isItalics = false,int fontSize = 16)
         {
             switch (input)
             {
@@ -113,7 +113,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case TextBlock textBlock:
                     XWPFRun blockText = parentParagraph.CreateRun();
                     blockText.SetText(textBlock.Text);
-                    blockText.FontSize = 16;
+                    blockText.FontSize = fontSize;
 
                     if (isBold)
                     {
@@ -167,26 +167,49 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun footnoteMarker = parentParagraph.CreateRun();
 
                     footnoteMarker.SetText(footnoteId);
-                    footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+                    footnoteMarker.Subscript = VerticalAlign.SUBSCRIPT;
 
                     FootnoteTextTags[footnoteId] = fMarker;
 
+                    break;
+                case FPMarker fPMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, parentParagraph, fontSize: 12);
+                    }
                     break;
                 case FTMarker fTMarker:
 
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker,parentParagraph);
+                        RenderMarker(marker,parentParagraph,fontSize:12);
                     }
-
                     break;
+                case FRMarker fRMarker:
+                    XWPFRun VerseReference = parentParagraph.CreateRun();
+                    VerseReference.SetText(fRMarker.VerseReference);
+                    VerseReference.IsBold = true;
+                    VerseReference.FontSize = fontSize;
+                    break;
+                case FKMarker fKMarker:
+                    XWPFRun FootNoteKeyword = parentParagraph.CreateRun();
+                    FootNoteKeyword.SetText($" {fKMarker.FootNoteKeyword.ToUpper()}: ");
+                    FootNoteKeyword.FontSize = fontSize;
+                    break;
+                case FQMarker fQMarker:
                 case FQAMarker fQAMarker:
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph,isItalics:true);
+                        RenderMarker(marker, parentParagraph,isItalics:true,fontSize: 12);
                     }
                     break;
-                case FQAEndMarker fQAEndMarker:
+                case FVMarker fVMarker:
+                    XWPFRun footnoteVerseMarker = parentParagraph.CreateRun();
+                    footnoteVerseMarker.SetText(fVMarker.VerseCharacter);
+                    footnoteVerseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+                    break;
+                case FQEndMarker _:
+                case FQAEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
                 case IDMarker _:
@@ -203,10 +226,8 @@ namespace USFMToolsSharp.Renderers.Docx
 
             if (FootnoteTextTags.Count > 0)
             {
-                XWPFParagraph renderFootnoteHeader = newDoc.CreateParagraph();
-                XWPFRun FootnoteHeader = renderFootnoteHeader.CreateRun();
-                FootnoteHeader.SetText("Footnotes");
-                FootnoteHeader.FontSize = 24;
+                XWPFParagraph renderFootnoteStart = newDoc.CreateParagraph();
+                renderFootnoteStart.BorderTop = Borders.Single;
 
                 foreach(KeyValuePair<string,Marker> footnoteKVP in FootnoteTextTags)
                 {
@@ -217,7 +238,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     foreach(Marker marker in footnoteKVP.Value.Contents)
                     {
-                        RenderMarker(marker, renderFootnote);
+                        RenderMarker(marker, renderFootnote,fontSize:12);
                     }
   
                 }
