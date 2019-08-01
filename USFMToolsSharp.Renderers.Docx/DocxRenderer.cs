@@ -4,9 +4,11 @@ using USFMToolsSharp.Models.Markers;
 using NPOI.XWPF.UserModel;
 using NPOI.XWPF.Model;
 using NPOI.OpenXmlFormats.Wordprocessing;
+using USFMToolsSharp.Renderers.Docx.Extensions;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
+    
     public class DocxRenderer
     {
         public List<string> UnrenderableMarkers;
@@ -32,6 +34,7 @@ namespace USFMToolsSharp.Renderers.Docx
             newDoc = new XWPFDocument();
 
         }
+
         public XWPFDocument Render(USFMDocument input)
         {
             setStartPageNumber();
@@ -42,14 +45,17 @@ namespace USFMToolsSharp.Renderers.Docx
             foreach (Marker marker in input.Contents)
                 {
 
-                    RenderMarker(marker);
+                    RenderMarker(marker, new StyleConfig());
 
                 }
             return newDoc;
 
         }
-        private void RenderMarker(Marker input, XWPFParagraph parentParagraph = null, bool isBold = false, bool isItalics = false)
+        private void RenderMarker(Marker input, StyleConfig styles, XWPFParagraph parentParagraph = null, bool styleChange = false)
         {
+            StyleConfig markerStyle = styles;
+            if (styleChange)
+                markerStyle = (StyleConfig)styles.Clone();
             switch (input)
             {
                 case PMarker _:
@@ -60,19 +66,19 @@ namespace USFMToolsSharp.Renderers.Docx
                         
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, newParagraph);
+                        RenderMarker(marker, markerStyle, newParagraph);
                     }
                     break;
                 case CMarker cMarker:
                     XWPFParagraph newChapter = newDoc.CreateParagraph();
                     XWPFRun chapterMarker = newChapter.CreateRun();
                     chapterMarker.SetText(cMarker.Number.ToString());
-                    chapterMarker.FontSize = 24;
+                    chapterMarker.FontSize = 20;
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph();
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, chapterVerses);
+                        RenderMarker(marker, markerStyle ,chapterVerses);
                     }
 
                     RenderFootnotes();
@@ -96,7 +102,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph);
+                        RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case QMarker qMarker:
@@ -105,7 +111,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker,poetryParagraph);
+                        RenderMarker(marker,markerStyle, poetryParagraph);
                     }
                     break;
                 case MMarker mMarker:
@@ -113,21 +119,13 @@ namespace USFMToolsSharp.Renderers.Docx
                 case TextBlock textBlock:
                     XWPFRun blockText = parentParagraph.CreateRun();
                     blockText.SetText(textBlock.Text);
-                    blockText.FontSize = 16;
-
-                    if (isBold)
-                    {
-                        blockText.IsBold = true;
-                    }
-                    if (isItalics)
-                    {
-                        blockText.IsItalic = true;
-                    }
+                    blockText.StyleRun(markerStyle);
                     break;
                 case BDMarker bdMarker:
+                    markerStyle.isBold = true;
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker,parentParagraph,isBold:true);
+                        RenderMarker(marker,markerStyle,parentParagraph,styleChange:true);
                     }
                     break;
                 case HMarker hMarker:
@@ -140,7 +138,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker);
+                        RenderMarker(marker,markerStyle);
                     }
                     if (!configDocx.separateChapters)   // No double page breaks before books
                     {
@@ -176,14 +174,15 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker,parentParagraph);
+                        RenderMarker(marker, markerStyle, parentParagraph);
                     }
 
                     break;
                 case FQAMarker fQAMarker:
+                    markerStyle.isItalics = true;
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph,isItalics:true);
+                        RenderMarker(marker, markerStyle, parentParagraph, styleChange: true);
                     }
                     break;
                 case FQAEndMarker fQAEndMarker:
@@ -217,7 +216,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     foreach(Marker marker in footnoteKVP.Value.Contents)
                     {
-                        RenderMarker(marker, renderFootnote);
+                        RenderMarker(marker, new StyleConfig(),renderFootnote);
                     }
   
                 }

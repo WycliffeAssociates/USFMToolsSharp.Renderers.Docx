@@ -28,7 +28,7 @@ namespace USFMToolsSharp.Renderers.Docx
             
             fontSize = 12;
         }
-        public DocxConfig(int fontSize = 12, bool separateChapters = false, bool separateVerses = false) : this()
+        public DocxConfig(int fontSize = 12, bool separateChapters = true, bool separateVerses = false) : this()
         {
             this.fontSize = fontSize;
             this.separateChapters = separateChapters;
