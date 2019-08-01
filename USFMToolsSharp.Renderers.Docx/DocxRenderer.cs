@@ -13,13 +13,15 @@ namespace USFMToolsSharp.Renderers.Docx
         public Dictionary<string,Marker> FootnoteTextTags;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
-        private int bookNameCount=1;
+        private int bookNameCount=0;
+        public List<string> BookNames;
 
         public DocxRenderer()
         {
             configDocx = new DocxConfig();
 
             UnrenderableMarkers = new List<string>();
+            BookNames = new List<string>();
             FootnoteTextTags = new Dictionary<string,Marker>();
             newDoc = new XWPFDocument();
         }
@@ -28,6 +30,7 @@ namespace USFMToolsSharp.Renderers.Docx
             configDocx = config;
 
             UnrenderableMarkers = new List<string>();
+            BookNames = new List<string>();
             FootnoteTextTags = new Dictionary<string,Marker>();
             newDoc = new XWPFDocument();
 
@@ -45,6 +48,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     RenderMarker(marker);
 
                 }
+            createBookHeaders(BookNames[BookNames.Count - 1]);
+            createFooter();
             return newDoc;
 
         }
@@ -137,16 +142,11 @@ namespace USFMToolsSharp.Renderers.Docx
                     headerTitle.FontSize = 24;
                     break;
                 case MTMarker mTMarker:
-
+                    createBookHeaders(mTMarker.Title);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker);
                     }
-                    if (!configDocx.separateChapters)   // No double page breaks before books
-                    {
-                        newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
-                    }
-                    createBookHeaders(mTMarker.Title);
                     break;
                 case FMarker fMarker:
                     StringBuilder footnote = new StringBuilder();
@@ -266,25 +266,29 @@ namespace USFMToolsSharp.Renderers.Docx
 
         public void createBookHeaders(string bookname)
         {
+            BookNames.Add(bookname);
+            if (BookNames.Count > 1)
+            {
+                CT_Hdr header = new CT_Hdr();
+                CT_P headerParagraph = header.AddNewP();
+                CT_PPr ppr = headerParagraph.AddNewPPr();
+                CT_Jc align = ppr.AddNewJc();
+                align.val = ST_Jc.left;
 
-            CT_Hdr header = new CT_Hdr();
-            CT_P headerParagraph = header.AddNewP();
-            CT_PPr ppr = headerParagraph.AddNewPPr();
-            CT_Jc align = ppr.AddNewJc();
-            align.val = ST_Jc.left;
+                headerParagraph.AddNewR().AddNewT().Value = BookNames[bookNameCount-1];
 
-            headerParagraph.AddNewR().AddNewT().Value = bookname;
+                XWPFRelation headerRelation = XWPFRelation.HEADER;
 
-            XWPFRelation headerRelation = XWPFRelation.HEADER;
-
-            // newDoc.HeaderList doesn't update with header additions
-            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), bookNameCount);
-            documentHeader.SetHeaderFooter(header);
-            CT_SectPr diffHeader = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
-            CT_HdrFtrRef headerRef = diffHeader.AddNewHeaderReference();
-            headerRef.type = ST_HdrFtr.@default;
-            headerRef.id = documentHeader.GetPackageRelationship().Id;
-
+                // newDoc.HeaderList doesn't update with header additions
+                XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), bookNameCount);
+                documentHeader.SetHeaderFooter(header);
+                CT_SectPr diffHeader = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
+                CT_HdrFtrRef headerRef = diffHeader.AddNewHeaderReference();
+                headerRef.type = ST_HdrFtr.@default;
+                headerRef.id = documentHeader.GetPackageRelationship().Id;
+            
+                
+            }
             bookNameCount++;
         }
 
