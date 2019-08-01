@@ -134,7 +134,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     headerTitle.SetText(hMarker.HeaderText);
                     break;
                 case MTMarker mTMarker:
-
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker,markerStyle);
@@ -240,6 +239,16 @@ namespace USFMToolsSharp.Renderers.Docx
             // Table Markers
                 case TableBlock table:
                     XWPFTable tableContainer = newDoc.CreateTable();
+
+                    // Clear Borders
+                    tableContainer.SetBottomBorder(XWPFTable.XWPFBorderType.NONE,0,0,"#FFFFFFF");
+                    tableContainer.SetLeftBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
+                    tableContainer.SetRightBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
+                    tableContainer.SetTopBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
+                    // Clear Inside Borders
+                    tableContainer.SetInsideHBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
+                    tableContainer.SetInsideVBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
+
                     foreach (Marker marker in input.Contents)
                     {
                         getRenderedRows(marker, tableContainer);
@@ -311,7 +320,7 @@ namespace USFMToolsSharp.Renderers.Docx
         public void setStartPageNumber()
         {
             newDoc.Document.body.sectPr.pgNumType.fmt = ST_NumberFormat.@decimal;
-            newDoc.Document.body.sectPr.pgNumType.start = "0";
+            newDoc.Document.body.sectPr.pgNumType.start = "1";
         }
         public void createFooter()
         {
