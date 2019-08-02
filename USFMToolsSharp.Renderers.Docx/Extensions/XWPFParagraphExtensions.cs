@@ -8,9 +8,15 @@ namespace USFMToolsSharp.Renderers.Docx.Extensions
 {
     public static class XWPFParagraphExtensions
     {
-        public static void StyleParagraph(this XWPFParagraph para, StyleConfig styles)
+        public static XWPFRun CreateStyledRun(this XWPFParagraph para, StyleConfig styles)
         {
-            para.Alignment = (styles.isAlignRight ? ParagraphAlignment.RIGHT : ParagraphAlignment.LEFT);
+            XWPFRun run = para.CreateRun();
+            run.IsBold = styles.isBold;
+            run.IsItalic = styles.isItalics;
+            run.FontSize = styles.fontSize;
+            run.IsSmallCaps = styles.isSmallCaps;
+            return run;
+
         }
     }
 }
