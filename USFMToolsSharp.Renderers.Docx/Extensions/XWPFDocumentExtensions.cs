@@ -8,7 +8,7 @@ namespace USFMToolsSharp.Renderers.Docx.Extensions
 {
     public static class XWPFDocumentExtensions
     {
-        public static XWPFParagraph CreateStyledParagraph(this XWPFDocument doc, StyleConfig styles)
+        public static XWPFParagraph CreateParagraph(this XWPFDocument doc, StyleConfig styles)
         {
             XWPFParagraph para = doc.CreateParagraph();
             para.Alignment = (styles.isAlignRight ? ParagraphAlignment.RIGHT : ParagraphAlignment.LEFT);

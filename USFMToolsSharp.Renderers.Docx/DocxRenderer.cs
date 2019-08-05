@@ -57,7 +57,7 @@ namespace USFMToolsSharp.Renderers.Docx
             switch (input)
             {
                 case PMarker _:
-                    XWPFParagraph newParagraph = newDoc.CreateStyledParagraph(markerStyle);
+                    XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle);
 
                     newParagraph.Alignment = configDocx.textAlign;
                     newParagraph.SpacingBetween = configDocx.lineSpacing;
@@ -68,12 +68,12 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case CMarker cMarker:
-                    XWPFParagraph newChapter = newDoc.CreateStyledParagraph(markerStyle);
-                    XWPFRun chapterMarker = newChapter.CreateStyledRun(markerStyle);
+                    XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
                     chapterMarker.SetText(cMarker.Number.ToString());
                     chapterMarker.FontSize = 20;
 
-                    XWPFParagraph chapterVerses = newDoc.CreateStyledParagraph(markerStyle);
+                    XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle ,chapterVerses);
@@ -93,7 +93,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         XWPFRun newLine = parentParagraph.CreateRun();
                         newLine.AddBreak(BreakType.TEXTWRAPPING);
                     }
-                    XWPFRun verseMarker = parentParagraph.CreateStyledRun(markerStyle);
+                    XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
 
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
@@ -104,7 +104,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case QMarker qMarker:
-                    XWPFParagraph poetryParagraph = newDoc.CreateStyledParagraph(markerStyle);
+                    XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle);
                     poetryParagraph.IndentationLeft = qMarker.Depth;
 
                     foreach (Marker marker in input.Contents)
@@ -115,7 +115,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case MMarker mMarker:
                     break;
                 case TextBlock textBlock:
-                    XWPFRun blockText = parentParagraph.CreateStyledRun(markerStyle);
+                    XWPFRun blockText = parentParagraph.CreateRun(markerStyle);
                     blockText.SetText(textBlock.Text);
                     break;
                 case BDMarker bdMarker:
@@ -126,8 +126,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case HMarker hMarker:
-                    XWPFParagraph newHeader = newDoc.CreateStyledParagraph(markerStyle);
-                    XWPFRun headerTitle = newHeader.CreateStyledRun(markerStyle);
+                    XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
                     headerTitle.FontSize = 24;
                     break;
@@ -159,7 +159,7 @@ namespace USFMToolsSharp.Renderers.Docx
                             footnoteId = fMarker.FootNoteCaller;
                             break;
                     }
-                    XWPFRun footnoteMarker = parentParagraph.CreateStyledRun(markerStyle);
+                    XWPFRun footnoteMarker = parentParagraph.CreateRun(markerStyle);
 
                     footnoteMarker.SetText(footnoteId);
                     footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;

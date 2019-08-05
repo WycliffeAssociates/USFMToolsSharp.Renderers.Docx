@@ -8,7 +8,7 @@ namespace USFMToolsSharp.Renderers.Docx.Extensions
 {
     public static class XWPFParagraphExtensions
     {
-        public static XWPFRun CreateStyledRun(this XWPFParagraph para, StyleConfig styles)
+        public static XWPFRun CreateRun(this XWPFParagraph para, StyleConfig styles)
         {
             XWPFRun run = para.CreateRun();
             run.IsBold = styles.isBold;
