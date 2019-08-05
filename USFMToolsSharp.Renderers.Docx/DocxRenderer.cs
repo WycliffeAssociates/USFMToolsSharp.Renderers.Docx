@@ -194,9 +194,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
             }
         }
-        private void RenderFootnotes(StyleConfig markerStyle)
+        private void RenderFootnotes(StyleConfig styles)
         {
-
             if (FootnoteMarkers.Count > 0)
             {
                 XWPFParagraph renderFootnoteStart = newDoc.CreateParagraph();
@@ -209,12 +208,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     footnoteMarker.SetText(footnoteKVP.Key);
                     footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
-                    foreach(Marker marker in footnoteKVP.Value.Contents)
+                    StyleConfig markerStyle = (StyleConfig)styles.Clone();
+                    markerStyle.fontSize = 12;
+
+                    foreach (Marker marker in footnoteKVP.Value.Contents)
                     {
                         RenderMarker(marker, markerStyle, renderFootnote);
                     }
-  
-                }
+                  }
                 FootnoteMarkers.Clear();
             }
         }
