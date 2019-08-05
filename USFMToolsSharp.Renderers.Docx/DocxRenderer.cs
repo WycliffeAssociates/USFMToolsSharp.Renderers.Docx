@@ -12,7 +12,7 @@ namespace USFMToolsSharp.Renderers.Docx
     public class DocxRenderer
     {
         public List<string> UnrenderableMarkers;
-        public Dictionary<string,Marker> FootnoteTextTags;
+        public Dictionary<string,Marker> FootnoteMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
         private int bookNameCount=1;
@@ -22,7 +22,7 @@ namespace USFMToolsSharp.Renderers.Docx
             configDocx = new DocxConfig();
 
             UnrenderableMarkers = new List<string>();
-            FootnoteTextTags = new Dictionary<string,Marker>();
+            FootnoteMarkers = new Dictionary<string,Marker>();
             newDoc = new XWPFDocument();
         }
         public DocxRenderer(DocxConfig config)
@@ -30,7 +30,7 @@ namespace USFMToolsSharp.Renderers.Docx
             configDocx = config;
 
             UnrenderableMarkers = new List<string>();
-            FootnoteTextTags = new Dictionary<string,Marker>();
+            FootnoteMarkers = new Dictionary<string,Marker>();
             newDoc = new XWPFDocument();
 
         }
@@ -79,7 +79,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle ,chapterVerses);
                     }
 
-                    RenderFootnotes();
+                    RenderFootnotes(markerStyle);
                     if (configDocx.separateChapters)
                     {
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
@@ -153,7 +153,7 @@ namespace USFMToolsSharp.Renderers.Docx
                             footnoteId = "";
                             break;
                         case "+":
-                            footnoteId = $"{FootnoteTextTags.Count + 1}";
+                            footnoteId = $"{FootnoteMarkers.Count + 1}";
                             break;
                         default:
                             footnoteId = fMarker.FootNoteCaller;
@@ -164,7 +164,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     footnoteMarker.SetText(footnoteId);
                     footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
-                    FootnoteTextTags[footnoteId] = fMarker;
+                    FootnoteMarkers[footnoteId] = fMarker;
 
                     break;
                 case FTMarker fTMarker:
@@ -194,17 +194,15 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
             }
         }
-        private void RenderFootnotes()
+        private void RenderFootnotes(StyleConfig markerStyle)
         {
 
-            if (FootnoteTextTags.Count > 0)
+            if (FootnoteMarkers.Count > 0)
             {
-                XWPFParagraph renderFootnoteHeader = newDoc.CreateParagraph();
-                XWPFRun FootnoteHeader = renderFootnoteHeader.CreateRun();
-                FootnoteHeader.SetText("Footnotes");
-                FootnoteHeader.FontSize = 24;
+                XWPFParagraph renderFootnoteStart = newDoc.CreateParagraph();
+                renderFootnoteStart.BorderTop = Borders.Single;
 
-                foreach(KeyValuePair<string,Marker> footnoteKVP in FootnoteTextTags)
+                foreach (KeyValuePair<string,Marker> footnoteKVP in FootnoteMarkers)
                 {
                     XWPFParagraph renderFootnote = newDoc.CreateParagraph();
                     XWPFRun footnoteMarker = renderFootnote.CreateRun();
@@ -213,11 +211,11 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     foreach(Marker marker in footnoteKVP.Value.Contents)
                     {
-                        RenderMarker(marker, new StyleConfig(),renderFootnote);
+                        RenderMarker(marker, markerStyle, renderFootnote);
                     }
   
                 }
-                FootnoteTextTags.Clear();
+                FootnoteMarkers.Clear();
             }
         }
         public void setStartPageNumber()
