@@ -228,14 +228,14 @@ namespace USFMToolsSharp.Renderers.Docx
                 case XTMarker xTMarker:
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, markerStyle,parentParagraph);
+                        RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case XQMarker xQMarker:
                     markerStyle.isItalics = true;
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, markerStyle,parentParagraph);
+                        RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case XEndMarker _:
