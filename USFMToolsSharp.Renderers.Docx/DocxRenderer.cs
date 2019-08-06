@@ -144,8 +144,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     createBookHeaders(mTMarker.Title);
                     break;
                 case FMarker fMarker:
-                    StringBuilder footnote = new StringBuilder();
-
                     string footnoteId;
                     switch (fMarker.FootNoteCaller)
                     {
@@ -170,7 +168,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case FPMarker fPMarker:
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph, fontSize: 12);
+                        RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case FTMarker fTMarker:
@@ -179,18 +177,15 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
-
                     break;
                 case FRMarker fRMarker:
-                    XWPFRun VerseReference = parentParagraph.CreateRun();
+                    markerStyle.isBold = true;
+                    XWPFRun VerseReference = parentParagraph.CreateRun(markerStyle);
                     VerseReference.SetText(fRMarker.VerseReference);
-                    VerseReference.IsBold = true;
-                    VerseReference.FontSize = fontSize;
                     break;
                 case FKMarker fKMarker:
-                    XWPFRun FootNoteKeyword = parentParagraph.CreateRun();
+                    XWPFRun FootNoteKeyword = parentParagraph.CreateRun(markerStyle);
                     FootNoteKeyword.SetText($" {fKMarker.FootNoteKeyword.ToUpper()}: ");
-                    FootNoteKeyword.FontSize = fontSize;
                     break;
                 case FQMarker fQMarker:
                 case FQAMarker fQAMarker:
@@ -201,7 +196,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case FQEndMarker _:
-                case FQAEndMarker fQAEndMarker:
+                case FQAEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
                 case IDMarker _:
