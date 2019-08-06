@@ -47,9 +47,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
             foreach (Marker marker in input.Contents)
                 {
-
                     RenderMarker(marker, new StyleConfig());
-
                 }
             return newDoc;
 
@@ -83,7 +81,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
 
                     RenderFootnotes(markerStyle);
-                    RenderCrossReferences();
+                    RenderCrossReferences(markerStyle);
                     if (configDocx.separateChapters)
                     {
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
@@ -225,22 +223,26 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun VerseReference = parentParagraph.CreateRun();
                     VerseReference.SetText($" {xOMarker.OriginRef} ");
                     VerseReference.IsBold = true;
-                    VerseReference.FontSize = fontSize;
+                    VerseReference.FontSize = markerStyle.fontSize;
                     break;
                 case XTMarker xTMarker:
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph, fontSize: 12);
+                        RenderMarker(marker, markerStyle,parentParagraph);
                     }
                     break;
                 case XQMarker xQMarker:
+                    markerStyle.isItalics = true;
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph, isItalics: true, fontSize: 12);
+                        RenderMarker(marker, markerStyle,parentParagraph);
                     }
                     break;
                 case XEndMarker _:
+<<<<<<< HEAD
                 case FQEndMarker _:
+=======
+>>>>>>> rebase cross ref to handle style config
                 case FQAEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
@@ -277,13 +279,16 @@ namespace USFMToolsSharp.Renderers.Docx
                 FootnoteMarkers.Clear();
             }
         }
-        private void RenderCrossReferences()
+        private void RenderCrossReferences(StyleConfig config)
         {
 
             if (CrossRefMarkers.Count > 0)
             {
                 XWPFParagraph renderCrossRefStart = newDoc.CreateParagraph();
                 renderCrossRefStart.BorderTop = Borders.Single;
+
+                StyleConfig markerStyle = (StyleConfig)config.Clone();
+                markerStyle.fontSize = 12;
 
                 foreach (KeyValuePair<string, Marker> crossRefKVP in CrossRefMarkers)
                 {
@@ -294,7 +299,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     foreach (Marker marker in crossRefKVP.Value.Contents)
                     {
-                        RenderMarker(marker, renderCrossRef, fontSize: 12);
+                        RenderMarker(marker, markerStyle, renderCrossRef);
                     }
 
                 }
