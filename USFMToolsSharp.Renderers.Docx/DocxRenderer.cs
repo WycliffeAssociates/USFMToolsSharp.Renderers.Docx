@@ -220,8 +220,8 @@ namespace USFMToolsSharp.Renderers.Docx
 
                 foreach (KeyValuePair<string,Marker> footnoteKVP in FootnoteMarkers)
                 {
-                    XWPFParagraph renderFootnote = newDoc.CreateParagraph();
-                    XWPFRun footnoteMarker = renderFootnote.CreateRun();
+                    XWPFParagraph renderFootnote = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun footnoteMarker = renderFootnote.CreateRun(markerStyle);
                     footnoteMarker.SetText(footnoteKVP.Key);
                     footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
                     foreach (Marker marker in footnoteKVP.Value.Contents)
