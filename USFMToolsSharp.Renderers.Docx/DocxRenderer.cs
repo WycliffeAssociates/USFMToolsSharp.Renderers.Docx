@@ -128,10 +128,10 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case HMarker hMarker:
+                    markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
-                    headerTitle.FontSize = 24;
                     break;
                 case MTMarker mTMarker:
 
@@ -212,7 +212,7 @@ namespace USFMToolsSharp.Renderers.Docx
                             crossId = xMarker.CrossRefCaller;
                             break;
                     }
-                    XWPFRun crossRefMarker = parentParagraph.CreateRun();
+                    XWPFRun crossRefMarker = parentParagraph.CreateRun(markerStyle);
 
                     crossRefMarker.SetText(crossId);
                     crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
@@ -220,10 +220,9 @@ namespace USFMToolsSharp.Renderers.Docx
                     CrossRefMarkers[crossId] = xMarker;
                     break;
                 case XOMarker xOMarker:
-                    XWPFRun VerseReference = parentParagraph.CreateRun();
+                    markerStyle.isBold = true;
+                    XWPFRun VerseReference = parentParagraph.CreateRun(markerStyle);
                     VerseReference.SetText($" {xOMarker.OriginRef} ");
-                    VerseReference.IsBold = true;
-                    VerseReference.FontSize = markerStyle.fontSize;
                     break;
                 case XTMarker xTMarker:
                     foreach (Marker marker in input.Contents)
@@ -293,7 +292,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 foreach (KeyValuePair<string, Marker> crossRefKVP in CrossRefMarkers)
                 {
                     XWPFParagraph renderCrossRef = newDoc.CreateParagraph();
-                    XWPFRun crossRefMarker = renderCrossRef.CreateRun();
+                    XWPFRun crossRefMarker = renderCrossRef.CreateRun(markerStyle);
                     crossRefMarker.SetText(crossRefKVP.Key);
                     crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
