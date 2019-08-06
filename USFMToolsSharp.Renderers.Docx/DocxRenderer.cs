@@ -201,16 +201,15 @@ namespace USFMToolsSharp.Renderers.Docx
                 XWPFParagraph renderFootnoteStart = newDoc.CreateParagraph();
                 renderFootnoteStart.BorderTop = Borders.Single;
 
+                StyleConfig markerStyle = (StyleConfig)styles.Clone();
+                markerStyle.fontSize = 12;
+
                 foreach (KeyValuePair<string,Marker> footnoteKVP in FootnoteMarkers)
                 {
                     XWPFParagraph renderFootnote = newDoc.CreateParagraph();
                     XWPFRun footnoteMarker = renderFootnote.CreateRun();
                     footnoteMarker.SetText(footnoteKVP.Key);
                     footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
-
-                    StyleConfig markerStyle = (StyleConfig)styles.Clone();
-                    markerStyle.fontSize = 12;
-
                     foreach (Marker marker in footnoteKVP.Value.Contents)
                     {
                         RenderMarker(marker, markerStyle, renderFootnote);
