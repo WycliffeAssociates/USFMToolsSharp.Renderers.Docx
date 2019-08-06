@@ -4,13 +4,15 @@ using USFMToolsSharp.Models.Markers;
 using NPOI.XWPF.UserModel;
 using NPOI.XWPF.Model;
 using NPOI.OpenXmlFormats.Wordprocessing;
+using USFMToolsSharp.Renderers.Docx.Extensions;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
+    
     public class DocxRenderer
     {
         public List<string> UnrenderableMarkers;
-        public Dictionary<string,Marker> FootnoteTextTags;
+        public Dictionary<string,Marker> FootnoteMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
         private int bookNameCount=1;
@@ -20,7 +22,7 @@ namespace USFMToolsSharp.Renderers.Docx
             configDocx = new DocxConfig();
 
             UnrenderableMarkers = new List<string>();
-            FootnoteTextTags = new Dictionary<string,Marker>();
+            FootnoteMarkers = new Dictionary<string,Marker>();
             newDoc = new XWPFDocument();
         }
         public DocxRenderer(DocxConfig config)
@@ -28,10 +30,11 @@ namespace USFMToolsSharp.Renderers.Docx
             configDocx = config;
 
             UnrenderableMarkers = new List<string>();
-            FootnoteTextTags = new Dictionary<string,Marker>();
+            FootnoteMarkers = new Dictionary<string,Marker>();
             newDoc = new XWPFDocument();
 
         }
+
         public XWPFDocument Render(USFMDocument input)
         {
             setStartPageNumber();
@@ -42,40 +45,41 @@ namespace USFMToolsSharp.Renderers.Docx
             foreach (Marker marker in input.Contents)
                 {
 
-                    RenderMarker(marker);
+                    RenderMarker(marker, new StyleConfig());
 
                 }
             return newDoc;
 
         }
-        private void RenderMarker(Marker input, XWPFParagraph parentParagraph = null, bool isBold = false, bool isItalics = false)
+        private void RenderMarker(Marker input, StyleConfig styles, XWPFParagraph parentParagraph = null)
         {
+            StyleConfig markerStyle = (StyleConfig)styles.Clone();
             switch (input)
             {
                 case PMarker _:
-                    XWPFParagraph newParagraph = newDoc.CreateParagraph();
+                    XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle);
 
                     newParagraph.Alignment = configDocx.textAlign;
                     newParagraph.SpacingBetween = configDocx.lineSpacing;
                         
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, newParagraph);
+                        RenderMarker(marker, markerStyle, newParagraph);
                     }
                     break;
                 case CMarker cMarker:
-                    XWPFParagraph newChapter = newDoc.CreateParagraph();
-                    XWPFRun chapterMarker = newChapter.CreateRun();
+                    XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
                     chapterMarker.SetText(cMarker.Number.ToString());
-                    chapterMarker.FontSize = 24;
+                    chapterMarker.FontSize = 20;
 
-                    XWPFParagraph chapterVerses = newDoc.CreateParagraph();
+                    XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, chapterVerses);
+                        RenderMarker(marker, markerStyle ,chapterVerses);
                     }
 
-                    RenderFootnotes();
+                    RenderFootnotes(markerStyle);
                     if (configDocx.separateChapters)
                     {
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
@@ -89,50 +93,41 @@ namespace USFMToolsSharp.Renderers.Docx
                         XWPFRun newLine = parentParagraph.CreateRun();
                         newLine.AddBreak(BreakType.TEXTWRAPPING);
                     }
-                    XWPFRun verseMarker = parentParagraph.CreateRun();
+                    XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
 
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph);
+                        RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case QMarker qMarker:
-                    XWPFParagraph poetryParagraph = newDoc.CreateParagraph();
+                    XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle);
                     poetryParagraph.IndentationLeft = qMarker.Depth;
 
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker,poetryParagraph);
+                        RenderMarker(marker,markerStyle, poetryParagraph);
                     }
                     break;
                 case MMarker mMarker:
                     break;
                 case TextBlock textBlock:
-                    XWPFRun blockText = parentParagraph.CreateRun();
+                    XWPFRun blockText = parentParagraph.CreateRun(markerStyle);
                     blockText.SetText(textBlock.Text);
-                    blockText.FontSize = 16;
-
-                    if (isBold)
-                    {
-                        blockText.IsBold = true;
-                    }
-                    if (isItalics)
-                    {
-                        blockText.IsItalic = true;
-                    }
                     break;
                 case BDMarker bdMarker:
+                    markerStyle.isBold = true;
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker,parentParagraph,isBold:true);
+                        RenderMarker(marker,markerStyle,parentParagraph);
                     }
                     break;
                 case HMarker hMarker:
-                    XWPFParagraph newHeader = newDoc.CreateParagraph();
-                    XWPFRun headerTitle = newHeader.CreateRun();
+                    XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
                     headerTitle.FontSize = 24;
                     break;
@@ -140,7 +135,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker);
+                        RenderMarker(marker,markerStyle);
                     }
                     if (!configDocx.separateChapters)   // No double page breaks before books
                     {
@@ -158,32 +153,33 @@ namespace USFMToolsSharp.Renderers.Docx
                             footnoteId = "";
                             break;
                         case "+":
-                            footnoteId = $"{FootnoteTextTags.Count + 1}";
+                            footnoteId = $"{FootnoteMarkers.Count + 1}";
                             break;
                         default:
                             footnoteId = fMarker.FootNoteCaller;
                             break;
                     }
-                    XWPFRun footnoteMarker = parentParagraph.CreateRun();
+                    XWPFRun footnoteMarker = parentParagraph.CreateRun(markerStyle);
 
                     footnoteMarker.SetText(footnoteId);
                     footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
-                    FootnoteTextTags[footnoteId] = fMarker;
+                    FootnoteMarkers[footnoteId] = fMarker;
 
                     break;
                 case FTMarker fTMarker:
 
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker,parentParagraph);
+                        RenderMarker(marker, markerStyle, parentParagraph);
                     }
 
                     break;
                 case FQAMarker fQAMarker:
+                    markerStyle.isItalics = true;
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph,isItalics:true);
+                        RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case FQAEndMarker fQAEndMarker:
@@ -198,30 +194,28 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
             }
         }
-        private void RenderFootnotes()
+        private void RenderFootnotes(StyleConfig styles)
         {
-
-            if (FootnoteTextTags.Count > 0)
+            if (FootnoteMarkers.Count > 0)
             {
-                XWPFParagraph renderFootnoteHeader = newDoc.CreateParagraph();
-                XWPFRun FootnoteHeader = renderFootnoteHeader.CreateRun();
-                FootnoteHeader.SetText("Footnotes");
-                FootnoteHeader.FontSize = 24;
+                XWPFParagraph renderFootnoteStart = newDoc.CreateParagraph();
+                renderFootnoteStart.BorderTop = Borders.Single;
 
-                foreach(KeyValuePair<string,Marker> footnoteKVP in FootnoteTextTags)
+                StyleConfig markerStyle = (StyleConfig)styles.Clone();
+                markerStyle.fontSize = 12;
+
+                foreach (KeyValuePair<string,Marker> footnoteKVP in FootnoteMarkers)
                 {
                     XWPFParagraph renderFootnote = newDoc.CreateParagraph();
                     XWPFRun footnoteMarker = renderFootnote.CreateRun();
                     footnoteMarker.SetText(footnoteKVP.Key);
                     footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
-
-                    foreach(Marker marker in footnoteKVP.Value.Contents)
+                    foreach (Marker marker in footnoteKVP.Value.Contents)
                     {
-                        RenderMarker(marker, renderFootnote);
+                        RenderMarker(marker, markerStyle, renderFootnote);
                     }
-  
-                }
-                FootnoteTextTags.Clear();
+                  }
+                FootnoteMarkers.Clear();
             }
         }
         public void setStartPageNumber()
