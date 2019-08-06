@@ -251,7 +251,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     foreach (Marker marker in input.Contents)
                     {
-                        getRenderedRows(marker, tableContainer);
+                        getRenderedRows(marker, markerStyle, tableContainer);
                     }
                     break;
                 case BMarker bMarker:
@@ -380,42 +380,45 @@ namespace USFMToolsSharp.Renderers.Docx
 
             bookNameCount++;
         }
-        public void getRenderedRows(Marker input, XWPFTable parentTable)
+        public void getRenderedRows(Marker input, StyleConfig config,XWPFTable parentTable)
         {
             XWPFTableRow tableRowContainer = parentTable.CreateRow();
             foreach (Marker marker in input.Contents)
             {
-                getRenderedCell(marker, tableRowContainer);
+                getRenderedCell(marker, config, tableRowContainer);
             }
         }
-        public void getRenderedCell(Marker input,XWPFTableRow parentRow)
+        public void getRenderedCell(Marker input,StyleConfig config, XWPFTableRow parentRow)
         {
+            StyleConfig markerStyle = (StyleConfig)config.Clone();
             XWPFTableCell tableCellContainer = parentRow.CreateCell();
             XWPFParagraph cellContents = tableCellContainer.AddParagraph();
             switch (input)
             {
                 case THMarker tHMarker:
+                    markerStyle.isBold = true;
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph: cellContents, isBold: true);
+                        RenderMarker(marker, markerStyle, cellContents);
                     }
                     break;
                 case THRMarker tHRMarker:
+                    markerStyle.isBold = true;
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph: cellContents, isBold: true);
+                        RenderMarker(marker, markerStyle, cellContents);
                     }
                     break;
                 case TCMarker tCMarker:
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph: cellContents);
+                        RenderMarker(marker, markerStyle, cellContents);
                     }
                     break;
                 case TCRMarker tCRMarker:
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, parentParagraph: cellContents);
+                        RenderMarker(marker, markerStyle, cellContents);
                     }
                     break;
                 default:
