@@ -2,13 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>0.0.1</Version>
+    <Version>0.2.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/WycliffeAssociates/USFMToolsSharp.Renderers.Docx</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Authors>@rbnswartz; @BryanHo10</Authors>
     <Company>Wycliffe Associates</Company>
     <PackageProjectUrl>https://github.com/WycliffeAssociates/USFMToolsSharp.Renderers.Docx</PackageProjectUrl>
+    <RepositoryType />
+    <AssemblyVersion>0.2.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
