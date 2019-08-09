@@ -144,8 +144,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     createBookHeaders(mTMarker.Title);
                     break;
                 case FMarker fMarker:
-                    StringBuilder footnote = new StringBuilder();
-
                     string footnoteId;
                     switch (fMarker.FootNoteCaller)
                     {
@@ -162,10 +160,16 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun footnoteMarker = parentParagraph.CreateRun(markerStyle);
 
                     footnoteMarker.SetText(footnoteId);
-                    footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+                    footnoteMarker.Subscript = VerticalAlign.SUBSCRIPT;
 
                     FootnoteMarkers[footnoteId] = fMarker;
 
+                    break;
+                case FPMarker fPMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, parentParagraph);
+                    }
                     break;
                 case FTMarker fTMarker:
 
@@ -173,8 +177,17 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
-
                     break;
+                case FRMarker fRMarker:
+                    markerStyle.isBold = true;
+                    XWPFRun VerseReference = parentParagraph.CreateRun(markerStyle);
+                    VerseReference.SetText(fRMarker.VerseReference);
+                    break;
+                case FKMarker fKMarker:
+                    XWPFRun FootNoteKeyword = parentParagraph.CreateRun(markerStyle);
+                    FootNoteKeyword.SetText($" {fKMarker.FootNoteKeyword.ToUpper()}: ");
+                    break;
+                case FQMarker fQMarker:
                 case FQAMarker fQAMarker:
                     markerStyle.isItalics = true;
                     foreach (Marker marker in input.Contents)
@@ -182,7 +195,8 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
-                case FQAEndMarker fQAEndMarker:
+                case FQEndMarker _:
+                case FQAEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
                 case IDMarker _:
@@ -206,8 +220,8 @@ namespace USFMToolsSharp.Renderers.Docx
 
                 foreach (KeyValuePair<string,Marker> footnoteKVP in FootnoteMarkers)
                 {
-                    XWPFParagraph renderFootnote = newDoc.CreateParagraph();
-                    XWPFRun footnoteMarker = renderFootnote.CreateRun();
+                    XWPFParagraph renderFootnote = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun footnoteMarker = renderFootnote.CreateRun(markerStyle);
                     footnoteMarker.SetText(footnoteKVP.Key);
                     footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
                     foreach (Marker marker in footnoteKVP.Value.Contents)
