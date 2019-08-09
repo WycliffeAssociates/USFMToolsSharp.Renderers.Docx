@@ -392,30 +392,36 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             StyleConfig markerStyle = (StyleConfig)config.Clone();
             XWPFTableCell tableCellContainer = parentRow.CreateCell();
-            XWPFParagraph cellContents = tableCellContainer.AddParagraph();
+            XWPFParagraph cellContents;
             switch (input)
             {
                 case THMarker tHMarker:
                     markerStyle.isBold = true;
+                    cellContents = tableCellContainer.AddParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
                     break;
                 case THRMarker tHRMarker:
+                    markerStyle.isAlignRight = true;
                     markerStyle.isBold = true;
+                    cellContents = tableCellContainer.AddParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
                     break;
                 case TCMarker tCMarker:
+                    cellContents = tableCellContainer.AddParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
                     break;
                 case TCRMarker tCRMarker:
+                    markerStyle.isAlignRight = true;
+                    cellContents = tableCellContainer.AddParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
