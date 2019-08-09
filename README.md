@@ -1,3 +1,8 @@
+![GitHub](https://img.shields.io/github/license/WycliffeAssociates/USFMToolsSharp.Renderers.Docx?color=blue)
+![Travis (.com) branch](https://img.shields.io/travis/com/WycliffeAssociates/USFMToolsSharp.Renderers.Docx/master)
+![GitHub release](https://img.shields.io/github/release/WycliffeAssociates/USFMToolsSharp.Renderers.Docx)
+![Nuget](https://img.shields.io/nuget/dt/USFMToolsSharp.Renderers.Docx?color=blue)
+
 # USFMToolsSharp.Renderers.Docx
 A .net Docx rendering tool for USFM.
 
