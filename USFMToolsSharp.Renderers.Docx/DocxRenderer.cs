@@ -270,10 +270,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun footnoteMarker = renderFootnote.CreateRun(markerStyle);
                     footnoteMarker.SetText(footnoteKVP.Key);
                     footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
-                    foreach (Marker marker in footnoteKVP.Value.Contents)
-                    {
-                        RenderMarker(marker, markerStyle, renderFootnote);
-                    }
+
+                    RenderMarker(footnoteKVP.Value, markerStyle, renderFootnote);
                   }
                 FootnoteMarkers.Clear();
             }
@@ -296,11 +294,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     crossRefMarker.SetText(crossRefKVP.Key);
                     crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
-                    foreach (Marker marker in crossRefKVP.Value.Contents)
-                    {
-                        RenderMarker(marker, markerStyle, renderCrossRef);
-                    }
-
+                    RenderMarker(crossRefKVP.Value, markerStyle, renderCrossRef);
                 }
                 CrossRefMarkers.Clear();
             }
