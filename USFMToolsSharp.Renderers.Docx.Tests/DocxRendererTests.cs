@@ -41,8 +41,8 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         public void TestVerseRender()
         {
             Assert.AreEqual("1This is a simple verse.", renderDoc("\\c 1 \\v 1 This is a simple verse.").Paragraphs[1].ParagraphText);
-            Assert.AreEqual("1This is a simple verse.2verse 2", renderDoc("\\c 1 \\v 1 This is a simple verse. \\v 2 verse 2").Paragraphs[1].ParagraphText);
-            Assert.AreEqual("2verse 2", renderDoc("\\c 1 \\v 1 This is a simple verse. \\c 2 \\v 2 verse 2").Paragraphs[3].ParagraphText);
+            Assert.AreEqual("1This is a simple verse.2Another one.", renderDoc("\\c 1 \\v 1 This is a simple verse. \\v 2 Another one.").Paragraphs[1].ParagraphText);
+            Assert.AreEqual("2Another one.", renderDoc("\\c 1 \\v 1 This is a simple verse. \\c 2 \\v 2 Another one.").Paragraphs[3].ParagraphText);
         }
         [TestMethod]
         public void TestFootnoteRender()
@@ -54,7 +54,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
 
         public XWPFDocument renderDoc(string usfm)
         {
-            render.clearDocumentElements();
+            render = new DocxRenderer();
             USFMDocument markerTree = parser.ParseFromString(usfm);
             XWPFDocument testDoc = render.Render(markerTree);
             return testDoc;
