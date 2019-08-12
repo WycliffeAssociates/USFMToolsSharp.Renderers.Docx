@@ -21,25 +21,19 @@ namespace USFMToolsSharp.Renderers.Docx
         public DocxRenderer()
         {
             configDocx = new DocxConfig();
-
-            UnrenderableMarkers = new List<string>();
-            FootnoteMarkers = new Dictionary<string,Marker>();
-            CrossRefMarkers = new Dictionary<string, Marker>();
-            newDoc = new XWPFDocument();
         }
         public DocxRenderer(DocxConfig config)
         {
             configDocx = config;
-
-            UnrenderableMarkers = new List<string>();
-            FootnoteMarkers = new Dictionary<string,Marker>();
-            CrossRefMarkers = new Dictionary<string, Marker>();
-            newDoc = new XWPFDocument();
-
         }
 
         public XWPFDocument Render(USFMDocument input)
         {
+            UnrenderableMarkers = new List<string>();
+            FootnoteMarkers = new Dictionary<string, Marker>();
+            CrossRefMarkers = new Dictionary<string, Marker>();
+            newDoc = new XWPFDocument();
+
             setStartPageNumber();
 
             newDoc.ColumnCount = configDocx.columnCount;
