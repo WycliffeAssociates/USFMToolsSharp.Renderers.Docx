@@ -16,6 +16,7 @@ namespace USFMToolsSharp.Renderers.Docx
         public Dictionary<string, Marker> CrossRefMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
+        public string currentChapterLabel;
         private int bookNameCount=1;
 
         public DocxRenderer()
@@ -65,7 +66,20 @@ namespace USFMToolsSharp.Renderers.Docx
                 case CMarker cMarker:
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
                     XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
-                    chapterMarker.SetText(cMarker.Number.ToString());
+
+                    if (cMarker.GetChildMarkers<CLMarker>().Count > 0)
+                    {
+                        chapterMarker.SetText(cMarker.CustomChapterLabel);
+                    }
+                    else if (currentChapterLabel != null)
+                    {
+                        chapterMarker.SetText($"{currentChapterLabel} {cMarker.PublishedChapterMarker}");
+                    }
+                    else
+                    {
+                        chapterMarker.SetText(cMarker.PublishedChapterMarker);
+                    }
+
                     chapterMarker.FontSize = 20;
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
@@ -81,6 +95,9 @@ namespace USFMToolsSharp.Renderers.Docx
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
                     }
 
+                    break;
+                case CLMarker cLMarker:
+                    currentChapterLabel = cLMarker.Label;
                     break;
                 case VMarker vMarker:
 
@@ -122,21 +139,11 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case HMarker hMarker:
+                    createBookHeaders(hMarker.HeaderText);
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
-                    break;
-                case MTMarker mTMarker:
-                    foreach (Marker marker in input.Contents)
-                    {
-                        RenderMarker(marker,markerStyle);
-                    }
-                    if (!configDocx.separateChapters)   // No double page breaks before books
-                    {
-                        newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
-                    }
-                    createBookHeaders(mTMarker.Title);
                     break;
                 case FMarker fMarker:
                     string footnoteId;
@@ -252,12 +259,15 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun newLineBreak = parentParagraph.CreateRun();
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
+                case IDMarker idMarker:
+                    currentChapterLabel = null;
+                    break;
                 case XEndMarker _:
                 case FQEndMarker _:
                 case FQAEndMarker _:
                 case FEndMarker _:
+                case MTMarker _:
                 case IDEMarker _:
-                case IDMarker _:
                 case VPMarker _:
                 case VPEndMarker _:
                     break;
