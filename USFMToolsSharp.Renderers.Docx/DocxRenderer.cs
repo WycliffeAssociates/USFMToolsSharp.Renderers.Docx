@@ -149,6 +149,12 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
                     break;
+                case MTMarker mtMarker:
+                    XWPFParagraph newMajorTitle = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun majorTitle = newMajorTitle.CreateRun(markerStyle);
+                    majorTitle.SetText(mtMarker.Title);
+                    majorTitle.FontSize= markerStyle.fontSize + (3 / mtMarker.Weight);
+                    break;
                 case FMarker fMarker:
                     string footnoteId;
                     switch (fMarker.FootNoteCaller)
@@ -270,7 +276,6 @@ namespace USFMToolsSharp.Renderers.Docx
                 case FQEndMarker _:
                 case FQAEndMarker _:
                 case FEndMarker _:
-                case MTMarker _:
                 case IDEMarker _:
                 case VPMarker _:
                 case VPEndMarker _:
