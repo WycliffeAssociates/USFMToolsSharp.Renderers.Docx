@@ -16,7 +16,9 @@ namespace USFMToolsSharp.Renderers.Docx
         public Dictionary<string, Marker> CrossRefMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
-        private int bookNameCount=1;
+        public string currentChapterLabel;
+        private int bookNameCount = 0;
+        public List<string> BookNames;
 
         public DocxRenderer()
         {
@@ -32,6 +34,7 @@ namespace USFMToolsSharp.Renderers.Docx
             UnrenderableMarkers = new List<string>();
             FootnoteMarkers = new Dictionary<string, Marker>();
             CrossRefMarkers = new Dictionary<string, Marker>();
+            BookNames = new List<string>();
             newDoc = new XWPFDocument();
 
             setStartPageNumber();
@@ -43,6 +46,8 @@ namespace USFMToolsSharp.Renderers.Docx
                 {
                     RenderMarker(marker, new StyleConfig());
                 }
+            createBookHeaders(BookNames[BookNames.Count - 1]);
+            createFooter();
             return newDoc;
 
         }
@@ -65,7 +70,20 @@ namespace USFMToolsSharp.Renderers.Docx
                 case CMarker cMarker:
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
                     XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
-                    chapterMarker.SetText(cMarker.Number.ToString());
+
+                    if (cMarker.GetChildMarkers<CLMarker>().Count > 0)
+                    {
+                        chapterMarker.SetText(cMarker.CustomChapterLabel);
+                    }
+                    else if (currentChapterLabel != null)
+                    {
+                        chapterMarker.SetText($"{currentChapterLabel} {cMarker.PublishedChapterMarker}");
+                    }
+                    else
+                    {
+                        chapterMarker.SetText(cMarker.PublishedChapterMarker);
+                    }
+
                     chapterMarker.FontSize = 20;
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
@@ -81,6 +99,9 @@ namespace USFMToolsSharp.Renderers.Docx
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
                     }
 
+                    break;
+                case CLMarker cLMarker:
+                    currentChapterLabel = cLMarker.Label;
                     break;
                 case VMarker vMarker:
 
@@ -122,21 +143,17 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case HMarker hMarker:
+                    createBookHeaders(hMarker.HeaderText);
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
                     break;
-                case MTMarker mTMarker:
-                    foreach (Marker marker in input.Contents)
-                    {
-                        RenderMarker(marker,markerStyle);
-                    }
-                    if (!configDocx.separateChapters)   // No double page breaks before books
-                    {
-                        newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
-                    }
-                    createBookHeaders(mTMarker.Title);
+                case MTMarker mtMarker:
+                    XWPFParagraph newMajorTitle = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun majorTitle = newMajorTitle.CreateRun(markerStyle);
+                    majorTitle.SetText(mtMarker.Title);
+                    majorTitle.FontSize= markerStyle.fontSize + (3 / mtMarker.Weight);
                     break;
                 case FMarker fMarker:
                     string footnoteId;
@@ -252,12 +269,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun newLineBreak = parentParagraph.CreateRun();
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
+                case IDMarker idMarker:
+                    currentChapterLabel = null;
+                    break;
                 case XEndMarker _:
                 case FQEndMarker _:
                 case FQAEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
-                case IDMarker _:
                 case VPMarker _:
                 case VPEndMarker _:
                     break;
@@ -359,24 +378,27 @@ namespace USFMToolsSharp.Renderers.Docx
         
         public void createBookHeaders(string bookname)
         {
+            BookNames.Add(bookname);
+            if (BookNames.Count > 1)
+            {
+                CT_Hdr header = new CT_Hdr();
+                CT_P headerParagraph = header.AddNewP();
+                CT_PPr ppr = headerParagraph.AddNewPPr();
+                CT_Jc align = ppr.AddNewJc();
+                align.val = ST_Jc.left;
 
-            CT_Hdr header = new CT_Hdr();
-            CT_P headerParagraph = header.AddNewP();
-            CT_PPr ppr = headerParagraph.AddNewPPr();
-            CT_Jc align = ppr.AddNewJc();
-            align.val = ST_Jc.left;
+                headerParagraph.AddNewR().AddNewT().Value = BookNames[bookNameCount - 1];
 
-            headerParagraph.AddNewR().AddNewT().Value = bookname;
+                XWPFRelation headerRelation = XWPFRelation.HEADER;
 
-            XWPFRelation headerRelation = XWPFRelation.HEADER;
-
-            // newDoc.HeaderList doesn't update with header additions
-            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), bookNameCount);
-            documentHeader.SetHeaderFooter(header);
-            CT_SectPr diffHeader = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
-            CT_HdrFtrRef headerRef = diffHeader.AddNewHeaderReference();
-            headerRef.type = ST_HdrFtr.@default;
-            headerRef.id = documentHeader.GetPackageRelationship().Id;
+                // newDoc.HeaderList doesn't update with header additions
+                XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), bookNameCount);
+                documentHeader.SetHeaderFooter(header);
+                CT_SectPr diffHeader = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
+                CT_HdrFtrRef headerRef = diffHeader.AddNewHeaderReference();
+                headerRef.type = ST_HdrFtr.@default;
+                headerRef.id = documentHeader.GetPackageRelationship().Id;
+            }
 
             bookNameCount++;
         }
