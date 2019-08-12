@@ -240,12 +240,12 @@ namespace USFMToolsSharp.Renderers.Docx
                 FootnoteMarkers.Clear();
             }
         }
-        public void setStartPageNumber()
+        private void setStartPageNumber()
         {
             newDoc.Document.body.sectPr.pgNumType.fmt = ST_NumberFormat.@decimal;
             newDoc.Document.body.sectPr.pgNumType.start = "0";
         }
-        public void createFooter()
+        private void createFooter()
         {
             // Footer Object
             CT_Ftr footer = new CT_Ftr();
@@ -280,7 +280,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
         }
 
-        public void createBookHeaders(string bookname)
+        private void createBookHeaders(string bookname)
         {
 
             CT_Hdr header = new CT_Hdr();
@@ -302,10 +302,6 @@ namespace USFMToolsSharp.Renderers.Docx
             headerRef.id = documentHeader.GetPackageRelationship().Id;
 
             bookNameCount++;
-        }
-        public void addFrontMatter(XWPFDocument frontmatter)
-        {
-
         }
 
     }
