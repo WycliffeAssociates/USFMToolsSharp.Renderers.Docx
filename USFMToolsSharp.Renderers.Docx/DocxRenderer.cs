@@ -83,7 +83,6 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     break;
                 case VMarker vMarker:
-
                     if (configDocx.separateVerses)
                     {
                         XWPFRun newLine = parentParagraph.CreateRun();
@@ -252,6 +251,51 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun newLineBreak = parentParagraph.CreateRun();
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
+            // Section Markers
+                case MSMarker mSMarker:
+                    markerStyle.fontSize += (3 / mSMarker.Weight) + 2;
+                    XWPFParagraph newMajorSection = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun majorSection = newMajorSection.CreateRun(markerStyle);
+                    majorSection.SetText(mSMarker.Heading);
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, newMajorSection);
+                    }
+                    break;
+                case MRMarker mRMarker:
+                    markerStyle.isItalics = true;
+                    XWPFParagraph newMajorRef = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun majorRef = newMajorRef.CreateRun(markerStyle);
+                    majorRef.SetText(mRMarker.SectionReference);
+                    break;
+                case SMarker sMarker:
+                    markerStyle.fontSize += (3 / sMarker.Weight);
+                    XWPFParagraph newSection = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun section = newSection.CreateRun(markerStyle);
+                    section.SetText(sMarker.Text);
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, newSection);
+                    }
+                    break;
+                case RMarker rMarker:
+                    markerStyle.isItalics = true;
+                    XWPFParagraph newSectionRef = newDoc.CreateParagraph(markerStyle);
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, newSectionRef);
+                    }
+                    break;
+                case RQMarker rQMarker:
+                    markerStyle.isItalics = true;
+                    markerStyle.isAlignRight = true; 
+                    XWPFParagraph newRef = newDoc.CreateParagraph(markerStyle);
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, newRef);
+                    }
+                    break;
+                case RQEndMarker _:
                 case XEndMarker _:
                 case FQEndMarker _:
                 case FQAEndMarker _:
