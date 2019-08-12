@@ -47,14 +47,12 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         [TestMethod]
         public void TestFootnoteRender()
         {
-            Assert.AreEqual("Footnotes", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft Hello Friend \\f*").Paragraphs[2].ParagraphText);
             Assert.AreEqual("1Hello Friend", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft Hello Friend \\f*").Paragraphs[3].ParagraphText);
             Assert.AreEqual("1Hello Fried Friend", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft \\fqa Hello Fried Friend \\f*").Paragraphs[3].ParagraphText);
         }
 
         public XWPFDocument renderDoc(string usfm)
         {
-            render = new DocxRenderer();
             USFMDocument markerTree = parser.ParseFromString(usfm);
             XWPFDocument testDoc = render.Render(markerTree);
             return testDoc;
