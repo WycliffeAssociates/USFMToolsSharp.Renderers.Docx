@@ -221,8 +221,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case XOMarker xOMarker:
                     markerStyle.isBold = true;
-                    XWPFRun VerseReference = parentParagraph.CreateRun(markerStyle);
-                    VerseReference.SetText($" {xOMarker.OriginRef} ");
+                    XWPFRun CrossVerseReference = parentParagraph.CreateRun(markerStyle);
+                    CrossVerseReference.SetText($" {xOMarker.OriginRef} ");
                     break;
                 case XTMarker xTMarker:
                     foreach (Marker marker in input.Contents)
@@ -238,10 +238,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case XEndMarker _:
-<<<<<<< HEAD
                 case FQEndMarker _:
-=======
->>>>>>> rebase cross ref to handle style config
                 case FQAEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
