@@ -134,7 +134,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     headerTitle.SetText(hMarker.HeaderText);
                     break;
                 case MTMarker mTMarker:
-
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker,markerStyle);
@@ -237,6 +236,28 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
+            // Table Markers
+                case TableBlock table:
+                    XWPFTable tableContainer = newDoc.CreateTable();
+
+                    // Clear Borders
+                    tableContainer.SetBottomBorder(XWPFTable.XWPFBorderType.NONE,0,0,"#FFFFFFF");
+                    tableContainer.SetLeftBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
+                    tableContainer.SetRightBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
+                    tableContainer.SetTopBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
+                    // Clear Inside Borders
+                    tableContainer.SetInsideHBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
+                    tableContainer.SetInsideVBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
+
+                    foreach (Marker marker in input.Contents)
+                    {
+                        getRenderedRows(marker, markerStyle, tableContainer);
+                    }
+                    break;
+                case BMarker bMarker:
+                    XWPFRun newLineBreak = parentParagraph.CreateRun();
+                    newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
+                    break;
                 case XEndMarker _:
                 case FQEndMarker _:
                 case FQAEndMarker _:
@@ -299,7 +320,7 @@ namespace USFMToolsSharp.Renderers.Docx
         public void setStartPageNumber()
         {
             newDoc.Document.body.sectPr.pgNumType.fmt = ST_NumberFormat.@decimal;
-            newDoc.Document.body.sectPr.pgNumType.start = "0";
+            newDoc.Document.body.sectPr.pgNumType.start = "1";
         }
         public void createFooter()
         {
@@ -335,7 +356,7 @@ namespace USFMToolsSharp.Renderers.Docx
             footerRef.id = documentFooter.GetPackageRelationship().Id;
 
         }
-
+        
         public void createBookHeaders(string bookname)
         {
 
@@ -359,7 +380,57 @@ namespace USFMToolsSharp.Renderers.Docx
 
             bookNameCount++;
         }
-
+        public void getRenderedRows(Marker input, StyleConfig config,XWPFTable parentTable)
+        {
+            XWPFTableRow tableRowContainer = parentTable.CreateRow();
+            foreach (Marker marker in input.Contents)
+            {
+                getRenderedCell(marker, config, tableRowContainer);
+            }
+        }
+        public void getRenderedCell(Marker input,StyleConfig config, XWPFTableRow parentRow)
+        {
+            StyleConfig markerStyle = (StyleConfig)config.Clone();
+            XWPFTableCell tableCellContainer = parentRow.CreateCell();
+            XWPFParagraph cellContents;
+            switch (input)
+            {
+                case THMarker tHMarker:
+                    markerStyle.isBold = true;
+                    cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, cellContents);
+                    }
+                    break;
+                case THRMarker tHRMarker:
+                    markerStyle.isAlignRight = true;
+                    markerStyle.isBold = true;
+                    cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, cellContents);
+                    }
+                    break;
+                case TCMarker tCMarker:
+                    cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, cellContents);
+                    }
+                    break;
+                case TCRMarker tCRMarker:
+                    markerStyle.isAlignRight = true;
+                    cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, cellContents);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
 
     }
 }
