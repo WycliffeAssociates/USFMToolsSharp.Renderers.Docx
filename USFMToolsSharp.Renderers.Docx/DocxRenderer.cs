@@ -17,7 +17,8 @@ namespace USFMToolsSharp.Renderers.Docx
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
         public string currentChapterLabel;
-        private int bookNameCount=1;
+        private int bookNameCount = 0;
+        public List<string> BookNames;
 
         public DocxRenderer()
         {
@@ -33,6 +34,7 @@ namespace USFMToolsSharp.Renderers.Docx
             UnrenderableMarkers = new List<string>();
             FootnoteMarkers = new Dictionary<string, Marker>();
             CrossRefMarkers = new Dictionary<string, Marker>();
+            BookNames = new List<string>();
             newDoc = new XWPFDocument();
 
             setStartPageNumber();
@@ -44,6 +46,8 @@ namespace USFMToolsSharp.Renderers.Docx
                 {
                     RenderMarker(marker, new StyleConfig());
                 }
+            createBookHeaders(BookNames[BookNames.Count - 1]);
+            createFooter();
             return newDoc;
 
         }
@@ -369,24 +373,27 @@ namespace USFMToolsSharp.Renderers.Docx
         
         public void createBookHeaders(string bookname)
         {
+            BookNames.Add(bookname);
+            if (BookNames.Count > 1)
+            {
+                CT_Hdr header = new CT_Hdr();
+                CT_P headerParagraph = header.AddNewP();
+                CT_PPr ppr = headerParagraph.AddNewPPr();
+                CT_Jc align = ppr.AddNewJc();
+                align.val = ST_Jc.left;
 
-            CT_Hdr header = new CT_Hdr();
-            CT_P headerParagraph = header.AddNewP();
-            CT_PPr ppr = headerParagraph.AddNewPPr();
-            CT_Jc align = ppr.AddNewJc();
-            align.val = ST_Jc.left;
+                headerParagraph.AddNewR().AddNewT().Value = BookNames[bookNameCount - 1];
 
-            headerParagraph.AddNewR().AddNewT().Value = bookname;
+                XWPFRelation headerRelation = XWPFRelation.HEADER;
 
-            XWPFRelation headerRelation = XWPFRelation.HEADER;
-
-            // newDoc.HeaderList doesn't update with header additions
-            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), bookNameCount);
-            documentHeader.SetHeaderFooter(header);
-            CT_SectPr diffHeader = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
-            CT_HdrFtrRef headerRef = diffHeader.AddNewHeaderReference();
-            headerRef.type = ST_HdrFtr.@default;
-            headerRef.id = documentHeader.GetPackageRelationship().Id;
+                // newDoc.HeaderList doesn't update with header additions
+                XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), bookNameCount);
+                documentHeader.SetHeaderFooter(header);
+                CT_SectPr diffHeader = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
+                CT_HdrFtrRef headerRef = diffHeader.AddNewHeaderReference();
+                headerRef.type = ST_HdrFtr.@default;
+                headerRef.id = documentHeader.GetPackageRelationship().Id;
+            }
 
             bookNameCount++;
         }
