@@ -459,7 +459,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case THRMarker tHRMarker:
-                    markerStyle.isAlignRight = true;
+                    markerStyle.Alignment = ParagraphAlignment.RIGHT;
                     markerStyle.isBold = true;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
@@ -475,7 +475,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case TCRMarker tCRMarker:
-                    markerStyle.isAlignRight = true;
+                    markerStyle.Alignment = ParagraphAlignment.RIGHT;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
                     {
