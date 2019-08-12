@@ -114,13 +114,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun blockText = parentParagraph.CreateRun(markerStyle);
                     blockText.SetText(textBlock.Text);
                     break;
-                case BDMarker bdMarker:
-                    markerStyle.isBold = true;
-                    foreach (Marker marker in input.Contents)
-                    {
-                        RenderMarker(marker,markerStyle,parentParagraph);
-                    }
-                    break;
                 case HMarker hMarker:
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
@@ -252,6 +245,67 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun newLineBreak = parentParagraph.CreateRun();
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
+            // Word and Character Style
+                case ITMarker iTMarker:
+                case EMMarker eMMarker:
+                case BKMarker bKMarker:
+                case ADDMarker aDDMarker:
+                case TLMarker tLMarker:
+                    markerStyle.isItalics = true;
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, parentParagraph);
+                    }
+                    break;
+                case BDMarker bdMarker:
+                case WMarker wMarker:
+                    markerStyle.isBold = true;
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, parentParagraph);
+                    }
+                    break;
+                case BDITMarker bDITMarker:
+                    markerStyle.isBold = true;
+                    markerStyle.isItalics = true;
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, parentParagraph);
+                    }
+                    break;
+                case NOMarker nOMarker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, parentParagraph);
+                    }
+                    break;
+                case SUPMarker sUPMarker:
+                    markerStyle.isSuperscript = true;
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, parentParagraph);
+                    }
+                    break;
+                case SCMarker sCMarker:
+                case NDMarker nDMarker:
+                    markerStyle.isSmallCaps = true;
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, parentParagraph);
+                    }
+                    break;
+                case WEndMarker _:
+                case SCEndMarker _:
+                case TLEndMarker _:
+                case ADDEndMarker _:
+                case BKEndMarker _:
+                case SUPEndMarker _:
+                case NDEndMarker _:
+                case NOEndMarker _:
+                case EMEndMarker _:
+                case BDITEndMarker _:
+                case BDEndMarker _:
+                case ITEndMarker _:
                 case XEndMarker _:
                 case FQEndMarker _:
                 case FQAEndMarker _:
