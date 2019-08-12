@@ -82,6 +82,10 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
 
                     break;
+                case CAMarker cAMarker:
+                    XWPFRun altChapterMarker = parentParagraph.CreateRun(markerStyle);
+                    altChapterMarker.SetText(cAMarker.AltChapterCharacter);
+                    break;
                 case VMarker vMarker:
 
                     if (configDocx.separateVerses)
@@ -98,6 +102,10 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
+                    break;
+                case VAMarker vAMarker:
+                    XWPFRun altVerseMarker = parentParagraph.CreateRun(markerStyle);
+                    altVerseMarker.SetText(vAMarker.AltVerseCharacter);
                     break;
                 case QMarker qMarker:
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle);
@@ -252,6 +260,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun newLineBreak = parentParagraph.CreateRun();
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
+                case CAEndMarker _:
+                case VAEndMarker _:
                 case XEndMarker _:
                 case FQEndMarker _:
                 case FQAEndMarker _:
@@ -260,6 +270,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case IDMarker _:
                 case VPMarker _:
                 case VPEndMarker _:
+                case USFMMarker _:
                     break;
                 default:
                     UnrenderableMarkers.Add(input.Identifier);
