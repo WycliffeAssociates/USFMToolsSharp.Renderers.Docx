@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
-    <PackageReference Include="USFMToolsSharp" Version="0.8.0" />
+    <PackageReference Include="USFMToolsSharp" Version="0.9.0" />
     <PackageReference Include="WycliffeAssociates.NPOI" Version="2.4.1" />
   </ItemGroup>
 
