@@ -21,25 +21,19 @@ namespace USFMToolsSharp.Renderers.Docx
         public DocxRenderer()
         {
             configDocx = new DocxConfig();
-
-            UnrenderableMarkers = new List<string>();
-            FootnoteMarkers = new Dictionary<string,Marker>();
-            CrossRefMarkers = new Dictionary<string, Marker>();
-            newDoc = new XWPFDocument();
         }
         public DocxRenderer(DocxConfig config)
         {
             configDocx = config;
-
-            UnrenderableMarkers = new List<string>();
-            FootnoteMarkers = new Dictionary<string,Marker>();
-            CrossRefMarkers = new Dictionary<string, Marker>();
-            newDoc = new XWPFDocument();
-
         }
 
         public XWPFDocument Render(USFMDocument input)
         {
+            UnrenderableMarkers = new List<string>();
+            FootnoteMarkers = new Dictionary<string, Marker>();
+            CrossRefMarkers = new Dictionary<string, Marker>();
+            newDoc = new XWPFDocument();
+
             setStartPageNumber();
 
             newDoc.ColumnCount = configDocx.columnCount;
@@ -288,9 +282,11 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun footnoteMarker = renderFootnote.CreateRun(markerStyle);
                     footnoteMarker.SetText(footnoteKVP.Key);
                     footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
-
-                    RenderMarker(footnoteKVP.Value, markerStyle, renderFootnote);
-                  }
+                    foreach(Marker input in footnoteKVP.Value.Contents)
+                    {
+                        RenderMarker(input, markerStyle, renderFootnote);
+                    }
+                }
                 FootnoteMarkers.Clear();
             }
         }
@@ -312,7 +308,11 @@ namespace USFMToolsSharp.Renderers.Docx
                     crossRefMarker.SetText(crossRefKVP.Key);
                     crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
-                    RenderMarker(crossRefKVP.Value, markerStyle, renderCrossRef);
+                    foreach (Marker input in crossRefKVP.Value.Contents)
+                    {
+                        RenderMarker(input, markerStyle, renderCrossRef);
+                    }
+                    
                 }
                 CrossRefMarkers.Clear();
             }

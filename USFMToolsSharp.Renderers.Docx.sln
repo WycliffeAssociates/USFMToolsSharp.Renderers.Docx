@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "USFMToolsSharp.Renderers.Docx", "USFMToolsSharp.Renderers.Docx\USFMToolsSharp.Renderers.Docx.csproj", "{F4D20D2A-EEAF-453B-8C9B-80929F656D98}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "USFMToolsSharp.Renderers.Docx.Tests", "USFMToolsSharp.Renderers.Docx.Tests\USFMToolsSharp.Renderers.Docx.Tests.csproj", "{A3D81CA8-CFF6-4E59-B740-FA51BBF8FA9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		.net 2 Release|Any CPU = .net 2 Release|Any CPU
@@ -21,6 +23,14 @@ Global
 		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4D20D2A-EEAF-453B-8C9B-80929F656D98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3D81CA8-CFF6-4E59-B740-FA51BBF8FA9F}..net 2 Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3D81CA8-CFF6-4E59-B740-FA51BBF8FA9F}..net 2 Release|Any CPU.Build.0 = Release|Any CPU
+		{A3D81CA8-CFF6-4E59-B740-FA51BBF8FA9F}..net 4 Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3D81CA8-CFF6-4E59-B740-FA51BBF8FA9F}..net 4 Release|Any CPU.Build.0 = Release|Any CPU
+		{A3D81CA8-CFF6-4E59-B740-FA51BBF8FA9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3D81CA8-CFF6-4E59-B740-FA51BBF8FA9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3D81CA8-CFF6-4E59-B740-FA51BBF8FA9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3D81CA8-CFF6-4E59-B740-FA51BBF8FA9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
