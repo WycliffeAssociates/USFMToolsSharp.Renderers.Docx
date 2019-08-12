@@ -25,14 +25,22 @@ namespace USFMToolsSharp.Renderers.Docx
             FootnoteMarkers = new Dictionary<string,Marker>();
             newDoc = new XWPFDocument();
         }
-        public DocxRenderer(DocxConfig config)
+        /// <summary>
+        /// Constructs Document with styling configuration
+        /// </summary>
+        /// <param name="config"></param>
+        public DocxRenderer(DocxConfig config):this()
         {
             configDocx = config;
 
-            UnrenderableMarkers = new List<string>();
-            FootnoteMarkers = new Dictionary<string,Marker>();
-            newDoc = new XWPFDocument();
-
+        }
+        /// <summary>
+        /// Inserts outside Document at the beginning  
+        /// </summary>
+        /// <param name="input"></param>
+        public DocxRenderer(XWPFDocument input) :this()
+        {
+            newDoc = input;
         }
 
         public XWPFDocument Render(USFMDocument input)
@@ -295,7 +303,10 @@ namespace USFMToolsSharp.Renderers.Docx
 
             bookNameCount++;
         }
+        public void addFrontMatter(XWPFDocument frontmatter)
+        {
 
+        }
 
     }
 }
