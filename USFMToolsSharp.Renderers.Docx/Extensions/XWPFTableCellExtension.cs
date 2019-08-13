@@ -11,7 +11,7 @@ namespace USFMToolsSharp.Renderers.Docx.Extensions
         public static XWPFParagraph AddParagraph(this XWPFTableCell cell, StyleConfig styles)
         {
             XWPFParagraph para = cell.AddParagraph();
-            para.Alignment = (styles.isAlignRight ? ParagraphAlignment.RIGHT : ParagraphAlignment.LEFT);
+            para.Alignment = styles.Alignment;
             return para;
 
         }
