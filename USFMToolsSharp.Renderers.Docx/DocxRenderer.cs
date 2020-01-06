@@ -253,8 +253,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
                 case XEndMarker _:
-                case FQEndMarker _:
-                case FQAEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
                 case IDMarker _:
