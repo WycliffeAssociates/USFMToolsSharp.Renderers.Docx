@@ -100,8 +100,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case QMarker qMarker:
+                    markerStyle.indentationLevel = qMarker.Depth;
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle);
-                    poetryParagraph.IndentationLeft = qMarker.Depth;
 
                     foreach (Marker marker in input.Contents)
                     {
@@ -252,6 +252,61 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun newLineBreak = parentParagraph.CreateRun();
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
+            // Poetry Markers
+                case QSMarker _:
+                case QRMarker _:
+                    markerStyle.isItalics = true;
+                    markerStyle.Alignment = ParagraphAlignment.RIGHT;
+                    XWPFParagraph poetryRightPara = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun poetryRightText = poetryRightPara.CreateRun(markerStyle);
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, poetryRightPara);
+                    }
+                    break;
+                case QCMarker _:
+                    markerStyle.Alignment = ParagraphAlignment.CENTER;
+                    XWPFParagraph poetryCenterPara = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun poetryCenterText = poetryCenterPara.CreateRun(markerStyle);
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, poetryCenterPara);
+                    }
+                    break;
+                case QDMarker _:
+                    markerStyle.isItalics = true;
+                    markerStyle.Alignment = ParagraphAlignment.LEFT;
+                    XWPFParagraph hebrewNotePara= newDoc.CreateParagraph(markerStyle);
+                    XWPFRun hebrewNote = hebrewNotePara.CreateRun(markerStyle);
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, hebrewNotePara);
+                    }
+                    break;
+                case QACMarker qACMarker:
+                    markerStyle.isBold = true;
+                    XWPFRun acrosticLetter = parentParagraph.CreateRun(markerStyle);
+                    acrosticLetter.SetText(qACMarker.AcrosticLetter);
+                    break;
+                case QAMarker qAMarker:
+                    markerStyle.isItalics = true;
+                    markerStyle.Alignment = ParagraphAlignment.CENTER;
+                    XWPFParagraph acrosticPara = newDoc.CreateParagraph(markerStyle);
+                    XWPFRun acrosticText = acrosticPara.CreateRun(markerStyle);
+                    acrosticText.SetText(qAMarker.Heading);
+                    break;
+                case QMMarker qMMarker:
+                    markerStyle.indentationLevel = qMMarker.Depth;
+                    markerStyle.isItalics = true;
+                    XWPFParagraph poetryEmbeddedPara = newDoc.CreateParagraph(markerStyle);
+
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, poetryEmbeddedPara);
+                    }
+                    break;
+                case QACEndMarker _:
+                case QSEndMarker _:
                 case XEndMarker _:
                 case FQEndMarker _:
                 case FQAEndMarker _:
@@ -404,7 +459,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case THRMarker tHRMarker:
-                    markerStyle.isAlignRight = true;
+                    markerStyle.Alignment = ParagraphAlignment.RIGHT;
                     markerStyle.isBold = true;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
@@ -420,7 +475,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case TCRMarker tCRMarker:
-                    markerStyle.isAlignRight = true;
+                    markerStyle.Alignment = ParagraphAlignment.RIGHT;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
                     {
