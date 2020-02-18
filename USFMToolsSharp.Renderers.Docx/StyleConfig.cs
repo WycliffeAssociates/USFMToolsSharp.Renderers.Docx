@@ -11,7 +11,7 @@ namespace USFMToolsSharp.Renderers.Docx
         public bool isItalics = false;
         public bool isAlignRight = false;
         public bool isSmallCaps = false;
-
+        public bool isSuperscript = false;
         public object Clone()
         {
             return this.MemberwiseClone();

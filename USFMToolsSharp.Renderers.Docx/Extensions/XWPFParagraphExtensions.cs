@@ -15,6 +15,7 @@ namespace USFMToolsSharp.Renderers.Docx.Extensions
             run.IsItalic = styles.isItalics;
             run.FontSize = styles.fontSize;
             run.IsSmallCaps = styles.isSmallCaps;
+            run.Subscript = (styles.isSuperscript ? VerticalAlign.SUPERSCRIPT: VerticalAlign.BASELINE);
             return run;
 
         }
