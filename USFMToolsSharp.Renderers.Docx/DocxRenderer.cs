@@ -253,8 +253,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
             // Poetry Markers
-                case QSMarker qSMarker:
-                case QRMarker qRMarker:
+                case QSMarker _:
+                case QRMarker _:
                     markerStyle.isItalics = true;
                     markerStyle.Alignment = ParagraphAlignment.RIGHT;
                     XWPFParagraph poetryRightPara = newDoc.CreateParagraph(markerStyle);
@@ -264,7 +264,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, poetryRightPara);
                     }
                     break;
-                case QCMarker qCMarker:
+                case QCMarker _:
                     markerStyle.Alignment = ParagraphAlignment.CENTER;
                     XWPFParagraph poetryCenterPara = newDoc.CreateParagraph(markerStyle);
                     XWPFRun poetryCenterText = poetryCenterPara.CreateRun(markerStyle);
@@ -273,7 +273,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, poetryCenterPara);
                     }
                     break;
-                case QDMarker qDMarker:
+                case QDMarker _:
                     markerStyle.isItalics = true;
                     markerStyle.Alignment = ParagraphAlignment.LEFT;
                     XWPFParagraph hebrewNotePara= newDoc.CreateParagraph(markerStyle);
