@@ -16,7 +16,8 @@ namespace USFMToolsSharp.Renderers.Docx
         public Dictionary<string, Marker> CrossRefMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
-        private int bookNameCount=1;
+        private int bookNameCount=0;
+        private bool firstBreakFlag = false;
 
         public DocxRenderer()
         {
@@ -40,9 +41,9 @@ namespace USFMToolsSharp.Renderers.Docx
             newDoc.TextDirection= configDocx.textDirection;
 
             foreach (Marker marker in input.Contents)
-                {
-                    RenderMarker(marker, new StyleConfig());
-                }
+            {
+                RenderMarker(marker, new StyleConfig());
+            }
             return newDoc;
 
         }
@@ -127,6 +128,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
                     break;
+                    /*
                 case MTMarker mTMarker:
                     foreach (Marker marker in input.Contents)
                     {
@@ -137,6 +139,25 @@ namespace USFMToolsSharp.Renderers.Docx
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
                     }
                     createBookHeaders(mTMarker.Title);
+                    break;
+                    */
+                case TOC2Marker tOC2Marker:
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker,markerStyle);
+                    }
+                    if (!configDocx.separateChapters)   // No double page breaks before books
+                    {
+                        if (firstBreakFlag)
+                        {
+                            newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+                        }
+                        else
+                        {
+                            firstBreakFlag = true;
+                        }
+                    }
+                    createBookHeaders(tOC2Marker.ShortTableOfContentsText);
                     break;
                 case FMarker fMarker:
                     string footnoteId;
@@ -371,6 +392,7 @@ namespace USFMToolsSharp.Renderers.Docx
             // newDoc.HeaderList doesn't update with header additions
             XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), bookNameCount);
             documentHeader.SetHeaderFooter(header);
+
             CT_SectPr diffHeader = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
             CT_HdrFtrRef headerRef = diffHeader.AddNewHeaderReference();
             headerRef.type = ST_HdrFtr.@default;
