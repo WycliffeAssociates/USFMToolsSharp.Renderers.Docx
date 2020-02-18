@@ -245,27 +245,27 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun newLineBreak = parentParagraph.CreateRun();
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
-            // Word and Character Style
-                case ITMarker iTMarker:
-                case EMMarker eMMarker:
-                case BKMarker bKMarker:
-                case ADDMarker aDDMarker:
-                case TLMarker tLMarker:
+                // Word and Character Style
+                case ITMarker _:
+                case EMMarker _:
+                case BKMarker _:
+                case ADDMarker _:
+                case TLMarker _:
                     markerStyle.isItalics = true;
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
-                case BDMarker bdMarker:
-                case WMarker wMarker:
+                case BDMarker _:
+                case WMarker _:
                     markerStyle.isBold = true;
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
-                case BDITMarker bDITMarker:
+                case BDITMarker _:
                     markerStyle.isBold = true;
                     markerStyle.isItalics = true;
                     foreach (Marker marker in input.Contents)
@@ -273,7 +273,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
-                case NOMarker nOMarker:
+                case NOMarker _:
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
