@@ -2,6 +2,7 @@
 using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using USFMToolsSharp.Models.Markers;
 
@@ -49,6 +50,23 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         {
             Assert.AreEqual("1Hello Friend", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft Hello Friend \\f*").Paragraphs[3].ParagraphText);
             Assert.AreEqual("1Hello Fried Friend", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft \\fqa Hello Fried Friend \\f*").Paragraphs[3].ParagraphText);
+        }
+
+        [TestMethod]
+        public void TestCraigMain()
+        {
+            parser = new USFMParser(new List<string> { "s5", "fqa*" });
+            string inputFilename = @"C:\Users\oliverc.WAOFFICE\Downloads\docx-testing\1JN_2JN_3JN.usfm";
+            string usfm = File.ReadAllText(inputFilename);
+            USFMDocument markerTree = parser.ParseFromString(usfm);
+            XWPFDocument testDoc = render.Render(markerTree);
+
+            string outputFilename = @"C:\Users\oliverc.WAOFFICE\Downloads\docx-testing\out.docx";
+            using (FileStream fs = File.OpenWrite(outputFilename))
+            {
+                testDoc.Write(fs);
+            }
+
         }
 
         public XWPFDocument renderDoc(string usfm)

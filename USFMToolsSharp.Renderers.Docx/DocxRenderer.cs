@@ -122,22 +122,23 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case HMarker hMarker:
+                    newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
                     break;
-                case MTMarker mTMarker:
-                    foreach (Marker marker in input.Contents)
-                    {
-                        RenderMarker(marker,markerStyle);
-                    }
-                    if (!configDocx.separateChapters)   // No double page breaks before books
-                    {
-                        newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
-                    }
-                    createBookHeaders(mTMarker.Title);
-                    break;
+                //case MTMarker mTMarker:
+                    //if (configDocx.separateChapters) 
+                    //{
+                    //    newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+                    //}
+                    //foreach (Marker marker in input.Contents)
+                    //{
+                    //    RenderMarker(marker,markerStyle);
+                    //}
+                    //createBookHeaders(mTMarker.Title);
+                    //break;
                 case FMarker fMarker:
                     string footnoteId;
                     switch (fMarker.FootNoteCaller)
