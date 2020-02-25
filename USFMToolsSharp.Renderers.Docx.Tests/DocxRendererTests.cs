@@ -59,6 +59,9 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             string inputFilename = @"C:\Users\oliverc.WAOFFICE\Downloads\docx-testing\1JN_2JN_3JN.usfm";
             string usfm = File.ReadAllText(inputFilename);
             USFMDocument markerTree = parser.ParseFromString(usfm);
+            DocxConfig config = new DocxConfig();
+            //config.separateChapters = true;
+            render = new DocxRenderer(config);
             XWPFDocument testDoc = render.Render(markerTree);
 
             string outputFilename = @"C:\Users\oliverc.WAOFFICE\Downloads\docx-testing\out.docx";
