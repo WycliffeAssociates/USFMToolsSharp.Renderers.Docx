@@ -17,6 +17,7 @@ namespace USFMToolsSharp.Renderers.Docx
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
         private int bookNameCount=1;
+        private bool firstBookHeader = true;
 
         public DocxRenderer()
         {
@@ -122,7 +123,16 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case HMarker hMarker:
-                    newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+                    if (firstBookHeader)
+                    {
+                        // Don't page break before first book
+                        firstBookHeader = false;
+                    } 
+                    else
+                    {
+                        // Print page break before subsequent books
+                        newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+                    }
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
