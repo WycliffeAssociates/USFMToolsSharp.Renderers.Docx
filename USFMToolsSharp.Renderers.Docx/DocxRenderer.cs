@@ -16,8 +16,8 @@ namespace USFMToolsSharp.Renderers.Docx
         public Dictionary<string, Marker> CrossRefMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
-        private int bookNameCount=1;
-        private bool firstBookHeader = true;
+        private int bookNameCount = 1;
+        private string previousBookHeader = null;
 
         public DocxRenderer()
         {
@@ -44,6 +44,15 @@ namespace USFMToolsSharp.Renderers.Docx
                 {
                     RenderMarker(marker, new StyleConfig());
                 }
+
+            // Add section header for final book
+            // (section page headers are set at the final paragraph of the section)
+            if (previousBookHeader != null)
+            {
+                createBookHeaders(previousBookHeader);
+            }
+
+
             return newDoc;
 
         }
@@ -123,20 +132,26 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case HMarker hMarker:
-                    if (firstBookHeader)
+
+                    // Add section header for previous book, if any
+                    // (section page headers are set at the final paragraph of the section)
+                    if (previousBookHeader != null)
                     {
-                        // Don't page break before first book
-                        firstBookHeader = false;
-                    } 
-                    else
-                    {
-                        // Print page break before subsequent books
+                        // Create new section and page header
+                        createBookHeaders(previousBookHeader);
+
+                        // Print page break
                         newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+
                     }
+                    previousBookHeader = hMarker.HeaderText;
+
+                    // Write body header text
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
+
                     break;
                 //case MTMarker mTMarker:
                     //if (configDocx.separateChapters) 
@@ -368,21 +383,19 @@ namespace USFMToolsSharp.Renderers.Docx
         
         public void createBookHeaders(string bookname)
         {
-
             CT_Hdr header = new CT_Hdr();
             CT_P headerParagraph = header.AddNewP();
             CT_PPr ppr = headerParagraph.AddNewPPr();
             CT_Jc align = ppr.AddNewJc();
             align.val = ST_Jc.left;
-
             headerParagraph.AddNewR().AddNewT().Value = bookname;
 
-            XWPFRelation headerRelation = XWPFRelation.HEADER;
-
             // newDoc.HeaderList doesn't update with header additions
-            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), bookNameCount);
+            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), bookNameCount);
             documentHeader.SetHeaderFooter(header);
             CT_SectPr diffHeader = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
+            diffHeader.type = new CT_SectType();
+            diffHeader.type.val = ST_SectionMark.continuous;
             CT_HdrFtrRef headerRef = diffHeader.AddNewHeaderReference();
             headerRef.type = ST_HdrFtr.@default;
             headerRef.id = documentHeader.GetPackageRelationship().Id;
