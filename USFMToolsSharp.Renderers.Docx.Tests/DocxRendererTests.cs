@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NPOI.XWPF.UserModel;
+using NPOI.OpenXmlFormats.Wordprocessing;
 using USFMToolsSharp.Models.Markers;
 
 namespace USFMToolsSharp.Renderers.Docx.Tests
@@ -34,6 +35,33 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         public void TestHeaderRenderBlank()
         {
             Assert.AreEqual("", renderDoc("\\h      ").Paragraphs[0].Text);
+        }
+
+        [TestMethod]
+        public void TestHeadersCreateSections()
+        {
+            XWPFDocument doc = renderDoc("\\h 1 John \\c 1 \\v 1 Text \\h 2 John \\c 1 \\v 1 Text");
+            Assert.AreEqual(7, doc.Paragraphs.Count);
+
+            // Header
+            Assert.AreEqual("1 John", doc.Paragraphs[0].Text);
+            // Chapter
+            Assert.AreEqual("1", doc.Paragraphs[1].Text);
+            // Verse
+            Assert.AreEqual("1Text", doc.Paragraphs[2].Text);
+            // Line break
+            Assert.AreEqual("\n", doc.Paragraphs[3].Text);
+            // New book: Section break exists at end and has a header
+            Assert.IsNotNull(((CT_P)doc.Document.body.Items[3]).pPr.sectPr.headerReference);
+
+            // Header
+            Assert.AreEqual("2 John", doc.Paragraphs[4].Text);
+            // Chapter
+            Assert.AreEqual("1", doc.Paragraphs[5].Text);
+            // Verse
+            Assert.AreEqual("1Text", doc.Paragraphs[6].Text);
+            // Final book: Section break exists at end and has a header
+            Assert.IsNotNull(((CT_P)doc.Document.body.Items[8]).pPr.sectPr.headerReference);
 
         }
 
