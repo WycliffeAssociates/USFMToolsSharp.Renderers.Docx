@@ -379,7 +379,7 @@ namespace USFMToolsSharp.Renderers.Docx
         /// Creates a new section with the given page header.  Must be
         /// called *after* the final paragraph of the section.  In DOCX, a
         /// section definition is a child of the final paragraph of the
-        /// section, except for the final paragraph of the document, which
+        /// section, except for the final section of the document, which
         /// is a direct child of the body.
         /// </summary>
         /// <param name="bookname"> The name of the book to display, usually from the \h marker </param>
