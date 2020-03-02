@@ -41,7 +41,11 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         public void TestHeadersCreateSections()
         {
             XWPFDocument doc = renderDoc("\\h 1 John \\c 1 \\v 1 Text \\h 2 John \\c 1 \\v 1 Text");
+
+            // 7 paragraphs: H C V (pagebreak) H C V
             Assert.AreEqual(7, doc.Paragraphs.Count);
+            // 9 body items: same as above plus two section headers
+            Assert.AreEqual(9, doc.Document.body.Items.Count);
 
             // Header
             Assert.AreEqual("1 John", doc.Paragraphs[0].Text);
