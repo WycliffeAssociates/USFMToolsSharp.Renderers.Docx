@@ -158,17 +158,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     headerTitle.SetText(hMarker.HeaderText);
 
                     break;
-                //case MTMarker mTMarker:
-                    //if (configDocx.separateChapters) 
-                    //{
-                    //    newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
-                    //}
-                    //foreach (Marker marker in input.Contents)
-                    //{
-                    //    RenderMarker(marker,markerStyle);
-                    //}
-                    //createBookHeaders(mTMarker.Title);
-                    //break;
                 case FMarker fMarker:
                     string footnoteId;
                     switch (fMarker.FootNoteCaller)
