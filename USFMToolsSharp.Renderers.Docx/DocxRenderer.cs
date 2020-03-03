@@ -16,7 +16,8 @@ namespace USFMToolsSharp.Renderers.Docx
         public Dictionary<string, Marker> CrossRefMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
-        private int bookNameCount=1;
+        private int pageHeaderCount = 1;
+        private string previousBookHeader = null;
 
         public DocxRenderer()
         {
@@ -43,6 +44,22 @@ namespace USFMToolsSharp.Renderers.Docx
                 {
                     RenderMarker(marker, new StyleConfig());
                 }
+
+            // Add section header for final book
+            if (previousBookHeader != null)
+            {
+                createBookHeaders(previousBookHeader);
+            }
+
+            // Make final document section continuous so that it doesn't
+            // create an extra page at the end.  Final section is unique:
+            // it's a direct child of the document, not a child of the last
+            // paragraph.
+            CT_SectPr finalSection = new CT_SectPr();
+            finalSection.type = new CT_SectType();
+            finalSection.type.val = ST_SectionMark.continuous;
+            newDoc.Document.body.sectPr = finalSection;
+
             return newDoc;
 
         }
@@ -122,21 +139,24 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case HMarker hMarker:
+
+                    // Add section header for previous book, if any
+                    // (section page headers are set at the final paragraph of the section)
+                    if (previousBookHeader != null)
+                    {
+                        // Create new section and page header
+                        createBookHeaders(previousBookHeader);
+                        // Print page break
+                        newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+                    }
+                    previousBookHeader = hMarker.HeaderText;
+
+                    // Write body header text
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
-                    break;
-                case MTMarker mTMarker:
-                    foreach (Marker marker in input.Contents)
-                    {
-                        RenderMarker(marker,markerStyle);
-                    }
-                    if (!configDocx.separateChapters)   // No double page breaks before books
-                    {
-                        newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
-                    }
-                    createBookHeaders(mTMarker.Title);
+
                     break;
                 case FMarker fMarker:
                     string footnoteId;
@@ -355,28 +375,38 @@ namespace USFMToolsSharp.Renderers.Docx
 
         }
         
+        /// <summary>
+        /// Creates a new section with the given page header.  Must be
+        /// called *after* the final paragraph of the section.  In DOCX, a
+        /// section definition is a child of the final paragraph of the
+        /// section, except for the final section of the document, which
+        /// is a direct child of the body.
+        /// </summary>
+        /// <param name="bookname"> The name of the book to display, usually from the \h marker </param>
         public void createBookHeaders(string bookname)
-        {
-
+        { 
+            // Create page heading content for book
             CT_Hdr header = new CT_Hdr();
             CT_P headerParagraph = header.AddNewP();
             CT_PPr ppr = headerParagraph.AddNewPPr();
             CT_Jc align = ppr.AddNewJc();
             align.val = ST_Jc.left;
-
             headerParagraph.AddNewR().AddNewT().Value = bookname;
 
-            XWPFRelation headerRelation = XWPFRelation.HEADER;
-
-            // newDoc.HeaderList doesn't update with header additions
-            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(headerRelation, XWPFFactory.GetInstance(), bookNameCount);
+            // Create page header
+            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
             documentHeader.SetHeaderFooter(header);
-            CT_SectPr diffHeader = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
-            CT_HdrFtrRef headerRef = diffHeader.AddNewHeaderReference();
+
+            // Create new section and set its header
+            CT_SectPr newSection = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
+            newSection.type = new CT_SectType();
+            newSection.type.val = ST_SectionMark.continuous;
+            CT_HdrFtrRef headerRef = newSection.AddNewHeaderReference();
             headerRef.type = ST_HdrFtr.@default;
             headerRef.id = documentHeader.GetPackageRelationship().Id;
 
-            bookNameCount++;
+            // Increment page header count so each one gets a unique ID
+            pageHeaderCount++;
         }
         public void getRenderedRows(Marker input, StyleConfig config,XWPFTable parentTable)
         {
