@@ -70,6 +70,44 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         }
 
         [TestMethod]
+        public void TestHeadersCreateSectionsOneBook()
+        {
+            XWPFDocument doc = renderDoc("\\h 1 John \\c 1 \\v 1 Text");
+
+            // 3 paragraphs: H C V
+            Assert.AreEqual(3, doc.Paragraphs.Count);
+            // 4 body items: same as above plus one section header
+            Assert.AreEqual(4, doc.Document.body.Items.Count);
+
+            // Header
+            Assert.AreEqual("1 John", doc.Paragraphs[0].Text);
+            // Chapter
+            Assert.AreEqual("1", doc.Paragraphs[1].Text);
+            // Verse
+            Assert.AreEqual("1Text", doc.Paragraphs[2].Text);
+            // New book: Section break exists at end and has a header
+            Assert.IsNotNull(((CT_P)doc.Document.body.Items[3]).pPr.sectPr.headerReference);
+
+        }
+
+        [TestMethod]
+        public void TestHeadersCreateSectionsNoBooks()
+        {
+            XWPFDocument doc = renderDoc("\\c 1 \\v 1 Text");
+
+            // 2 paragraphs: C V
+            Assert.AreEqual(2, doc.Paragraphs.Count);
+            // 2 body items: same as above (no section headers)
+            Assert.AreEqual(2, doc.Document.body.Items.Count);
+
+            // Chapter
+            Assert.AreEqual("1", doc.Paragraphs[0].Text);
+            // Verse
+            Assert.AreEqual("1Text", doc.Paragraphs[1].Text);
+
+        }
+
+        [TestMethod]
         public void TestChapterRender()
         {
             Assert.AreEqual("5", renderDoc("\\c 5").Paragraphs[0].Text);
