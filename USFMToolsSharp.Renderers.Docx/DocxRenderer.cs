@@ -76,6 +76,10 @@ namespace USFMToolsSharp.Renderers.Docx
                         
                     foreach (Marker marker in input.Contents)
                     {
+                        if (marker != input.Contents[0])
+                        {
+                            AppendSpace(newParagraph);
+                        }
                         RenderMarker(marker, markerStyle, newParagraph);
                     }
                     break;
@@ -88,6 +92,10 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
                     {
+                        if (marker != input.Contents[0])
+                        {
+                            AppendSpace(chapterVerses);
+                        }
                         RenderMarker(marker, markerStyle ,chapterVerses);
                     }
 
@@ -106,13 +114,14 @@ namespace USFMToolsSharp.Renderers.Docx
                         XWPFRun newLine = parentParagraph.CreateRun();
                         newLine.AddBreak(BreakType.TEXTWRAPPING);
                     }
-                    XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
 
+                    XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
                     foreach (Marker marker in input.Contents)
                     {
+                        AppendSpace(parentParagraph);
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
@@ -284,6 +293,16 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
             }
         }
+
+        private void AppendSpace(XWPFParagraph paragraph)
+        {
+            XWPFRun run = paragraph.CreateRun();
+            CT_R ctr = run.GetCTR();
+            CT_Text text = ctr.AddNewT();
+            text.Value = " ";
+            text.space = "preserve";
+        }
+
         private void RenderFootnotes(StyleConfig styles)
         {
             if (FootnoteMarkers.Count > 0)
