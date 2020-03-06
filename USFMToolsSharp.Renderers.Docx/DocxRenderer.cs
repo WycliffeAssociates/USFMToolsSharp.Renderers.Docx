@@ -18,6 +18,7 @@ namespace USFMToolsSharp.Renderers.Docx
         private XWPFDocument newDoc;
         private int pageHeaderCount = 1;
         private string previousBookHeader = null;
+        private bool firstChapterOfBook = true;
 
         public DocxRenderer()
         {
@@ -73,13 +74,26 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     newParagraph.Alignment = configDocx.textAlign;
                     newParagraph.SpacingBetween = configDocx.lineSpacing;
-                        
+
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, newParagraph);
                     }
                     break;
                 case CMarker cMarker:
+
+                    if (firstChapterOfBook)
+                    {
+                        firstChapterOfBook = false;
+                    }
+                    else
+                    {
+                        if (configDocx.separateChapters)
+                        {
+                            newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+                        }
+                    }
+
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
                     XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
                     chapterMarker.SetText(cMarker.Number.ToString());
@@ -93,10 +107,6 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     RenderFootnotes(markerStyle);
                     RenderCrossReferences(markerStyle);
-                    if (configDocx.separateChapters)
-                    {
-                        newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
-                    }
 
                     break;
                 case VMarker vMarker:
@@ -273,10 +283,12 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun newLineBreak = parentParagraph.CreateRun();
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
+                case IDMarker _:
+                    firstChapterOfBook = true;
+                    break;
                 case XEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
-                case IDMarker _:
                 case VPMarker _:
                 case VPEndMarker _:
                     break;
