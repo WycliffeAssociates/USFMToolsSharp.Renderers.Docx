@@ -2,8 +2,6 @@
 using NPOI.XWPF.UserModel;
 using NPOI.OpenXmlFormats.Wordprocessing;
 using USFMToolsSharp.Models.Markers;
-using System.Collections.Generic;
-using System.IO;
 
 namespace USFMToolsSharp.Renderers.Docx.Tests
 {
@@ -20,26 +18,6 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             configDocx = new DocxConfig();
             parser = new USFMParser();
             render = new DocxRenderer();
-        }
-
-
-        [TestMethod]
-        public void TestCraigMain()
-        {
-            parser = new USFMParser(new List<string> { "s5", "fqa*" });
-            string inputFilename = @"C:\Users\oliverc.WAOFFICE\Downloads\docx-testing\1JN_2JN_3JN.usfm";
-            string usfm = File.ReadAllText(inputFilename);
-            USFMDocument markerTree = parser.ParseFromString(usfm);
-            DocxConfig config = new DocxConfig();
-            //config.separateChapters = true;
-            render = new DocxRenderer(config);
-            XWPFDocument testDoc = render.Render(markerTree);
-
-            string outputFilename = @"C:\Users\oliverc.WAOFFICE\Downloads\docx-testing\out.docx";
-            using (FileStream fs = File.Create(outputFilename))
-            {
-                testDoc.Write(fs);
-            }
         }
 
 
