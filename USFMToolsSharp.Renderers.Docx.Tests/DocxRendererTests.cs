@@ -20,7 +20,6 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             render = new DocxRenderer();
         }
 
-
         [TestMethod]
         public void TestHeaderRender()
         {
