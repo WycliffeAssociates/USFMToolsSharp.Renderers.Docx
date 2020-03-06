@@ -78,6 +78,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         if (marker != input.Contents[0])
                         {
+                            // Add a space before every verse (except the first)
                             AppendSpace(newParagraph);
                         }
                         RenderMarker(marker, markerStyle, newParagraph);
@@ -94,6 +95,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         if (marker != input.Contents[0])
                         {
+                            // Add a space before every verse (except the first)
                             AppendSpace(chapterVerses);
                         }
                         RenderMarker(marker, markerStyle ,chapterVerses);
@@ -294,6 +296,11 @@ namespace USFMToolsSharp.Renderers.Docx
             }
         }
 
+        /// <summary>
+        /// Appends a text run containing a single space.  The run is
+        /// space-preserved so that the space will be visible.
+        /// </summary>
+        /// <param name="paragraph">The parent paragraph to add the run to.</param>
         private void AppendSpace(XWPFParagraph paragraph)
         {
             XWPFRun run = paragraph.CreateRun();
