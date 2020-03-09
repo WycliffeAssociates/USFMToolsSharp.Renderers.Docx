@@ -146,6 +146,32 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             Assert.AreEqual("1Hello Fried Friend ", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft \\fqa Hello Fried Friend \\f*").Paragraphs[3].ParagraphText);
         }
 
+        [TestMethod]
+        public void TestChapterLabelNone()
+        {
+            string usfm = "\\c 1 \\v 1 First verse. \\v 2 Second verse.";
+            XWPFDocument doc = renderDoc(usfm);
+            Assert.AreEqual("Chapter 1",doc.Paragraphs[0].Text);
+        }
+
+        [TestMethod]
+        public void TestChapterLabelDoc()
+        {
+            string usfm = "\\cl Psalm \\c 1 \\v 1 First verse. \\c 2 \\v 1 First verse.";
+            XWPFDocument doc = renderDoc(usfm);
+            Assert.AreEqual("Psalm 1",doc.Paragraphs[0].Text);
+            Assert.AreEqual("Psalm 2",doc.Paragraphs[2].Text);
+        }
+
+        [TestMethod]
+        public void TestChapterLabelIndividual()
+        {
+            string usfm = "\\c 1 \\cl Psalm \\v 1 First verse. \\c 2 \\v 1 First verse.";
+            XWPFDocument doc = renderDoc(usfm);
+            Assert.AreEqual("Psalm 1",doc.Paragraphs[0].Text);
+            Assert.AreEqual("Chapter 2",doc.Paragraphs[2].Text);
+        }
+
         public XWPFDocument renderDoc(string usfm)
         {
             USFMDocument markerTree = parser.ParseFromString(usfm);
