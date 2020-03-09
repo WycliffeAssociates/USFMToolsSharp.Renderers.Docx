@@ -51,7 +51,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Header
             Assert.AreEqual("1 John", doc.Paragraphs[0].Text);
             // Chapter
-            Assert.AreEqual("1", doc.Paragraphs[1].Text);
+            Assert.AreEqual("Chapter 1", doc.Paragraphs[1].Text);
             // Verse
             Assert.AreEqual("1 Text ", doc.Paragraphs[2].Text);
             // Line break
@@ -62,7 +62,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Header
             Assert.AreEqual("2 John", doc.Paragraphs[4].Text);
             // Chapter
-            Assert.AreEqual("1", doc.Paragraphs[5].Text);
+            Assert.AreEqual("Chapter 1", doc.Paragraphs[5].Text);
             // Verse
             Assert.AreEqual("1 Text", doc.Paragraphs[6].Text);
             // Final book: Section break exists at end and has a header
@@ -83,7 +83,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Header
             Assert.AreEqual("1 John", doc.Paragraphs[0].Text);
             // Chapter
-            Assert.AreEqual("1", doc.Paragraphs[1].Text);
+            Assert.AreEqual("Chapter 1", doc.Paragraphs[1].Text);
             // Verse
             Assert.AreEqual("1 Text", doc.Paragraphs[2].Text);
             // New book: Section break exists at end and has a header
@@ -102,7 +102,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             Assert.AreEqual(2, doc.Document.body.Items.Count);
 
             // Chapter
-            Assert.AreEqual("1", doc.Paragraphs[0].Text);
+            Assert.AreEqual("Chapter 1", doc.Paragraphs[0].Text);
             // Verse
             Assert.AreEqual("1 Text", doc.Paragraphs[1].Text);
 
@@ -111,10 +111,10 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         [TestMethod]
         public void TestChapterRender()
         {
-            Assert.AreEqual("5", renderDoc("\\c 5").Paragraphs[0].Text);
-            Assert.AreEqual("1", renderDoc("\\c 1").Paragraphs[0].Text);
-            Assert.AreEqual("-1", renderDoc("\\c -1").Paragraphs[0].Text);
-            Assert.AreEqual("0", renderDoc("\\c 0").Paragraphs[0].Text);
+            Assert.AreEqual("Chapter 5", renderDoc("\\c 5").Paragraphs[0].Text);
+            Assert.AreEqual("Chapter 1", renderDoc("\\c 1").Paragraphs[0].Text);
+            Assert.AreEqual("Chapter -1", renderDoc("\\c -1").Paragraphs[0].Text);
+            Assert.AreEqual("Chapter 0", renderDoc("\\c 0").Paragraphs[0].Text);
         }
 
         [TestMethod]
@@ -166,9 +166,9 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         [TestMethod]
         public void TestChapterLabelIndividual()
         {
-            string usfm = "\\c 1 \\cl Psalm \\v 1 First verse. \\c 2 \\v 1 First verse.";
+            string usfm = "\\c 1 \\cl Psalm One \\v 1 First verse. \\c 2 \\v 1 First verse.";
             XWPFDocument doc = renderDoc(usfm);
-            Assert.AreEqual("Psalm 1",doc.Paragraphs[0].Text);
+            Assert.AreEqual("Psalm One",doc.Paragraphs[0].Text);
             Assert.AreEqual("Chapter 2",doc.Paragraphs[2].Text);
         }
 

@@ -96,7 +96,17 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
                     XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
-                    chapterMarker.SetText(cMarker.Number.ToString());
+                    string simpleNumber = cMarker.Number.ToString();
+                    if (cMarker.CustomChapterLabel != simpleNumber)
+                    {
+                        // Use the custom label for this section, e.g. "Psalm One" instead of "Chapter 1"
+                        chapterMarker.SetText(cMarker.CustomChapterLabel);
+                    }
+                    else
+                    {
+                        // Use the default chapter text for this section, e.g. "Chapter 1"
+                        chapterMarker.SetText("Chapter " + simpleNumber);
+                    }
                     chapterMarker.FontSize = 20;
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
