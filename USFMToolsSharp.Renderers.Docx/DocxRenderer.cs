@@ -18,7 +18,9 @@ namespace USFMToolsSharp.Renderers.Docx
         private XWPFDocument newDoc;
         private int pageHeaderCount = 1;
         private string previousBookHeader = null;
-        private bool firstChapterOfBook = true;
+        private const string chapterLabelDefault = "Chapter";
+        private string chapterLabel = chapterLabelDefault;
+        private bool beforeFirstChapter = true;
 
         public DocxRenderer()
         {
@@ -80,11 +82,19 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, newParagraph);
                     }
                     break;
+                case CLMarker clMarker:
+                    if (beforeFirstChapter)
+                    {
+                        // A CL before the first chapter means that we should use
+                        // this string instead of the word "Chapter".
+                        chapterLabel = clMarker.Label;
+                    }
+                    break;
                 case CMarker cMarker:
 
-                    if (firstChapterOfBook)
+                    if (beforeFirstChapter)
                     {
-                        firstChapterOfBook = false;
+                        beforeFirstChapter = false;
                     }
                     else
                     {
@@ -105,7 +115,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     else
                     {
                         // Use the default chapter text for this section, e.g. "Chapter 1"
-                        chapterMarker.SetText("Chapter " + simpleNumber);
+                        chapterMarker.SetText(chapterLabel + " " + simpleNumber);
                     }
                     chapterMarker.FontSize = 20;
 
@@ -294,7 +304,9 @@ namespace USFMToolsSharp.Renderers.Docx
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
                 case IDMarker _:
-                    firstChapterOfBook = true;
+                    // This is the start of a new book.
+                    beforeFirstChapter = true;
+                    chapterLabel = chapterLabelDefault;
                     break;
                 case XEndMarker _:
                 case FEndMarker _:
