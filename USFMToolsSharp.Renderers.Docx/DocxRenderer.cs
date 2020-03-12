@@ -94,12 +94,14 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     if (beforeFirstChapter)
                     {
+                        // We found the first chapter, so set the flag to false.
                         beforeFirstChapter = false;
                     }
                     else
                     {
                         if (configDocx.separateChapters)
                         {
+                            // Add page break between chapters.
                             newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
                         }
                     }
