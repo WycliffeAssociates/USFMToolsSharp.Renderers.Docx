@@ -19,6 +19,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             parser = new USFMParser();
             render = new DocxRenderer();
         }
+
         [TestMethod]
         public void TestHeaderRender()
         {
@@ -52,7 +53,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Chapter
             Assert.AreEqual("1", doc.Paragraphs[1].Text);
             // Verse
-            Assert.AreEqual("1Text", doc.Paragraphs[2].Text);
+            Assert.AreEqual("1 Text ", doc.Paragraphs[2].Text);
             // Line break
             Assert.AreEqual("\n", doc.Paragraphs[3].Text);
             // New book: Section break exists at end and has a header
@@ -63,7 +64,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Chapter
             Assert.AreEqual("1", doc.Paragraphs[5].Text);
             // Verse
-            Assert.AreEqual("1Text", doc.Paragraphs[6].Text);
+            Assert.AreEqual("1 Text", doc.Paragraphs[6].Text);
             // Final book: Section break exists at end and has a header
             Assert.IsNotNull(((CT_P)doc.Document.body.Items[8]).pPr.sectPr.headerReference);
 
@@ -84,7 +85,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Chapter
             Assert.AreEqual("1", doc.Paragraphs[1].Text);
             // Verse
-            Assert.AreEqual("1Text", doc.Paragraphs[2].Text);
+            Assert.AreEqual("1 Text", doc.Paragraphs[2].Text);
             // New book: Section break exists at end and has a header
             Assert.IsNotNull(((CT_P)doc.Document.body.Items[3]).pPr.sectPr.headerReference);
 
@@ -103,7 +104,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Chapter
             Assert.AreEqual("1", doc.Paragraphs[0].Text);
             // Verse
-            Assert.AreEqual("1Text", doc.Paragraphs[1].Text);
+            Assert.AreEqual("1 Text", doc.Paragraphs[1].Text);
 
         }
 
@@ -119,16 +120,30 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         [TestMethod]
         public void TestVerseRender()
         {
-            Assert.AreEqual("1This is a simple verse.", renderDoc("\\c 1 \\v 1 This is a simple verse.").Paragraphs[1].ParagraphText);
-            Assert.AreEqual("1This is a simple verse.2Another one.", renderDoc("\\c 1 \\v 1 This is a simple verse. \\v 2 Another one.").Paragraphs[1].ParagraphText);
-            Assert.AreEqual("2Another one.", renderDoc("\\c 1 \\v 1 This is a simple verse. \\c 2 \\v 2 Another one.").Paragraphs[3].ParagraphText);
+            Assert.AreEqual("1 This is a simple verse.", renderDoc("\\c 1 \\v 1 This is a simple verse.").Paragraphs[1].ParagraphText);
+            Assert.AreEqual("1 This is a simple verse. 2 Another one.", renderDoc("\\c 1 \\v 1 This is a simple verse. \\v 2 Another one.").Paragraphs[1].ParagraphText);
+            Assert.AreEqual("2 Another one.", renderDoc("\\c 1 \\v 1 This is a simple verse. \\c 2 \\v 2 Another one.").Paragraphs[3].ParagraphText);
+        }
+
+        [TestMethod]
+        public void TestSpaceBetweenVerses()
+        {
+            XWPFDocument doc = renderDoc("\\c 1 \\v 1 First Verse. \\v 2 Second verse.");
+            Assert.AreEqual("1 First Verse. 2 Second verse.", doc.Paragraphs[1].ParagraphText);
+        }
+
+        [TestMethod]
+        public void TestSpaceBetweenVersesInParagraph()
+        {
+            XWPFDocument doc = renderDoc("\\c 1 \\p \\v 1 First Verse. \\v 2 Second verse.");
+            Assert.AreEqual("1 First Verse. 2 Second verse.", doc.Paragraphs[2].ParagraphText);
         }
 
         [TestMethod]
         public void TestFootnoteRender()
         {
-            Assert.AreEqual("1Hello Friend", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft Hello Friend \\f*").Paragraphs[3].ParagraphText);
-            Assert.AreEqual("1Hello Fried Friend", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft \\fqa Hello Fried Friend \\f*").Paragraphs[3].ParagraphText);
+            Assert.AreEqual("1Hello Friend ", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft Hello Friend \\f*").Paragraphs[3].ParagraphText);
+            Assert.AreEqual("1Hello Fried Friend ", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft \\fqa Hello Fried Friend \\f*").Paragraphs[3].ParagraphText);
         }
 
         public XWPFDocument renderDoc(string usfm)

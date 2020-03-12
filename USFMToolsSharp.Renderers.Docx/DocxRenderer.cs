@@ -106,13 +106,14 @@ namespace USFMToolsSharp.Renderers.Docx
                         XWPFRun newLine = parentParagraph.CreateRun();
                         newLine.AddBreak(BreakType.TEXTWRAPPING);
                     }
-                    XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
 
+                    XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
                     foreach (Marker marker in input.Contents)
                     {
+                        AppendSpace(parentParagraph);
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
@@ -284,6 +285,21 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
             }
         }
+
+        /// <summary>
+        /// Appends a text run containing a single space.  The run is
+        /// space-preserved so that the space will be visible.
+        /// </summary>
+        /// <param name="paragraph">The parent paragraph to add the run to.</param>
+        private void AppendSpace(XWPFParagraph paragraph)
+        {
+            XWPFRun run = paragraph.CreateRun();
+            CT_R ctr = run.GetCTR();
+            CT_Text text = ctr.AddNewT();
+            text.Value = " ";
+            text.space = "preserve";
+        }
+
         private void RenderFootnotes(StyleConfig styles)
         {
             if (FootnoteMarkers.Count > 0)
