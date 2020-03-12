@@ -53,7 +53,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Chapter
             Assert.AreEqual("1", doc.Paragraphs[1].Text);
             // Verse
-            Assert.AreEqual("1 Text", doc.Paragraphs[2].Text);
+            Assert.AreEqual("1 Text ", doc.Paragraphs[2].Text);
             // Line break
             Assert.AreEqual("\n", doc.Paragraphs[3].Text);
             // New book: Section break exists at end and has a header
@@ -142,8 +142,8 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         [TestMethod]
         public void TestFootnoteRender()
         {
-            Assert.AreEqual("1Hello Friend", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft Hello Friend \\f*").Paragraphs[3].ParagraphText);
-            Assert.AreEqual("1Hello Fried Friend", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft \\fqa Hello Fried Friend \\f*").Paragraphs[3].ParagraphText);
+            Assert.AreEqual("1Hello Friend ", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft Hello Friend \\f*").Paragraphs[3].ParagraphText);
+            Assert.AreEqual("1Hello Fried Friend ", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft \\fqa Hello Fried Friend \\f*").Paragraphs[3].ParagraphText);
         }
 
         public XWPFDocument renderDoc(string usfm)

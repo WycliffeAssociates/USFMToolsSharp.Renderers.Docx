@@ -76,11 +76,6 @@ namespace USFMToolsSharp.Renderers.Docx
                         
                     foreach (Marker marker in input.Contents)
                     {
-                        if (marker != input.Contents[0])
-                        {
-                            // Add a space before every verse (except the first)
-                            AppendSpace(newParagraph);
-                        }
                         RenderMarker(marker, markerStyle, newParagraph);
                     }
                     break;
@@ -93,11 +88,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
                     foreach (Marker marker in input.Contents)
                     {
-                        if (marker != input.Contents[0])
-                        {
-                            // Add a space before every verse (except the first)
-                            AppendSpace(chapterVerses);
-                        }
                         RenderMarker(marker, markerStyle ,chapterVerses);
                     }
 
