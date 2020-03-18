@@ -212,11 +212,16 @@ namespace USFMToolsSharp.Renderers.Docx
                             footnoteId = fMarker.FootNoteCaller;
                             break;
                     }
+
                     CT_FtnEdn footnote = new CT_FtnEdn();
                     footnote.id = footnoteId;
                     footnote.type = ST_FtnEdn.normal;
                     CT_P footnoteParagraph = footnote.AddNewP();
-                    footnoteParagraph.AddNewR().AddNewT().Value = footnoteId + " Placeholder Text";
+                    XWPFParagraph xFootnoteParagraph = new XWPFParagraph(footnoteParagraph, parentParagraph.Body);
+                    foreach(Marker marker in fMarker.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, xFootnoteParagraph);
+                    }
                     parentParagraph.Document.AddFootnote(footnote);
 
                     XWPFRun footnoteReferenceRun = parentParagraph.CreateRun();
