@@ -140,6 +140,10 @@ namespace USFMToolsSharp.Renderers.Docx
                         XWPFRun newLine = parentParagraph.CreateRun();
                         newLine.AddBreak(BreakType.TEXTWRAPPING);
                     }
+                    else 
+                    { 
+                        AppendSpace(parentParagraph);
+                    }
 
                     XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
                     verseMarker.SetText(vMarker.VerseCharacter);
@@ -212,7 +216,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     footnote.id = footnoteId;
                     footnote.type = ST_FtnEdn.normal;
                     CT_P footnoteParagraph = footnote.AddNewP();
-                    footnoteParagraph.AddNewR().AddNewT().Value = "Placeholder Text";
+                    footnoteParagraph.AddNewR().AddNewT().Value = footnoteId + " Placeholder Text";
                     parentParagraph.Document.AddFootnote(footnote);
 
                     XWPFRun footnoteReferenceRun = parentParagraph.CreateRun();
@@ -323,6 +327,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     // This is the start of a new book.
                     beforeFirstChapter = true;
                     chapterLabel = chapterLabelDefault;
+                    nextFootnoteNum = 1;
                     break;
                 case XEndMarker _:
                 case FEndMarker _:
