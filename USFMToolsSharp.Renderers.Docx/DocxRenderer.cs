@@ -216,11 +216,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     CT_FtnEdn footnote = new CT_FtnEdn();
                     footnote.id = footnoteId;
                     footnote.type = ST_FtnEdn.normal;
+                    StyleConfig footnoteMarkerStyle = (StyleConfig)styles.Clone();
+                    footnoteMarkerStyle.fontSize = 12;
                     CT_P footnoteParagraph = footnote.AddNewP();
                     XWPFParagraph xFootnoteParagraph = new XWPFParagraph(footnoteParagraph, parentParagraph.Body);
+                    footnoteParagraph.AddNewR().AddNewT().Value = "F" + footnoteId.ToString() + " ";
                     foreach(Marker marker in fMarker.Contents)
                     {
-                        RenderMarker(marker, markerStyle, xFootnoteParagraph);
+                        RenderMarker(marker, footnoteMarkerStyle, xFootnoteParagraph);
                     }
                     parentParagraph.Document.AddFootnote(footnote);
 
@@ -231,6 +234,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     CT_FtnEdnRef footnoteReference = new CT_FtnEdnRef();
                     footnoteReference.id = footnoteId;
                     footnoteReference.isEndnote = false;
+                    footnoteReferenceRun.SetUnderline(UnderlinePatterns.Single);
+                    footnoteReferenceRun.AppendText("F");
                     footnoteReferenceRun.GetCTR().Items.Add(footnoteReference);
 
                     //FootnoteMarkers[footnoteId] = fMarker;
