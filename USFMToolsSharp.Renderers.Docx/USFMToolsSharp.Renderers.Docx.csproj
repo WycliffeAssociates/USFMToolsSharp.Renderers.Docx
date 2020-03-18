@@ -27,8 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\npoi\ooxml\NPOI.OOXML.csproj" />
-    <ProjectReference Include="..\..\npoi\OpenXmlFormats\NPOI.OpenXmlFormats.csproj" />
+    <ProjectReference Include="..\..\npoi\ooxml\NPOI.OOXML.Core.csproj" />
+    <ProjectReference Include="..\..\npoi\openxml4Net\NPOI.OpenXml4Net.Core.csproj" />
+    <ProjectReference Include="..\..\npoi\OpenXmlFormats\NPOI.OpenXmlFormats.Core.csproj" />
   </ItemGroup>
 
 </Project>
