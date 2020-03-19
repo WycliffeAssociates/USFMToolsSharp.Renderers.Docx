@@ -142,8 +142,17 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         [TestMethod]
         public void TestFootnoteRender()
         {
-            Assert.AreEqual("1Hello Friend ", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft Hello Friend \\f*").Paragraphs[3].ParagraphText);
-            Assert.AreEqual("1Hello Fried Friend ", renderDoc("\\c 1 \\v 1 This is a simple verse. \\f + \\ft \\fqa Hello Fried Friend \\f*").Paragraphs[3].ParagraphText);
+            XWPFDocument doc = renderDoc("\\c 1 \\v 1 This is a verse. \\f + \\ft This is a footnote. \\f*");
+            // Chapter 1
+            Assert.AreEqual("Chapter 1", doc.Paragraphs[0].ParagraphText);
+            // Verse 1
+            Assert.AreEqual("1", doc.Paragraphs[1].Runs[1].Text);
+            // Footnote Reference 1
+            CT_FtnEdnRef footnoteRef = (CT_FtnEdnRef)doc.Paragraphs[1].Runs[5].GetCTR().Items[1];
+            Assert.AreEqual("1", footnoteRef.id);
+            // Footnote Content 1
+            XWPFFootnote footnote = doc.GetFootnotes()[0];
+            Assert.AreEqual("F1 This is a footnote. ", footnote.Paragraphs[0].ParagraphText);
         }
 
         [TestMethod]
