@@ -146,9 +146,9 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Chapter 1
             Assert.AreEqual("Chapter 1", doc.Paragraphs[0].ParagraphText);
             // Verse 1
-            Assert.AreEqual("1", doc.Paragraphs[1].Runs[1].Text);
+            Assert.AreEqual("1", doc.Paragraphs[1].Runs[0].Text);
             // Footnote Reference 1
-            CT_FtnEdnRef footnoteRef = (CT_FtnEdnRef)doc.Paragraphs[1].Runs[5].GetCTR().Items[1];
+            CT_FtnEdnRef footnoteRef = (CT_FtnEdnRef)doc.Paragraphs[1].Runs[4].GetCTR().Items[1];
             Assert.AreEqual("1", footnoteRef.id);
             // Footnote Content 1
             XWPFFootnote footnote = doc.GetFootnotes()[0];
