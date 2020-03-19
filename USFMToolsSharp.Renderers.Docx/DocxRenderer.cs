@@ -76,6 +76,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     newParagraph.Alignment = configDocx.textAlign;
                     newParagraph.SpacingBetween = configDocx.lineSpacing;
+                    newParagraph.SpacingAfterLines = 50;
 
                     foreach (Marker marker in input.Contents)
                     {
@@ -137,19 +138,19 @@ namespace USFMToolsSharp.Renderers.Docx
                         XWPFRun newLine = parentParagraph.CreateRun();
                         newLine.AddBreak(BreakType.TEXTWRAPPING);
                     }
-                    else 
-                    { 
-                        //AppendSpace(parentParagraph);
-                    }
 
                     XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+                    AppendSpace(parentParagraph);
 
                     foreach (Marker marker in input.Contents)
                     {
-                        AppendSpace(parentParagraph);
                         RenderMarker(marker, markerStyle, parentParagraph);
+                    }
+                    if (parentParagraph.Text.EndsWith(" ") == false)
+                    {
+                        AppendSpace(parentParagraph);
                     }
                     break;
                 case QMarker qMarker:
