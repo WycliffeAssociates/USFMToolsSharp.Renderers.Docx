@@ -155,7 +155,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case QMarker qMarker:
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle);
-                    poetryParagraph.IndentationLeft = qMarker.Depth;
+                    poetryParagraph.IndentationLeft = qMarker.Depth * 500;
 
                     foreach (Marker marker in input.Contents)
                     {
