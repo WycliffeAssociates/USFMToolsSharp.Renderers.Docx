@@ -21,6 +21,8 @@ namespace USFMToolsSharp.Renderers.Docx
         private string chapterLabel = chapterLabelDefault;
         private bool beforeFirstChapter = true;
         private int nextFootnoteNum = 1;
+        private Marker thisMarker = null;
+        private Marker previousMarker = null;
 
         public DocxRenderer()
         {
@@ -68,19 +70,30 @@ namespace USFMToolsSharp.Renderers.Docx
         }
         private void RenderMarker(Marker input, StyleConfig styles, XWPFParagraph parentParagraph = null)
         {
+            // Keep track of the previous marker
+            previousMarker = thisMarker;
+            thisMarker = input;
+
             StyleConfig markerStyle = (StyleConfig)styles.Clone();
             switch (input)
             {
                 case PMarker _:
-                    XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle);
 
-                    newParagraph.Alignment = configDocx.textAlign;
-                    newParagraph.SpacingBetween = configDocx.lineSpacing;
-                    newParagraph.SpacingAfterLines = 50;
+                    XWPFParagraph paragraph = parentParagraph;
+                    // If the previous marker was a chapter marker, don't create a new paragraph.
+                    if (!(previousMarker is CMarker _))
+                    {
+                        XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle);
+
+                        newParagraph.Alignment = configDocx.textAlign;
+                        newParagraph.SpacingBetween = configDocx.lineSpacing;
+                        newParagraph.SpacingAfterLines = 50;
+                        paragraph = newParagraph;
+                    }
 
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, markerStyle, newParagraph);
+                        RenderMarker(marker, markerStyle, paragraph);
                     }
                     break;
                 case CLMarker clMarker:
