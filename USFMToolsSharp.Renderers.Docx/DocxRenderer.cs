@@ -210,19 +210,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case FMarker fMarker:
                     string footnoteId;
-                    switch (fMarker.FootNoteCaller)
-                    {
-                        case "-":
-                            footnoteId = "";
-                            break;
-                        case "+":
-                            footnoteId = nextFootnoteNum.ToString();
-                            nextFootnoteNum++;
-                            break;
-                        default:
-                            footnoteId = fMarker.FootNoteCaller;
-                            break;
-                    }
+                    footnoteId = nextFootnoteNum.ToString();
+                    nextFootnoteNum++;
 
                     CT_FtnEdn footnote = new CT_FtnEdn();
                     footnote.id = footnoteId;
@@ -345,7 +334,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     // This is the start of a new book.
                     beforeFirstChapter = true;
                     chapterLabel = chapterLabelDefault;
-                    nextFootnoteNum = 1;
                     break;
                 case XEndMarker _:
                 case FEndMarker _:
