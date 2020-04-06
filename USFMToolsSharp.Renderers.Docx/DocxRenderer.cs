@@ -12,12 +12,17 @@ namespace USFMToolsSharp.Renderers.Docx
     public class DocxRenderer
     {
         public List<string> UnrenderableMarkers;
-        public Dictionary<string,Marker> FootnoteMarkers;
         public Dictionary<string, Marker> CrossRefMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
         private int pageHeaderCount = 1;
         private string previousBookHeader = null;
+        private const string chapterLabelDefault = "Chapter";
+        private string chapterLabel = chapterLabelDefault;
+        private bool beforeFirstChapter = true;
+        private int nextFootnoteNum = 1;
+        private Marker thisMarker = null;
+        private Marker previousMarker = null;
 
         public DocxRenderer()
         {
@@ -31,9 +36,9 @@ namespace USFMToolsSharp.Renderers.Docx
         public XWPFDocument Render(USFMDocument input)
         {
             UnrenderableMarkers = new List<string>();
-            FootnoteMarkers = new Dictionary<string, Marker>();
             CrossRefMarkers = new Dictionary<string, Marker>();
             newDoc = new XWPFDocument();
+            newDoc.CreateFootnotes();
 
             setStartPageNumber();
 
@@ -65,24 +70,69 @@ namespace USFMToolsSharp.Renderers.Docx
         }
         private void RenderMarker(Marker input, StyleConfig styles, XWPFParagraph parentParagraph = null)
         {
+            // Keep track of the previous marker
+            previousMarker = thisMarker;
+            thisMarker = input;
+
             StyleConfig markerStyle = (StyleConfig)styles.Clone();
             switch (input)
             {
                 case PMarker _:
-                    XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle);
 
-                    newParagraph.Alignment = configDocx.textAlign;
-                    newParagraph.SpacingBetween = configDocx.lineSpacing;
-                        
+                    XWPFParagraph paragraph = parentParagraph;
+                    // If the previous marker was a chapter marker, don't create a new paragraph.
+                    if (!(previousMarker is CMarker _))
+                    {
+                        XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle);
+
+                        newParagraph.Alignment = configDocx.textAlign;
+                        newParagraph.SpacingBetween = configDocx.lineSpacing;
+                        newParagraph.SpacingAfterLines = 50;
+                        paragraph = newParagraph;
+                    }
+
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, markerStyle, newParagraph);
+                        RenderMarker(marker, markerStyle, paragraph);
+                    }
+                    break;
+                case CLMarker clMarker:
+                    if (beforeFirstChapter)
+                    {
+                        // A CL before the first chapter means that we should use
+                        // this string instead of the word "Chapter".
+                        chapterLabel = clMarker.Label;
                     }
                     break;
                 case CMarker cMarker:
+
+                    if (beforeFirstChapter)
+                    {
+                        // We found the first chapter, so set the flag to false.
+                        beforeFirstChapter = false;
+                    }
+                    else
+                    {
+                        if (configDocx.separateChapters)
+                        {
+                            // Add page break between chapters.
+                            newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+                        }
+                    }
+
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
                     XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
-                    chapterMarker.SetText(cMarker.Number.ToString());
+                    string simpleNumber = cMarker.Number.ToString();
+                    if (cMarker.CustomChapterLabel != simpleNumber)
+                    {
+                        // Use the custom label for this section, e.g. "Psalm One" instead of "Chapter 1"
+                        chapterMarker.SetText(cMarker.CustomChapterLabel);
+                    }
+                    else
+                    {
+                        // Use the default chapter text for this section, e.g. "Chapter 1"
+                        chapterMarker.SetText(chapterLabel + " " + simpleNumber);
+                    }
                     chapterMarker.FontSize = 20;
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
@@ -91,12 +141,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle ,chapterVerses);
                     }
 
-                    RenderFootnotes(markerStyle);
                     RenderCrossReferences(markerStyle);
-                    if (configDocx.separateChapters)
-                    {
-                        newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
-                    }
 
                     break;
                 case VMarker vMarker:
@@ -110,16 +155,20 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+                    AppendSpace(parentParagraph);
 
                     foreach (Marker marker in input.Contents)
                     {
-                        AppendSpace(parentParagraph);
                         RenderMarker(marker, markerStyle, parentParagraph);
+                    }
+                    if (parentParagraph.Text.EndsWith(" ") == false)
+                    {
+                        AppendSpace(parentParagraph);
                     }
                     break;
                 case QMarker qMarker:
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle);
-                    poetryParagraph.IndentationLeft = qMarker.Depth;
+                    poetryParagraph.IndentationLeft = qMarker.Depth * 500;
 
                     foreach (Marker marker in input.Contents)
                     {
@@ -161,25 +210,33 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case FMarker fMarker:
                     string footnoteId;
-                    switch (fMarker.FootNoteCaller)
+                    footnoteId = nextFootnoteNum.ToString();
+                    nextFootnoteNum++;
+
+                    CT_FtnEdn footnote = new CT_FtnEdn();
+                    footnote.id = footnoteId;
+                    footnote.type = ST_FtnEdn.normal;
+                    StyleConfig footnoteMarkerStyle = (StyleConfig)styles.Clone();
+                    footnoteMarkerStyle.fontSize = 12;
+                    CT_P footnoteParagraph = footnote.AddNewP();
+                    XWPFParagraph xFootnoteParagraph = new XWPFParagraph(footnoteParagraph, parentParagraph.Body);
+                    footnoteParagraph.AddNewR().AddNewT().Value = "F" + footnoteId.ToString() + " ";
+                    foreach(Marker marker in fMarker.Contents)
                     {
-                        case "-":
-                            footnoteId = "";
-                            break;
-                        case "+":
-                            footnoteId = $"{FootnoteMarkers.Count + 1}";
-                            break;
-                        default:
-                            footnoteId = fMarker.FootNoteCaller;
-                            break;
+                        RenderMarker(marker, footnoteMarkerStyle, xFootnoteParagraph);
                     }
-                    XWPFRun footnoteMarker = parentParagraph.CreateRun(markerStyle);
+                    parentParagraph.Document.AddFootnote(footnote);
 
-                    footnoteMarker.SetText(footnoteId);
-                    footnoteMarker.Subscript = VerticalAlign.SUBSCRIPT;
-
-                    FootnoteMarkers[footnoteId] = fMarker;
-
+                    XWPFRun footnoteReferenceRun = parentParagraph.CreateRun();
+                    CT_RPr rpr = footnoteReferenceRun.GetCTR().AddNewRPr();
+                    rpr.rStyle = new CT_String();
+                    rpr.rStyle.val = "FootnoteReference";
+                    CT_FtnEdnRef footnoteReference = new CT_FtnEdnRef();
+                    footnoteReference.id = footnoteId;
+                    footnoteReference.isEndnote = false;
+                    footnoteReferenceRun.SetUnderline(UnderlinePatterns.Single);
+                    footnoteReferenceRun.AppendText("F");
+                    footnoteReferenceRun.GetCTR().Items.Add(footnoteReference);
                     break;
                 case FPMarker fPMarker:
                     foreach (Marker marker in input.Contents)
@@ -273,10 +330,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFRun newLineBreak = parentParagraph.CreateRun();
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
+                case IDMarker _:
+                    // This is the start of a new book.
+                    beforeFirstChapter = true;
+                    chapterLabel = chapterLabelDefault;
+                    break;
                 case XEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
-                case IDMarker _:
                 case VPMarker _:
                 case VPEndMarker _:
                     break;
@@ -300,30 +361,6 @@ namespace USFMToolsSharp.Renderers.Docx
             text.space = "preserve";
         }
 
-        private void RenderFootnotes(StyleConfig styles)
-        {
-            if (FootnoteMarkers.Count > 0)
-            {
-                XWPFParagraph renderFootnoteStart = newDoc.CreateParagraph();
-                renderFootnoteStart.BorderTop = Borders.Single;
-
-                StyleConfig markerStyle = (StyleConfig)styles.Clone();
-                markerStyle.fontSize = 12;
-
-                foreach (KeyValuePair<string,Marker> footnoteKVP in FootnoteMarkers)
-                {
-                    XWPFParagraph renderFootnote = newDoc.CreateParagraph(markerStyle);
-                    XWPFRun footnoteMarker = renderFootnote.CreateRun(markerStyle);
-                    footnoteMarker.SetText(footnoteKVP.Key);
-                    footnoteMarker.Subscript = VerticalAlign.SUPERSCRIPT;
-                    foreach(Marker input in footnoteKVP.Value.Contents)
-                    {
-                        RenderMarker(input, markerStyle, renderFootnote);
-                    }
-                }
-                FootnoteMarkers.Clear();
-            }
-        }
         private void RenderCrossReferences(StyleConfig config)
         {
 

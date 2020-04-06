@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/WycliffeAssociates/USFMToolsSharp.Renderers.Docx</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Authors>@rbnswartz; @BryanHo10</Authors>
+    <Authors>@rbnswartz; @BryanHo10; @PurpleGuitar</Authors>
     <Company>Wycliffe Associates</Company>
     <PackageProjectUrl>https://github.com/WycliffeAssociates/USFMToolsSharp.Renderers.Docx</PackageProjectUrl>
     <RepositoryType />
@@ -17,7 +17,7 @@
   <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
     <PackageReference Include="USFMToolsSharp" Version="1.4.0" />
-    <PackageReference Include="WycliffeAssociates.NPOI" Version="2.4.1" />
+    <PackageReference Include="WycliffeAssociates.NPOI.OOXML" Version="2.4.5" />
   </ItemGroup>
 
   <ItemGroup>
