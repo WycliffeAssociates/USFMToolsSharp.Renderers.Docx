@@ -143,7 +143,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         public void TestSpaceBetweenVersesInParagraph()
         {
             XWPFDocument doc = renderDoc("\\c 1 \\p \\v 1 First Verse. \\v 2 Second verse.");
-            Assert.AreEqual("1 First Verse. 2 Second verse. ", doc.Paragraphs[2].ParagraphText);
+            Assert.AreEqual("1 First Verse. 2 Second verse. ", doc.Paragraphs[1].ParagraphText);
         }
 
         [TestMethod]
