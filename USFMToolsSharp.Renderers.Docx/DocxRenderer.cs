@@ -87,7 +87,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                         newParagraph.Alignment = configDocx.textAlign;
                         newParagraph.SpacingBetween = configDocx.lineSpacing;
-                        newParagraph.SpacingAfterLines = 50;
+                        newParagraph.SpacingAfter = 200;
                         paragraph = newParagraph;
                     }
 
@@ -121,6 +121,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
 
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
+                    newChapter.SpacingBetween = configDocx.lineSpacing;
+                    newChapter.SpacingAfter = 200;
                     XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
                     string simpleNumber = cMarker.Number.ToString();
                     if (cMarker.CustomChapterLabel != simpleNumber)
@@ -136,6 +138,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     chapterMarker.FontSize = 20;
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
+                    chapterVerses.SpacingBetween = configDocx.lineSpacing;
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle ,chapterVerses);
@@ -168,7 +171,9 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case QMarker qMarker:
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle);
+                    poetryParagraph.SpacingBetween = configDocx.lineSpacing;
                     poetryParagraph.IndentationLeft = qMarker.Depth * 500;
+                    poetryParagraph.SpacingAfter = 200;
 
                     foreach (Marker marker in input.Contents)
                     {
@@ -204,6 +209,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     // Write body header text
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
+                    newHeader.SpacingAfter = 200;
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
 
