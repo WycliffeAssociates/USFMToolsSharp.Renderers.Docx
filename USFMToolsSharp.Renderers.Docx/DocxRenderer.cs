@@ -464,6 +464,9 @@ namespace USFMToolsSharp.Renderers.Docx
             headerRef.type = ST_HdrFtr.@default;
             headerRef.id = documentHeader.GetPackageRelationship().Id;
 
+            // Set number of columns
+            newSection.cols.num = configDocx.columnCount.ToString();
+
             // Increment page header count so each one gets a unique ID
             pageHeaderCount++;
         }
