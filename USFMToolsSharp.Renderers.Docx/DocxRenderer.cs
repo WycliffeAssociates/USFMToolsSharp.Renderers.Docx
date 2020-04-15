@@ -64,6 +64,7 @@ namespace USFMToolsSharp.Renderers.Docx
             finalSection.type = new CT_SectType();
             finalSection.type.val = ST_SectionMark.continuous;
             newDoc.Document.body.sectPr = finalSection;
+            finalSection.cols.num = configDocx.columnCount.ToString();
 
             return newDoc;
 
