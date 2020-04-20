@@ -150,6 +150,16 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case VMarker vMarker:
 
+                    // If there is no parent paragraph, then we're maybe
+                    // missing a chapter marker prior to this verse.  Let's
+                    // create a stub parent paragraph so we can keep rendering.
+                    if (parentParagraph == null)
+                    {
+                        parentParagraph = newDoc.CreateParagraph(markerStyle);
+                        parentParagraph.SpacingBetween = configDocx.lineSpacing;
+                        parentParagraph.SpacingAfter = 200;
+                    }
+
                     if (configDocx.separateVerses)
                     {
                         XWPFRun newLine = parentParagraph.CreateRun();
