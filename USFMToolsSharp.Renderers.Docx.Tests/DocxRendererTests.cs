@@ -118,6 +118,14 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         }
 
         [TestMethod]
+        public void TestNoChapter()
+        {
+            // No chapter or verse 1 -- should render what it can, not crash
+            XWPFDocument doc = renderDoc("Pre text \\v 2 Second verse.");
+            Assert.AreEqual("2 Second verse. ", doc.Paragraphs[0].ParagraphText);
+        }
+
+        [TestMethod]
         public void TestVerseRender()
         {
             Assert.AreEqual("1 This is a simple verse. ", renderDoc("\\c 1 \\v 1 This is a simple verse.").Paragraphs[1].ParagraphText);
