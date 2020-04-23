@@ -480,13 +480,18 @@ namespace USFMToolsSharp.Renderers.Docx
                 run.AddNewT().Value = "  -  ";
                 run.AddNewT().Value = currentChapterLabel;
             }
-            // Page number
-            run.AddNewT().Value = "  -  Page ";
-            run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
-            run.AddNewInstrText().Value = " PAGE ";
-            run.AddNewFldChar().fldCharType = ST_FldCharType.separate;
-            run.AddNewInstrText().Value = "1";
-            run.AddNewFldChar().fldCharType = ST_FldCharType.end;
+            
+            // Show page numbers if requested
+            if (configDocx.showPageNumbers)
+            {
+                // Page number
+                run.AddNewT().Value = "  -  Page ";
+                run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
+                run.AddNewInstrText().Value = " PAGE ";
+                run.AddNewFldChar().fldCharType = ST_FldCharType.separate;
+                run.AddNewInstrText().Value = "1";
+                run.AddNewFldChar().fldCharType = ST_FldCharType.end;
+            }
 
             // Create page header
             XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);

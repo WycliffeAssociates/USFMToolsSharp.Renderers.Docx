@@ -16,6 +16,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
         public bool separateChapters;
         public bool separateVerses;
+        public bool showPageNumbers;
 
         public int fontSize;
 
@@ -25,14 +26,15 @@ namespace USFMToolsSharp.Renderers.Docx
             textDirection = ST_TextDirection.lrTb;
             columnCount = 1;
             lineSpacing = 1;
-            
+            showPageNumbers = true;
             fontSize = 12;
         }
-        public DocxConfig(int fontSize = 12, bool separateChapters = false, bool separateVerses = false) : this()
+        public DocxConfig(int fontSize = 12, bool separateChapters = false, bool separateVerses = false, bool showPageNumbers = true) : this()
         {
             this.fontSize = fontSize;
             this.separateChapters = separateChapters;
             this.separateVerses = separateVerses;
+            this.showPageNumbers = showPageNumbers;
         }
         
     }
