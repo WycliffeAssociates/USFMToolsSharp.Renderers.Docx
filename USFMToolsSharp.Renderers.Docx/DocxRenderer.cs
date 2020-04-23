@@ -127,6 +127,8 @@ namespace USFMToolsSharp.Renderers.Docx
                         }
                     }
 
+                    createBookHeaders(previousBookHeader);
+
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
                     newChapter.SpacingBetween = configDocx.lineSpacing;
                     newChapter.SpacingAfter = 200;
@@ -358,6 +360,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     // This is the start of a new book.
                     beforeFirstChapter = true;
                     chapterLabel = chapterLabelDefault;
+                    currentChapterLabel = "";
                     break;
                 case XEndMarker _:
                 case FEndMarker _:
@@ -467,20 +470,23 @@ namespace USFMToolsSharp.Renderers.Docx
             CT_P headerParagraph = header.AddNewP();
             CT_PPr ppr = headerParagraph.AddNewPPr();
             CT_Jc align = ppr.AddNewJc();
-            align.val = ST_Jc.left;
+            align.val = ST_Jc.center;
             CT_R run = headerParagraph.AddNewR();
+            // Book name
+            run.AddNewT().Value = bookname;
+            // Chapter name
+            if (currentChapterLabel.Length > 0)
+            {
+                run.AddNewT().Value = "  -  ";
+                run.AddNewT().Value = currentChapterLabel;
+            }
             // Page number
+            run.AddNewT().Value = "  -  Page ";
             run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
             run.AddNewInstrText().Value = " PAGE ";
             run.AddNewFldChar().fldCharType = ST_FldCharType.separate;
             run.AddNewInstrText().Value = "1";
             run.AddNewFldChar().fldCharType = ST_FldCharType.end;
-            // Book name
-            run.AddNewT().Value = " - ";
-            run.AddNewT().Value = bookname;
-            // Chapter name
-            run.AddNewT().Value = " - ";
-            run.AddNewT().Value = currentChapterLabel;
 
             // Create page header
             XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
