@@ -19,6 +19,7 @@ namespace USFMToolsSharp.Renderers.Docx
         private string previousBookHeader = null;
         private const string chapterLabelDefault = "Chapter";
         private string chapterLabel = chapterLabelDefault;
+        private string currentChapterLabel = "";
         private bool beforeFirstChapter = true;
         private int nextFootnoteNum = 1;
         private Marker thisMarker = null;
@@ -65,6 +66,11 @@ namespace USFMToolsSharp.Renderers.Docx
             finalSection.type.val = ST_SectionMark.continuous;
             newDoc.Document.body.sectPr = finalSection;
             finalSection.cols.num = configDocx.columnCount.ToString();
+            CT_PageNumber pageNum = new CT_PageNumber
+            {
+                fmt = ST_NumberFormat.@decimal
+            };
+            finalSection.pgNumType = pageNum;
 
             return newDoc;
 
@@ -129,13 +135,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     if (cMarker.CustomChapterLabel != simpleNumber)
                     {
                         // Use the custom label for this section, e.g. "Psalm One" instead of "Chapter 1"
-                        chapterMarker.SetText(cMarker.CustomChapterLabel);
+                        currentChapterLabel = cMarker.CustomChapterLabel;
                     }
                     else
                     {
                         // Use the default chapter text for this section, e.g. "Chapter 1"
-                        chapterMarker.SetText(chapterLabel + " " + simpleNumber);
+                        currentChapterLabel = chapterLabel + " " + simpleNumber;
                     }
+                    chapterMarker.SetText(currentChapterLabel);
                     chapterMarker.FontSize = 20;
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
@@ -461,7 +468,19 @@ namespace USFMToolsSharp.Renderers.Docx
             CT_PPr ppr = headerParagraph.AddNewPPr();
             CT_Jc align = ppr.AddNewJc();
             align.val = ST_Jc.left;
-            headerParagraph.AddNewR().AddNewT().Value = bookname;
+            CT_R run = headerParagraph.AddNewR();
+            // Page number
+            run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
+            run.AddNewInstrText().Value = " PAGE ";
+            run.AddNewFldChar().fldCharType = ST_FldCharType.separate;
+            run.AddNewInstrText().Value = "1";
+            run.AddNewFldChar().fldCharType = ST_FldCharType.end;
+            // Book name
+            run.AddNewT().Value = " - ";
+            run.AddNewT().Value = bookname;
+            // Chapter name
+            run.AddNewT().Value = " - ";
+            run.AddNewT().Value = currentChapterLabel;
 
             // Create page header
             XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
@@ -477,6 +496,13 @@ namespace USFMToolsSharp.Renderers.Docx
 
             // Set number of columns
             newSection.cols.num = configDocx.columnCount.ToString();
+
+            // Set page numbers
+            CT_PageNumber pageNum = new CT_PageNumber
+            {
+                fmt = ST_NumberFormat.@decimal
+            };
+            newSection.pgNumType = pageNum;
 
             // Increment page header count so each one gets a unique ID
             pageHeaderCount++;
