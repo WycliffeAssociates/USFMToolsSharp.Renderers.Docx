@@ -45,8 +45,8 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
 
             // 7 paragraphs: H C V (pagebreak) H C V
             Assert.AreEqual(7, doc.Paragraphs.Count);
-            // 9 body items: same as above plus two section headers
-            Assert.AreEqual(9, doc.Document.body.Items.Count);
+            // 11 body items: same as above plus four section headers
+            Assert.AreEqual(11, doc.Document.body.Items.Count);
 
             // Header
             Assert.AreEqual("1 John", doc.Paragraphs[0].Text);
@@ -57,7 +57,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Line break
             Assert.AreEqual("\n", doc.Paragraphs[3].Text);
             // New book: Section break exists at end and has a header
-            Assert.IsNotNull(((CT_P)doc.Document.body.Items[3]).pPr.sectPr.headerReference);
+            Assert.IsNotNull(((CT_P)doc.Document.body.Items[4]).pPr.sectPr.headerReference);
 
             // Header
             Assert.AreEqual("2 John", doc.Paragraphs[4].Text);
@@ -66,7 +66,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Verse
             Assert.AreEqual("1 Text ", doc.Paragraphs[6].Text);
             // Final book: Section break exists at end and has a header
-            Assert.IsNotNull(((CT_P)doc.Document.body.Items[8]).pPr.sectPr.headerReference);
+            Assert.IsNotNull(((CT_P)doc.Document.body.Items[10]).pPr.sectPr.headerReference);
 
         }
 
@@ -77,8 +77,8 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
 
             // 3 paragraphs: H C V
             Assert.AreEqual(3, doc.Paragraphs.Count);
-            // 4 body items: same as above plus one section header
-            Assert.AreEqual(4, doc.Document.body.Items.Count);
+            // 5 body items: same as above plus two section headers
+            Assert.AreEqual(5, doc.Document.body.Items.Count);
 
             // Header
             Assert.AreEqual("1 John", doc.Paragraphs[0].Text);
@@ -87,7 +87,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             // Verse
             Assert.AreEqual("1 Text ", doc.Paragraphs[2].Text);
             // New book: Section break exists at end and has a header
-            Assert.IsNotNull(((CT_P)doc.Document.body.Items[3]).pPr.sectPr.headerReference);
+            Assert.IsNotNull(((CT_P)doc.Document.body.Items[4]).pPr.sectPr.headerReference);
 
         }
 
@@ -98,8 +98,8 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
 
             // 2 paragraphs: C V
             Assert.AreEqual(2, doc.Paragraphs.Count);
-            // 2 body items: same as above (no section headers)
-            Assert.AreEqual(2, doc.Document.body.Items.Count);
+            // 3 body items: same as above plus a section header
+            Assert.AreEqual(3, doc.Document.body.Items.Count);
 
             // Chapter
             Assert.AreEqual("Chapter 1", doc.Paragraphs[0].Text);
