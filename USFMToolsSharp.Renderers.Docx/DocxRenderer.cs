@@ -420,41 +420,7 @@ namespace USFMToolsSharp.Renderers.Docx
             newDoc.Document.body.sectPr.pgNumType.fmt = ST_NumberFormat.@decimal;
             newDoc.Document.body.sectPr.pgNumType.start = "1";
         }
-        public void createFooter()
-        {
-            // Footer Object
-            CT_Ftr footer = new CT_Ftr();
-            CT_P footerParagraph = footer.AddNewP();
-            CT_PPr ppr = footerParagraph.AddNewPPr();
-            CT_Jc align = ppr.AddNewJc();
-            align.val = ST_Jc.center;
 
-            // Page Number Format OOXML
-            footerParagraph.AddNewR().AddNewFldChar().fldCharType = ST_FldCharType.begin;
-            CT_Text pageNumber = footerParagraph.AddNewR().AddNewInstrText();
-            pageNumber.Value = "PAGE   \\* MERGEFORMAT";
-            pageNumber.space = "preserve";
-            footerParagraph.AddNewR().AddNewFldChar().fldCharType = ST_FldCharType.separate;
-
-            CT_R centerRun = footerParagraph.AddNewR();
-            centerRun.AddNewRPr().AddNewNoProof();
-            centerRun.AddNewT().Value = "2";
-
-            CT_R endRun= footerParagraph.AddNewR();
-            endRun.AddNewRPr().AddNewNoProof();
-            endRun.AddNewFldChar().fldCharType = ST_FldCharType.end;
-
-
-            // Linking to Footer Style Object to Document
-            XWPFRelation footerRelation = XWPFRelation.FOOTER;
-            XWPFFooter documentFooter = (XWPFFooter)newDoc.CreateRelationship(footerRelation, XWPFFactory.GetInstance(), newDoc.FooterList.Count + 1);
-            documentFooter.SetHeaderFooter(footer);
-            CT_HdrFtrRef footerRef = newDoc.Document.body.sectPr.AddNewFooterReference();
-            footerRef.type = ST_HdrFtr.@default;
-            footerRef.id = documentFooter.GetPackageRelationship().Id;
-
-        }
-        
         /// <summary>
         /// Creates a new section with the given page header.  Must be
         /// called *after* the final paragraph of the section.  In DOCX, a
@@ -472,6 +438,19 @@ namespace USFMToolsSharp.Renderers.Docx
             CT_Jc align = ppr.AddNewJc();
             align.val = ST_Jc.center;
             CT_R run = headerParagraph.AddNewR();
+
+            // Show page numbers if requested
+            if (configDocx.showPageNumbers)
+            {
+                // Page number
+                run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
+                run.AddNewInstrText().Value = " PAGE ";
+                run.AddNewFldChar().fldCharType = ST_FldCharType.separate;
+                run.AddNewInstrText().Value = "1";
+                run.AddNewFldChar().fldCharType = ST_FldCharType.end;
+                run.AddNewT().Value = "  -  ";
+            }
+
             // Book name
             run.AddNewT().Value = bookname;
             // Chapter name
@@ -481,17 +460,6 @@ namespace USFMToolsSharp.Renderers.Docx
                 run.AddNewT().Value = currentChapterLabel;
             }
             
-            // Show page numbers if requested
-            if (configDocx.showPageNumbers)
-            {
-                // Page number
-                run.AddNewT().Value = "  -  Page ";
-                run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
-                run.AddNewInstrText().Value = " PAGE ";
-                run.AddNewFldChar().fldCharType = ST_FldCharType.separate;
-                run.AddNewInstrText().Value = "1";
-                run.AddNewFldChar().fldCharType = ST_FldCharType.end;
-            }
 
             // Create page header
             XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
