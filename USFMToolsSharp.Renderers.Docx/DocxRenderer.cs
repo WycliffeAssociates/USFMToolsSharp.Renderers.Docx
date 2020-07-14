@@ -44,7 +44,7 @@ namespace USFMToolsSharp.Renderers.Docx
             setStartPageNumber();
 
             newDoc.ColumnCount = configDocx.columnCount;
-            newDoc.TextDirection= configDocx.textDirection;
+            //newDoc.TextDirection= configDocx.textDirection; //FIXME doesn't seem to work
 
             foreach (Marker marker in input.Contents)
                 {
@@ -91,7 +91,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     if (!(previousMarker is CMarker _))
                     {
                         XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle);
-
+                        newParagraph.SetBidi(configDocx.rightToLeft);
                         newParagraph.Alignment = configDocx.textAlign;
                         newParagraph.SpacingBetween = configDocx.lineSpacing;
                         newParagraph.SpacingAfter = 200;
@@ -130,6 +130,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     createBookHeaders(previousBookHeader);
 
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
+                    newChapter.SetBidi(configDocx.rightToLeft);
+                    newChapter.Alignment = configDocx.textAlign;
                     newChapter.SpacingBetween = configDocx.lineSpacing;
                     newChapter.SpacingAfter = 200;
                     XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
@@ -148,6 +150,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     chapterMarker.FontSize = 20;
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
+                    chapterVerses.SetBidi(configDocx.rightToLeft);
+                    chapterVerses.Alignment = configDocx.textAlign;
                     chapterVerses.SpacingBetween = configDocx.lineSpacing;
                     foreach (Marker marker in input.Contents)
                     {
@@ -165,6 +169,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     if (parentParagraph == null)
                     {
                         parentParagraph = newDoc.CreateParagraph(markerStyle);
+                        parentParagraph.SetBidi(configDocx.rightToLeft);
+                        parentParagraph.Alignment = configDocx.textAlign;
                         parentParagraph.SpacingBetween = configDocx.lineSpacing;
                         parentParagraph.SpacingAfter = 200;
                     }
@@ -191,6 +197,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case QMarker qMarker:
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle);
+                    poetryParagraph.SetBidi(configDocx.rightToLeft);
+                    poetryParagraph.Alignment = configDocx.textAlign;
                     poetryParagraph.SpacingBetween = configDocx.lineSpacing;
                     poetryParagraph.IndentationLeft = qMarker.Depth * 500;
                     poetryParagraph.SpacingAfter = 200;
@@ -222,13 +230,17 @@ namespace USFMToolsSharp.Renderers.Docx
                         // Create new section and page header
                         createBookHeaders(previousBookHeader);
                         // Print page break
-                        newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+                        XWPFParagraph sectionParagraph = newDoc.CreateParagraph();
+                        sectionParagraph.SetBidi(configDocx.rightToLeft);
+                        sectionParagraph.Alignment = configDocx.textAlign;
+                        sectionParagraph.CreateRun().AddBreak(BreakType.PAGE);
                     }
                     previousBookHeader = hMarker.HeaderText;
 
                     // Write body header text
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
+                    newHeader.SetBidi(configDocx.rightToLeft);
                     newHeader.SpacingAfter = 200;
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     headerTitle.SetText(hMarker.HeaderText);
@@ -246,6 +258,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     footnoteMarkerStyle.fontSize = 12;
                     CT_P footnoteParagraph = footnote.AddNewP();
                     XWPFParagraph xFootnoteParagraph = new XWPFParagraph(footnoteParagraph, parentParagraph.Body);
+                    xFootnoteParagraph.SetBidi(configDocx.rightToLeft);
                     footnoteParagraph.AddNewR().AddNewT().Value = "F" + footnoteId.ToString() + " ";
                     foreach(Marker marker in fMarker.Contents)
                     {
@@ -402,6 +415,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 foreach (KeyValuePair<string, Marker> crossRefKVP in CrossRefMarkers)
                 {
                     XWPFParagraph renderCrossRef = newDoc.CreateParagraph();
+                    renderCrossRef.SetBidi(configDocx.rightToLeft);
                     XWPFRun crossRefMarker = renderCrossRef.CreateRun(markerStyle);
                     crossRefMarker.SetText(crossRefKVP.Key);
                     crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
@@ -504,6 +518,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case THMarker tHMarker:
                     markerStyle.isBold = true;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    cellContents.SetBidi(configDocx.rightToLeft);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
@@ -513,6 +528,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     markerStyle.isAlignRight = true;
                     markerStyle.isBold = true;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    cellContents.SetBidi(configDocx.rightToLeft);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
@@ -520,6 +536,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case TCMarker tCMarker:
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    cellContents.SetBidi(configDocx.rightToLeft);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
@@ -528,6 +545,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case TCRMarker tCRMarker:
                     markerStyle.isAlignRight = true;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    cellContents.SetBidi(configDocx.rightToLeft);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);

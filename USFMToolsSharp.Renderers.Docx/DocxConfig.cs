@@ -10,7 +10,7 @@ namespace USFMToolsSharp.Renderers.Docx
     {
 
         public ParagraphAlignment textAlign;
-        public ST_TextDirection textDirection;
+        public bool rightToLeft;
         public int columnCount;
         public double lineSpacing;
 
@@ -23,7 +23,7 @@ namespace USFMToolsSharp.Renderers.Docx
         public DocxConfig()
         {
             textAlign = ParagraphAlignment.LEFT;
-            textDirection = ST_TextDirection.lrTb;
+            rightToLeft = false;
             columnCount = 1;
             lineSpacing = 1;
             showPageNumbers = true;
