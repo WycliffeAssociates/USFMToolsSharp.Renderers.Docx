@@ -271,6 +271,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     parentParagraph.Document.AddFootnote(footnote);
 
                     XWPFRun footnoteReferenceRun = parentParagraph.CreateRun();
+                    setRTL(footnoteReferenceRun);
                     CT_RPr rpr = footnoteReferenceRun.GetCTR().AddNewRPr();
                     rpr.rStyle = new CT_String();
                     rpr.rStyle.val = "FootnoteReference";
@@ -338,6 +339,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case XOMarker xOMarker:
                     markerStyle.isBold = true;
                     XWPFRun CrossVerseReference = parentParagraph.CreateRun(markerStyle);
+                    setRTL(CrossVerseReference);
                     CrossVerseReference.SetText($" {xOMarker.OriginRef} ");
                     break;
                 case XTMarker xTMarker:
@@ -373,6 +375,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case BMarker bMarker:
                     XWPFRun newLineBreak = parentParagraph.CreateRun();
+                    setRTL(newLineBreak);
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
                 case IDMarker _:
@@ -401,6 +404,7 @@ namespace USFMToolsSharp.Renderers.Docx
         private void AppendSpace(XWPFParagraph paragraph)
         {
             XWPFRun run = paragraph.CreateRun();
+            setRTL(run);
             CT_R ctr = run.GetCTR();
             CT_Text text = ctr.AddNewT();
             text.Value = " ";
@@ -412,7 +416,6 @@ namespace USFMToolsSharp.Renderers.Docx
             if (configDocx.rightToLeft)
             {
                 CT_RPr rpr = run.GetCTR().AddNewRPr();
-                rpr.AddNewLang().bidi = configDocx.rightToLeftLangCode;
                 rpr.rtl = new CT_OnOff();
                 rpr.rtl.val = configDocx.rightToLeft;
             }
@@ -434,6 +437,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFParagraph renderCrossRef = newDoc.CreateParagraph();
                     renderCrossRef.SetBidi(configDocx.rightToLeft);
                     XWPFRun crossRefMarker = renderCrossRef.CreateRun(markerStyle);
+                    setRTL(crossRefMarker);
                     crossRefMarker.SetText(crossRefKVP.Key);
                     crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 

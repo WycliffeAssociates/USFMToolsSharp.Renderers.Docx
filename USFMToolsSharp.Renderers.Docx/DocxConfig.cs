@@ -25,7 +25,6 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             textAlign = ParagraphAlignment.LEFT;
             rightToLeft = false;
-            rightToLeftLangCode = "";
             columnCount = 1;
             lineSpacing = 1;
             showPageNumbers = true;
