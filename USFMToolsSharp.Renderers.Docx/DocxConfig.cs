@@ -11,6 +11,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
         public ParagraphAlignment textAlign;
         public bool rightToLeft;
+        public string rightToLeftLangCode;
         public int columnCount;
         public double lineSpacing;
 
@@ -24,6 +25,7 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             textAlign = ParagraphAlignment.LEFT;
             rightToLeft = false;
+            rightToLeftLangCode = "";
             columnCount = 1;
             lineSpacing = 1;
             showPageNumbers = true;

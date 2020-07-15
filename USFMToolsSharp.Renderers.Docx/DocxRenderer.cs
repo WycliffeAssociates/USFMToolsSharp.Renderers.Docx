@@ -135,6 +135,10 @@ namespace USFMToolsSharp.Renderers.Docx
                     newChapter.SpacingBetween = configDocx.lineSpacing;
                     newChapter.SpacingAfter = 200;
                     XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
+                    if (configDocx.rightToLeft)
+                    {
+                        chapterMarker.GetCTR().AddNewRPr().AddNewLang().bidi = configDocx.rightToLeftLangCode;
+                    }
                     string simpleNumber = cMarker.Number.ToString();
                     if (cMarker.CustomChapterLabel != simpleNumber)
                     {
@@ -182,6 +186,10 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
 
                     XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
+                    if (configDocx.rightToLeft)
+                    {
+                        verseMarker.GetCTR().AddNewRPr().AddNewLang().bidi = configDocx.rightToLeftLangCode;
+                    }
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
                     AppendSpace(parentParagraph);
@@ -212,6 +220,10 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case TextBlock textBlock:
                     XWPFRun blockText = parentParagraph.CreateRun(markerStyle);
+                    if (configDocx.rightToLeft)
+                    {
+                        blockText.GetCTR().AddNewRPr().AddNewLang().bidi = configDocx.rightToLeftLangCode;
+                    }
                     blockText.SetText(textBlock.Text);
                     break;
                 case BDMarker bdMarker:
@@ -243,6 +255,10 @@ namespace USFMToolsSharp.Renderers.Docx
                     newHeader.SetBidi(configDocx.rightToLeft);
                     newHeader.SpacingAfter = 200;
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
+                    if (configDocx.rightToLeft)
+                    {
+                        headerTitle.GetCTR().AddNewRPr().AddNewLang().bidi = configDocx.rightToLeftLangCode;
+                    }
                     headerTitle.SetText(hMarker.HeaderText);
 
                     break;
@@ -293,10 +309,18 @@ namespace USFMToolsSharp.Renderers.Docx
                 case FRMarker fRMarker:
                     markerStyle.isBold = true;
                     XWPFRun VerseReference = parentParagraph.CreateRun(markerStyle);
+                    if (configDocx.rightToLeft)
+                    {
+                        VerseReference.GetCTR().AddNewRPr().AddNewLang().bidi = configDocx.rightToLeftLangCode;
+                    }
                     VerseReference.SetText(fRMarker.VerseReference);
                     break;
                 case FKMarker fKMarker:
                     XWPFRun FootNoteKeyword = parentParagraph.CreateRun(markerStyle);
+                    if (configDocx.rightToLeft)
+                    {
+                        FootNoteKeyword.GetCTR().AddNewRPr().AddNewLang().bidi = configDocx.rightToLeftLangCode;
+                    }
                     FootNoteKeyword.SetText($" {fKMarker.FootNoteKeyword.ToUpper()}: ");
                     break;
                 case FQMarker fQMarker:
@@ -323,7 +347,10 @@ namespace USFMToolsSharp.Renderers.Docx
                             break;
                     }
                     XWPFRun crossRefMarker = parentParagraph.CreateRun(markerStyle);
-
+                    if (configDocx.rightToLeft)
+                    {
+                        crossRefMarker.GetCTR().AddNewRPr().AddNewLang().bidi = configDocx.rightToLeftLangCode;
+                    }
                     crossRefMarker.SetText(crossId);
                     crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
