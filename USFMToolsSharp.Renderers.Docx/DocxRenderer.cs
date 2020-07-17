@@ -44,7 +44,6 @@ namespace USFMToolsSharp.Renderers.Docx
             setStartPageNumber();
 
             newDoc.ColumnCount = configDocx.columnCount;
-            //newDoc.TextDirection= configDocx.textDirection; //FIXME doesn't seem to work
 
             foreach (Marker marker in input.Contents)
                 {
