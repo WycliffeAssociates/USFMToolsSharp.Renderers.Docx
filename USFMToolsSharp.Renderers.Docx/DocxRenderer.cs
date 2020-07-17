@@ -133,6 +133,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     newChapter.SetBidi(configDocx.rightToLeft);
                     newChapter.Alignment = configDocx.textAlign;
                     newChapter.SpacingBetween = configDocx.lineSpacing;
+                    newChapter.SpacingBefore = 200;
                     newChapter.SpacingAfter = 200;
                     XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
                     setRTL(chapterMarker);
