@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NPOI.XWPF.UserModel;
-using NPOI.OpenXmlFormats.Wordprocessing;
+﻿using NPOI.XWPF.UserModel;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
@@ -10,7 +6,8 @@ namespace USFMToolsSharp.Renderers.Docx
     {
 
         public ParagraphAlignment textAlign;
-        public ST_TextDirection textDirection;
+        public bool rightToLeft;
+        public string rightToLeftLangCode;
         public int columnCount;
         public double lineSpacing;
 
@@ -23,7 +20,7 @@ namespace USFMToolsSharp.Renderers.Docx
         public DocxConfig()
         {
             textAlign = ParagraphAlignment.LEFT;
-            textDirection = ST_TextDirection.lrTb;
+            rightToLeft = false;
             columnCount = 1;
             lineSpacing = 1;
             showPageNumbers = true;

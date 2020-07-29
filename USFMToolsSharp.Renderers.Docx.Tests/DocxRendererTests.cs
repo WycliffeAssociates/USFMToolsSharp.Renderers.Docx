@@ -113,8 +113,8 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         {
             Assert.AreEqual("Chapter 5", renderDoc("\\c 5").Paragraphs[0].Text);
             Assert.AreEqual("Chapter 1", renderDoc("\\c 1").Paragraphs[0].Text);
-            Assert.AreEqual("Chapter -1", renderDoc("\\c -1").Paragraphs[0].Text);
             Assert.AreEqual("Chapter 0", renderDoc("\\c 0").Paragraphs[0].Text);
+            Assert.AreEqual("Chapter 0", renderDoc("\\c -1").Paragraphs[0].Text);
         }
 
         [TestMethod]

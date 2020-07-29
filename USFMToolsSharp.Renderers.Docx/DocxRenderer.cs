@@ -44,7 +44,6 @@ namespace USFMToolsSharp.Renderers.Docx
             setStartPageNumber();
 
             newDoc.ColumnCount = configDocx.columnCount;
-            newDoc.TextDirection= configDocx.textDirection;
 
             foreach (Marker marker in input.Contents)
                 {
@@ -91,7 +90,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     if (!(previousMarker is CMarker _))
                     {
                         XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle);
-
+                        newParagraph.SetBidi(configDocx.rightToLeft);
                         newParagraph.Alignment = configDocx.textAlign;
                         newParagraph.SpacingBetween = configDocx.lineSpacing;
                         newParagraph.SpacingAfter = 200;
@@ -130,9 +129,13 @@ namespace USFMToolsSharp.Renderers.Docx
                     createBookHeaders(previousBookHeader);
 
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
+                    newChapter.SetBidi(configDocx.rightToLeft);
+                    newChapter.Alignment = configDocx.textAlign;
                     newChapter.SpacingBetween = configDocx.lineSpacing;
+                    newChapter.SpacingBefore = 200;
                     newChapter.SpacingAfter = 200;
                     XWPFRun chapterMarker = newChapter.CreateRun(markerStyle);
+                    setRTL(chapterMarker);
                     string simpleNumber = cMarker.Number.ToString();
                     if (cMarker.CustomChapterLabel != simpleNumber)
                     {
@@ -148,6 +151,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     chapterMarker.FontSize = 20;
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
+                    chapterVerses.SetBidi(configDocx.rightToLeft);
+                    chapterVerses.Alignment = configDocx.textAlign;
                     chapterVerses.SpacingBetween = configDocx.lineSpacing;
                     foreach (Marker marker in input.Contents)
                     {
@@ -165,6 +170,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     if (parentParagraph == null)
                     {
                         parentParagraph = newDoc.CreateParagraph(markerStyle);
+                        parentParagraph.SetBidi(configDocx.rightToLeft);
+                        parentParagraph.Alignment = configDocx.textAlign;
                         parentParagraph.SpacingBetween = configDocx.lineSpacing;
                         parentParagraph.SpacingAfter = 200;
                     }
@@ -176,6 +183,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
 
                     XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
+                    setRTL(verseMarker);
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
                     AppendSpace(parentParagraph);
@@ -191,6 +199,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case QMarker qMarker:
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle);
+                    poetryParagraph.SetBidi(configDocx.rightToLeft);
+                    poetryParagraph.Alignment = configDocx.textAlign;
                     poetryParagraph.SpacingBetween = configDocx.lineSpacing;
                     poetryParagraph.IndentationLeft = qMarker.Depth * 500;
                     poetryParagraph.SpacingAfter = 200;
@@ -204,6 +214,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case TextBlock textBlock:
                     XWPFRun blockText = parentParagraph.CreateRun(markerStyle);
+                    setRTL(blockText);
                     blockText.SetText(textBlock.Text);
                     break;
                 case BDMarker bdMarker:
@@ -222,15 +233,20 @@ namespace USFMToolsSharp.Renderers.Docx
                         // Create new section and page header
                         createBookHeaders(previousBookHeader);
                         // Print page break
-                        newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+                        XWPFParagraph sectionParagraph = newDoc.CreateParagraph();
+                        sectionParagraph.SetBidi(configDocx.rightToLeft);
+                        sectionParagraph.Alignment = configDocx.textAlign;
+                        sectionParagraph.CreateRun().AddBreak(BreakType.PAGE);
                     }
                     previousBookHeader = hMarker.HeaderText;
 
                     // Write body header text
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
+                    newHeader.SetBidi(configDocx.rightToLeft);
                     newHeader.SpacingAfter = 200;
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
+                    setRTL(headerTitle);
                     headerTitle.SetText(hMarker.HeaderText);
 
                     break;
@@ -246,6 +262,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     footnoteMarkerStyle.fontSize = 12;
                     CT_P footnoteParagraph = footnote.AddNewP();
                     XWPFParagraph xFootnoteParagraph = new XWPFParagraph(footnoteParagraph, parentParagraph.Body);
+                    xFootnoteParagraph.SetBidi(configDocx.rightToLeft);
                     footnoteParagraph.AddNewR().AddNewT().Value = "F" + footnoteId.ToString() + " ";
                     foreach(Marker marker in fMarker.Contents)
                     {
@@ -254,6 +271,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     parentParagraph.Document.AddFootnote(footnote);
 
                     XWPFRun footnoteReferenceRun = parentParagraph.CreateRun();
+                    setRTL(footnoteReferenceRun);
                     CT_RPr rpr = footnoteReferenceRun.GetCTR().AddNewRPr();
                     rpr.rStyle = new CT_String();
                     rpr.rStyle.val = "FootnoteReference";
@@ -280,10 +298,12 @@ namespace USFMToolsSharp.Renderers.Docx
                 case FRMarker fRMarker:
                     markerStyle.isBold = true;
                     XWPFRun VerseReference = parentParagraph.CreateRun(markerStyle);
+                    setRTL(VerseReference);
                     VerseReference.SetText(fRMarker.VerseReference);
                     break;
                 case FKMarker fKMarker:
                     XWPFRun FootNoteKeyword = parentParagraph.CreateRun(markerStyle);
+                    setRTL(FootNoteKeyword);
                     FootNoteKeyword.SetText($" {fKMarker.FootNoteKeyword.ToUpper()}: ");
                     break;
                 case FQMarker fQMarker:
@@ -310,7 +330,7 @@ namespace USFMToolsSharp.Renderers.Docx
                             break;
                     }
                     XWPFRun crossRefMarker = parentParagraph.CreateRun(markerStyle);
-
+                    setRTL(crossRefMarker);
                     crossRefMarker.SetText(crossId);
                     crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
@@ -319,6 +339,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case XOMarker xOMarker:
                     markerStyle.isBold = true;
                     XWPFRun CrossVerseReference = parentParagraph.CreateRun(markerStyle);
+                    setRTL(CrossVerseReference);
                     CrossVerseReference.SetText($" {xOMarker.OriginRef} ");
                     break;
                 case XTMarker xTMarker:
@@ -354,6 +375,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case BMarker bMarker:
                     XWPFRun newLineBreak = parentParagraph.CreateRun();
+                    setRTL(newLineBreak);
                     newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
                     break;
                 case IDMarker _:
@@ -382,10 +404,21 @@ namespace USFMToolsSharp.Renderers.Docx
         private void AppendSpace(XWPFParagraph paragraph)
         {
             XWPFRun run = paragraph.CreateRun();
+            setRTL(run);
             CT_R ctr = run.GetCTR();
             CT_Text text = ctr.AddNewT();
             text.Value = " ";
             text.space = "preserve";
+        }
+
+        private void setRTL(XWPFRun run)
+        {
+            if (configDocx.rightToLeft)
+            {
+                CT_RPr rpr = run.GetCTR().AddNewRPr();
+                rpr.rtl = new CT_OnOff();
+                rpr.rtl.val = configDocx.rightToLeft;
+            }
         }
 
         private void RenderCrossReferences(StyleConfig config)
@@ -402,7 +435,9 @@ namespace USFMToolsSharp.Renderers.Docx
                 foreach (KeyValuePair<string, Marker> crossRefKVP in CrossRefMarkers)
                 {
                     XWPFParagraph renderCrossRef = newDoc.CreateParagraph();
+                    renderCrossRef.SetBidi(configDocx.rightToLeft);
                     XWPFRun crossRefMarker = renderCrossRef.CreateRun(markerStyle);
+                    setRTL(crossRefMarker);
                     crossRefMarker.SetText(crossRefKVP.Key);
                     crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
@@ -420,41 +455,7 @@ namespace USFMToolsSharp.Renderers.Docx
             newDoc.Document.body.sectPr.pgNumType.fmt = ST_NumberFormat.@decimal;
             newDoc.Document.body.sectPr.pgNumType.start = "1";
         }
-        public void createFooter()
-        {
-            // Footer Object
-            CT_Ftr footer = new CT_Ftr();
-            CT_P footerParagraph = footer.AddNewP();
-            CT_PPr ppr = footerParagraph.AddNewPPr();
-            CT_Jc align = ppr.AddNewJc();
-            align.val = ST_Jc.center;
 
-            // Page Number Format OOXML
-            footerParagraph.AddNewR().AddNewFldChar().fldCharType = ST_FldCharType.begin;
-            CT_Text pageNumber = footerParagraph.AddNewR().AddNewInstrText();
-            pageNumber.Value = "PAGE   \\* MERGEFORMAT";
-            pageNumber.space = "preserve";
-            footerParagraph.AddNewR().AddNewFldChar().fldCharType = ST_FldCharType.separate;
-
-            CT_R centerRun = footerParagraph.AddNewR();
-            centerRun.AddNewRPr().AddNewNoProof();
-            centerRun.AddNewT().Value = "2";
-
-            CT_R endRun= footerParagraph.AddNewR();
-            endRun.AddNewRPr().AddNewNoProof();
-            endRun.AddNewFldChar().fldCharType = ST_FldCharType.end;
-
-
-            // Linking to Footer Style Object to Document
-            XWPFRelation footerRelation = XWPFRelation.FOOTER;
-            XWPFFooter documentFooter = (XWPFFooter)newDoc.CreateRelationship(footerRelation, XWPFFactory.GetInstance(), newDoc.FooterList.Count + 1);
-            documentFooter.SetHeaderFooter(footer);
-            CT_HdrFtrRef footerRef = newDoc.Document.body.sectPr.AddNewFooterReference();
-            footerRef.type = ST_HdrFtr.@default;
-            footerRef.id = documentFooter.GetPackageRelationship().Id;
-
-        }
-        
         /// <summary>
         /// Creates a new section with the given page header.  Must be
         /// called *after* the final paragraph of the section.  In DOCX, a
@@ -472,6 +473,19 @@ namespace USFMToolsSharp.Renderers.Docx
             CT_Jc align = ppr.AddNewJc();
             align.val = ST_Jc.center;
             CT_R run = headerParagraph.AddNewR();
+
+            // Show page numbers if requested
+            if (configDocx.showPageNumbers)
+            {
+                // Page number
+                run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
+                run.AddNewInstrText().Value = " PAGE ";
+                run.AddNewFldChar().fldCharType = ST_FldCharType.separate;
+                run.AddNewInstrText().Value = "1";
+                run.AddNewFldChar().fldCharType = ST_FldCharType.end;
+                run.AddNewT().Value = "  -  ";
+            }
+
             // Book name
             run.AddNewT().Value = bookname;
             // Chapter name
@@ -481,17 +495,6 @@ namespace USFMToolsSharp.Renderers.Docx
                 run.AddNewT().Value = currentChapterLabel;
             }
             
-            // Show page numbers if requested
-            if (configDocx.showPageNumbers)
-            {
-                // Page number
-                run.AddNewT().Value = "  -  Page ";
-                run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
-                run.AddNewInstrText().Value = " PAGE ";
-                run.AddNewFldChar().fldCharType = ST_FldCharType.separate;
-                run.AddNewInstrText().Value = "1";
-                run.AddNewFldChar().fldCharType = ST_FldCharType.end;
-            }
 
             // Create page header
             XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
@@ -536,6 +539,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case THMarker tHMarker:
                     markerStyle.isBold = true;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    cellContents.SetBidi(configDocx.rightToLeft);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
@@ -545,6 +549,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     markerStyle.isAlignRight = true;
                     markerStyle.isBold = true;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    cellContents.SetBidi(configDocx.rightToLeft);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
@@ -552,6 +557,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case TCMarker tCMarker:
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    cellContents.SetBidi(configDocx.rightToLeft);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
@@ -560,6 +566,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case TCRMarker tCRMarker:
                     markerStyle.isAlignRight = true;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
+                    cellContents.SetBidi(configDocx.rightToLeft);
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
