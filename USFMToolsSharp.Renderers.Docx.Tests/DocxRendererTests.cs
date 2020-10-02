@@ -196,6 +196,14 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             Assert.AreEqual("Chapter 2",doc.Paragraphs[2].Text);
         }
 
+        [TestMethod]
+        public void TestIntroParagraphs()
+        {
+            string text = "\\ip Text";
+            XWPFDocument doc = renderDoc(text);
+            Assert.AreEqual("Text",doc.Paragraphs[0].Text);
+        }
+
         public XWPFDocument renderDoc(string usfm)
         {
             USFMDocument markerTree = parser.ParseFromString(usfm);
