@@ -5,10 +5,11 @@ using NPOI.XWPF.UserModel;
 using NPOI.XWPF.Model;
 using NPOI.OpenXmlFormats.Wordprocessing;
 using USFMToolsSharp.Renderers.Docx.Extensions;
+using System;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
-    
+
     public class DocxRenderer
     {
         public List<string> UnrenderableMarkers;
@@ -46,9 +47,9 @@ namespace USFMToolsSharp.Renderers.Docx
             newDoc.ColumnCount = configDocx.columnCount;
 
             foreach (Marker marker in input.Contents)
-                {
-                    RenderMarker(marker, new StyleConfig());
-                }
+            {
+                RenderMarker(marker, new StyleConfig());
+            }
 
             // Add section header for final book
             if (previousBookHeader != null)
@@ -156,7 +157,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     chapterVerses.SpacingBetween = configDocx.lineSpacing;
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker, markerStyle ,chapterVerses);
+                        RenderMarker(marker, markerStyle, chapterVerses);
                     }
 
                     RenderCrossReferences(markerStyle);
@@ -207,7 +208,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker,markerStyle, poetryParagraph);
+                        RenderMarker(marker, markerStyle, poetryParagraph);
                     }
                     break;
                 case MMarker mMarker:
@@ -221,7 +222,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     markerStyle.isBold = true;
                     foreach (Marker marker in input.Contents)
                     {
-                        RenderMarker(marker,markerStyle,parentParagraph);
+                        RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case HMarker hMarker:
@@ -264,7 +265,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFParagraph xFootnoteParagraph = new XWPFParagraph(footnoteParagraph, parentParagraph.Body);
                     xFootnoteParagraph.SetBidi(configDocx.rightToLeft);
                     footnoteParagraph.AddNewR().AddNewT().Value = "F" + footnoteId.ToString() + " ";
-                    foreach(Marker marker in fMarker.Contents)
+                    foreach (Marker marker in fMarker.Contents)
                     {
                         RenderMarker(marker, footnoteMarkerStyle, xFootnoteParagraph);
                     }
@@ -355,12 +356,12 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
-            // Table Markers
+                // Table Markers
                 case TableBlock table:
                     XWPFTable tableContainer = newDoc.CreateTable();
 
                     // Clear Borders
-                    tableContainer.SetBottomBorder(XWPFTable.XWPFBorderType.NONE,0,0,"#FFFFFFF");
+                    tableContainer.SetBottomBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
                     tableContainer.SetLeftBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
                     tableContainer.SetRightBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
                     tableContainer.SetTopBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
@@ -383,6 +384,24 @@ namespace USFMToolsSharp.Renderers.Docx
                     beforeFirstChapter = true;
                     chapterLabel = chapterLabelDefault;
                     currentChapterLabel = "";
+                    break;
+                case IPMarker _:
+                    XWPFParagraph introParagraph = parentParagraph;
+                    // If the previous marker was a chapter marker, don't create a new paragraph.
+                    if (!(previousMarker is CMarker _))
+                    {
+                        XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle);
+                        newParagraph.SetBidi(configDocx.rightToLeft);
+                        newParagraph.Alignment = configDocx.textAlign;
+                        newParagraph.SpacingBetween = configDocx.lineSpacing;
+                        newParagraph.SpacingAfter = 200;
+                        introParagraph = newParagraph;
+                    }
+
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, introParagraph);
+                    }
                     break;
                 case XEndMarker _:
                 case FEndMarker _:
@@ -445,7 +464,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         RenderMarker(input, markerStyle, renderCrossRef);
                     }
-                    
+
                 }
                 CrossRefMarkers.Clear();
             }
@@ -465,7 +484,7 @@ namespace USFMToolsSharp.Renderers.Docx
         /// </summary>
         /// <param name="bookname"> The name of the book to display, usually from the \h marker </param>
         public void createBookHeaders(string bookname)
-        { 
+        {
             // Create page heading content for book
             CT_Hdr header = new CT_Hdr();
             CT_P headerParagraph = header.AddNewP();
@@ -494,7 +513,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 run.AddNewT().Value = "  -  ";
                 run.AddNewT().Value = currentChapterLabel;
             }
-            
+
 
             // Create page header
             XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
@@ -521,7 +540,7 @@ namespace USFMToolsSharp.Renderers.Docx
             // Increment page header count so each one gets a unique ID
             pageHeaderCount++;
         }
-        public void getRenderedRows(Marker input, StyleConfig config,XWPFTable parentTable)
+        public void getRenderedRows(Marker input, StyleConfig config, XWPFTable parentTable)
         {
             XWPFTableRow tableRowContainer = parentTable.CreateRow();
             foreach (Marker marker in input.Contents)
@@ -529,7 +548,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 getRenderedCell(marker, config, tableRowContainer);
             }
         }
-        public void getRenderedCell(Marker input,StyleConfig config, XWPFTableRow parentRow)
+        public void getRenderedCell(Marker input, StyleConfig config, XWPFTableRow parentRow)
         {
             StyleConfig markerStyle = (StyleConfig)config.Clone();
             XWPFTableCell tableCellContainer = parentRow.CreateCell();
