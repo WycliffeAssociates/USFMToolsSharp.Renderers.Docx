@@ -254,8 +254,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     setRTL(headerTitle);
                     headerTitle.SetText(hMarker.HeaderText);
 
-                    string bookMarkRef = BookMark(hMarker.HeaderText);
-                    TOCEntries.Add(hMarker.HeaderText, bookMarkRef);
                     break;
                 case FMarker fMarker:
                     string footnoteId;
@@ -408,6 +406,11 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         RenderMarker(marker, markerStyle, introParagraph);
                     }
+                    break;
+                case TOC2Marker toc2Marker:
+                    string text = toc2Marker.ShortTableOfContentsText;
+                    string bookMarkRef = BookMark(text);
+                    TOCEntries.Add(text, bookMarkRef);
                     break;
                 case XEndMarker _:
                 case FEndMarker _:
