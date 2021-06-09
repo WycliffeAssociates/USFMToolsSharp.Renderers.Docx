@@ -615,7 +615,10 @@ namespace USFMToolsSharp.Renderers.Docx
             bookmark.id = id.ToString();
             para.Items.Add(bookmark);
             para.ItemsElementName.Add(ParagraphItemsChoiceType.bookmarkStart);
-            para.AddNewR().AddNewT().Value = "This is the bookmark of " + name;
+            CT_R run = para.AddNewR();
+            run.AddNewRPr().vanish = new CT_OnOff() { val = true };
+            var t = run.AddNewT();
+            t.Value = "This is the bookmark of " + name;
 
             //Bookmark end
             bookmark = new CT_Bookmark();
@@ -626,8 +629,9 @@ namespace USFMToolsSharp.Renderers.Docx
             //var p = new XWPFParagraph(para, newDoc);
             //p.Style = "Heading1";
 
-            para.pPr.pStyle = para.pPr.AddNewPStyle();
-            para.pPr.pStyle.val = "Heading1";
+            var pPr = para.AddNewPPr();
+            pPr.AddNewPStyle().val = "Heading1";
+            pPr.AddNewRPr().vanish = new CT_OnOff() { val = true };
 
             return bookmarkName;    
         }
