@@ -6,6 +6,7 @@ using NPOI.XWPF.Model;
 using NPOI.OpenXmlFormats.Wordprocessing;
 using USFMToolsSharp.Renderers.Docx.Extensions;
 using System;
+using USFMToolsSharp.Renderers.Docx.Utils;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
@@ -14,6 +15,7 @@ namespace USFMToolsSharp.Renderers.Docx
     {
         public List<string> UnrenderableMarkers;
         public Dictionary<string, Marker> CrossRefMarkers;
+        private Dictionary<string, string> TOCEntries;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
         private int pageHeaderCount = 1;
@@ -39,6 +41,7 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             UnrenderableMarkers = new List<string>();
             CrossRefMarkers = new Dictionary<string, Marker>();
+            TOCEntries = new Dictionary<string, string>();
             newDoc = new XWPFDocument();
             newDoc.CreateFootnotes();
 
@@ -72,6 +75,7 @@ namespace USFMToolsSharp.Renderers.Docx
             };
             finalSection.pgNumType = pageNum;
 
+            RenderTOC();
             return newDoc;
 
         }
@@ -244,12 +248,15 @@ namespace USFMToolsSharp.Renderers.Docx
                     // Write body header text
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
+                    //newHeader.Style = "Heading1";
                     newHeader.SetBidi(configDocx.rightToLeft);
                     newHeader.SpacingAfter = 200;
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
                     setRTL(headerTitle);
                     headerTitle.SetText(hMarker.HeaderText);
 
+                    string bookMarkRef = BookMark(hMarker.HeaderText);
+                    TOCEntries.Add(hMarker.HeaderText, bookMarkRef);
                     break;
                 case FMarker fMarker:
                     string footnoteId;
@@ -596,5 +603,56 @@ namespace USFMToolsSharp.Renderers.Docx
             }
         }
 
+
+        private string BookMark(string name)
+        {
+            var bookmarkName = name.Replace(" ", "");
+            //Bookmark start
+            CT_P para = newDoc.Document.body.AddNewP();
+            CT_Bookmark bookmark = new CT_Bookmark();
+            bookmark.name = "_Toc" + bookmarkName;
+            int id = DateTime.Now.Millisecond;
+            bookmark.id = id.ToString();
+            para.Items.Add(bookmark);
+            para.ItemsElementName.Add(ParagraphItemsChoiceType.bookmarkStart);
+            para.AddNewR().AddNewT().Value = "This is the bookmark of " + name;
+
+            //Bookmark end
+            bookmark = new CT_Bookmark();
+            bookmark.id = id.ToString();
+            para.Items.Add(bookmark);
+            para.ItemsElementName.Add(ParagraphItemsChoiceType.bookmarkEnd);
+
+            //var p = new XWPFParagraph(para, newDoc);
+            //p.Style = "Heading1";
+
+            para.pPr.pStyle = para.pPr.AddNewPStyle();
+            para.pPr.pStyle.val = "Heading1";
+
+            return bookmarkName;    
+        }
+
+        private void RenderTOC()
+        {
+            CT_SdtBlock block = newDoc.Document.body.AddNewSdt();
+            TOC_Renderer tocRenderer = new TOC_Renderer(block);
+
+            //newDoc.CreateTOC();
+            //simple "TOC ..."
+            // "TOC \\o \"1\" \\h \\n \\z \\u"
+
+            //var newBlock = tocRenderer.CreateCustomTOC(block);
+
+            //block.AddNewSdtContent();
+            //foreach (var entry in TOCEntries)
+            //{
+            //    tocRenderer.AddRowTOC(block, 1, entry.Key, 1, entry.Value);
+            //}
+
+            tocRenderer.BuildLowLevelTOC(block, TOCEntries);
+
+            //newDoc.EnforceUpdateFields();
+
+        }
     }
 }
