@@ -248,7 +248,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     // Write body header text
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
-                    //newHeader.Style = "Heading1";
                     newHeader.SetBidi(configDocx.rightToLeft);
                     newHeader.SpacingAfter = 200;
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
@@ -626,11 +625,7 @@ namespace USFMToolsSharp.Renderers.Docx
             para.Items.Add(bookmark);
             para.ItemsElementName.Add(ParagraphItemsChoiceType.bookmarkEnd);
 
-            //var p = new XWPFParagraph(para, newDoc);
-            //p.Style = "Heading1";
-
             var pPr = para.AddNewPPr();
-            pPr.AddNewPStyle().val = "Heading1";
             pPr.AddNewRPr().vanish = new CT_OnOff() { val = true };
 
             return bookmarkName;    
@@ -638,7 +633,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
         private void RenderTOC()
         {
-            CT_SdtBlock block = new CT_SdtBlock();//newDoc.Document.body.AddNewSdt();
+            CT_SdtBlock block = new CT_SdtBlock();
             TOC_Renderer tocRenderer = new TOC_Renderer(block);
 
             tocRenderer.BuildLowLevelTOC(block, TOCEntries);
