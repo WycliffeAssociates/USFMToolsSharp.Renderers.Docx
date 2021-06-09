@@ -129,7 +129,9 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             CT_P p = sdtContent.AddNewP();
             
             p.AddNewPPr().AddNewPStyle().val = "TOCHeading";
-            p.AddNewR().AddNewT().Value = "Table of Contents";
+            CT_R run = p.AddNewR();
+            run.AddNewT().Value = "Table of Contents";
+            run.AddNewRPr().AddNewSz().val = (ulong) 24 * 2;
 
             // TOC Field
             p = sdtContent.AddNewP();
@@ -142,7 +144,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
 
             pPr.AddNewRPr().AddNewNoProof();
 
-            CT_R run = p.AddNewR();
+            run = p.AddNewR();
             run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
 
             run = p.AddNewR();
@@ -178,7 +180,9 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
                 
                 // TOC entry name
                 CT_R run = p.AddNewR();
-                run.AddNewRPr().AddNewNoProof();
+                var rPr = run.AddNewRPr();
+                rPr.AddNewNoProof();
+                rPr.AddNewSz().val = (ulong) 12 * 2;
                 CT_Text text = run.AddNewT();
                 text.space = "preserve";
                 text.Value = entry.Key;
@@ -206,7 +210,9 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
                 fieldChar.fldCharType = ST_FldCharType.separate;
 
                 run = p.AddNewR();
-                run.AddNewRPr().AddNewNoProof();
+                rPr = run.AddNewRPr();
+                rPr.AddNewNoProof();
+                rPr.AddNewSz().val = (ulong) 12 * 2;
                 run.AddNewT().Value = "1";
 
                 run = p.AddNewR();
