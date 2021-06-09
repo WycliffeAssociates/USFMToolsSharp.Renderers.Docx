@@ -651,7 +651,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
             tocRenderer.BuildLowLevelTOC(block, TOCEntries);
 
-            //newDoc.EnforceUpdateFields();
+            newDoc.EnforceUpdateFields();
 
         }
     }

@@ -129,7 +129,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             CT_P p = sdtContent.AddNewP();
             
             p.AddNewPPr().AddNewPStyle().val = "TOCHeading";
-            p.AddNewR().AddNewT().Value = "Contents";
+            p.AddNewR().AddNewT().Value = "Table of Contents";
 
             // TOC Field
             p = sdtContent.AddNewP();
@@ -174,18 +174,21 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
                 tab.leader = ST_TabTlc.dot;
                 tab.pos = "9350";
                 tab.val = ST_TabJc.right;
-
                 pPr.AddNewRPr().AddNewNoProof();
+                
+                // TOC entry name
                 CT_R run = p.AddNewR();
                 run.AddNewRPr().AddNewNoProof();
                 CT_Text text = run.AddNewT();
                 text.space = "preserve";
                 text.Value = entry.Key;
 
+                // add tab
                 run = p.AddNewR();
                 run.AddNewRPr().AddNewNoProof();
                 run.AddNewTab();
 
+                // add field code
                 run = p.AddNewR();
                 run.AddNewRPr().AddNewNoProof();
                 var fieldChar = run.AddNewFldChar();
