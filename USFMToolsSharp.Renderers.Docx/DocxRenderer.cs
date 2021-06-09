@@ -634,22 +634,12 @@ namespace USFMToolsSharp.Renderers.Docx
 
         private void RenderTOC()
         {
-            CT_SdtBlock block = newDoc.Document.body.AddNewSdt();
+            CT_SdtBlock block = new CT_SdtBlock();//newDoc.Document.body.AddNewSdt();
             TOC_Renderer tocRenderer = new TOC_Renderer(block);
 
-            //newDoc.CreateTOC();
-            //simple "TOC ..."
-            // "TOC \\o \"1\" \\h \\n \\z \\u"
-
-            //var newBlock = tocRenderer.CreateCustomTOC(block);
-
-            //block.AddNewSdtContent();
-            //foreach (var entry in TOCEntries)
-            //{
-            //    tocRenderer.AddRowTOC(block, 1, entry.Key, 1, entry.Value);
-            //}
-
             tocRenderer.BuildLowLevelTOC(block, TOCEntries);
+
+            newDoc.Document.body.Items.Insert(0, block);
 
             newDoc.EnforceUpdateFields();
 
