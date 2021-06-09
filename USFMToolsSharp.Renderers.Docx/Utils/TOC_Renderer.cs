@@ -172,7 +172,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
                 pPr.AddNewPStyle().val = "TOC1";
                 var tab = pPr.AddNewTabs().AddNewTab();
                 tab.leader = ST_TabTlc.dot;
-                tab.pos = "9350";
+                tab.pos = "8100";
                 tab.val = ST_TabJc.right;
                 pPr.AddNewRPr().AddNewNoProof();
                 
