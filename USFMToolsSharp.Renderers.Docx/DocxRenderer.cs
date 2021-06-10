@@ -613,8 +613,8 @@ namespace USFMToolsSharp.Renderers.Docx
             CT_P para = newDoc.Document.body.AddNewP();
             CT_Bookmark bookmark = new CT_Bookmark();
             bookmark.name = "_Toc" + bookmarkName;
-            int id = DateTime.Now.Millisecond;
-            bookmark.id = id.ToString();
+            string bookmarkId = TOCEntries.Count.ToString();
+            bookmark.id = bookmarkId;
             para.Items.Add(bookmark);
             para.ItemsElementName.Add(ParagraphItemsChoiceType.bookmarkStart);
             CT_R run = para.AddNewR();
@@ -624,7 +624,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
             //Bookmark end
             bookmark = new CT_Bookmark();
-            bookmark.id = id.ToString();
+            bookmark.id = bookmarkId;
             para.Items.Add(bookmark);
             para.ItemsElementName.Add(ParagraphItemsChoiceType.bookmarkEnd);
 
