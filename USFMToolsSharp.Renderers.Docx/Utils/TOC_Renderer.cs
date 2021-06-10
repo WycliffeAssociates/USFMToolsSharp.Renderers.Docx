@@ -167,10 +167,17 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
 
         private void AddLowLevelRows(CT_SdtContentBlock sdtContent, IDictionary<string, string> entries)
         {
+            CT_P p;
+            CT_PPr pPr;
+            CT_R run;
+            CT_RPr rPr;
+            CT_Text text;
+            CT_FldChar fieldChar;
+
             foreach (var entry in entries)
             {
-                CT_P p = sdtContent.AddNewP();
-                CT_PPr pPr = p.AddNewPPr();
+                p = sdtContent.AddNewP();
+                pPr = p.AddNewPPr();
                 pPr.AddNewPStyle().val = "TOC1";
                 var tab = pPr.AddNewTabs().AddNewTab();
                 tab.leader = ST_TabTlc.dot;
@@ -179,12 +186,11 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
                 pPr.AddNewRPr().AddNewNoProof();
                 
                 // TOC entry name
-                CT_R run = p.AddNewR();
-                var rPr = run.AddNewRPr();
+                run = p.AddNewR();
+                rPr = run.AddNewRPr();
                 rPr.AddNewNoProof();
                 rPr.AddNewSz().val = (ulong) 12 * 2;
-                CT_Text text = run.AddNewT();
-                text.space = "preserve";
+                text = run.AddNewT();
                 text.Value = entry.Key;
 
                 // add tab
@@ -192,10 +198,10 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
                 run.AddNewRPr().AddNewNoProof();
                 run.AddNewTab();
 
-                // add field code
+                // add field code - reference
                 run = p.AddNewR();
                 run.AddNewRPr().AddNewNoProof();
-                var fieldChar = run.AddNewFldChar();
+                fieldChar = run.AddNewFldChar();
                 fieldChar.fldCharType = ST_FldCharType.begin;
 
                 run = p.AddNewR();
@@ -209,6 +215,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
                 fieldChar = run.AddNewFldChar();
                 fieldChar.fldCharType = ST_FldCharType.separate;
 
+                // display page #
                 run = p.AddNewR();
                 rPr = run.AddNewRPr();
                 rPr.AddNewNoProof();
