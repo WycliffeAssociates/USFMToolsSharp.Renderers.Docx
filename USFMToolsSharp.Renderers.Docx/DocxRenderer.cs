@@ -637,7 +637,7 @@ namespace USFMToolsSharp.Renderers.Docx
         private void RenderTOC()
         {
             CT_SdtBlock block = new CT_SdtBlock();
-            TOC_Builder tocBuilder = new TOC_Builder(block);
+            TOCBuilder tocBuilder = new TOCBuilder(block);
 
             //tocRenderer.BuildLowLevelTOC(block, TOCEntries);
             

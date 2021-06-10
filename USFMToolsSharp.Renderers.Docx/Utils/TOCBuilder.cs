@@ -5,21 +5,21 @@ using System.Text;
 
 namespace USFMToolsSharp.Renderers.Docx.Utils
 {
-    class TOC_Builder
+    class TOCBuilder
     {
         private CT_SdtBlock block;
 
-        public TOC_Builder()
+        public TOCBuilder()
         {
 
         }
 
-        public TOC_Builder(CT_SdtBlock block)
+        public TOCBuilder(CT_SdtBlock block)
         {
             this.block = block;
         }
 
-        public TOC_Builder init()
+        public TOCBuilder init()
         {
             CT_SdtPr sdtPr = block.AddNewSdtPr();
             CT_DecimalNumber id = sdtPr.AddNewId();
