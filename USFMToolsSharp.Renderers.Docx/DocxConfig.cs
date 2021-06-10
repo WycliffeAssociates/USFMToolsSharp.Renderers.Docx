@@ -7,6 +7,8 @@ namespace USFMToolsSharp.Renderers.Docx
 
         public ParagraphAlignment textAlign;
         public bool rightToLeft;
+        public int marginLeft; // cm unit
+        public int marginRight; // cm unit
         public string rightToLeftLangCode;
         public int columnCount;
         public double lineSpacing;
@@ -26,9 +28,18 @@ namespace USFMToolsSharp.Renderers.Docx
             showPageNumbers = true;
             fontSize = 12;
         }
-        public DocxConfig(int fontSize = 12, bool separateChapters = false, bool separateVerses = false, bool showPageNumbers = true) : this()
+        public DocxConfig(
+            int fontSize = 12,
+            int marginLeft = 0,
+            int marginRight = 0,
+            bool separateChapters = false, 
+            bool separateVerses = false, 
+            bool showPageNumbers = true
+        ) : this()
         {
             this.fontSize = fontSize;
+            this.marginLeft = marginLeft;
+            this.marginRight = marginRight;
             this.separateChapters = separateChapters;
             this.separateVerses = separateVerses;
             this.showPageNumbers = showPageNumbers;
