@@ -7,6 +7,9 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
 {
     class TOCBuilder
     {
+        public int HeaderSize = 24;
+        public int RowSize = 12;
+
         private CT_SdtBlock block;
 
         public TOCBuilder()
@@ -34,18 +37,15 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             fonts.eastAsiaTheme = (ST_Theme.minorHAnsi);
             fonts.hAnsiTheme = (ST_Theme.minorHAnsi);
             fonts.cstheme = (ST_Theme.minorBidi);
-            rPr.AddNewB().val = false;
-            rPr.AddNewBCs().val = false;
-            rPr.AddNewColor().val = ("auto");
-            rPr.AddNewSz().val = 24;
-            rPr.AddNewSzCs().val = 24;
             CT_SdtContentBlock content = block.AddNewSdtContent();
             CT_P p = content.AddNewP();
             byte[] b = Encoding.Unicode.GetBytes("00EF7E24");
             p.rsidR = b;
             p.rsidRDefault = b;
             p.AddNewPPr().AddNewPStyle().val = ("TOCHeading");
-            p.AddNewR().AddNewT().Value = ("Table of Contents");
+            CT_R run = p.AddNewR();
+            run.AddNewRPr().AddNewSz().val = (ulong)HeaderSize * 2;
+            run.AddNewT().Value = ("Table of Contents");
 
             // TOC Field
             p = content.AddNewP();
@@ -53,13 +53,13 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             pPr.AddNewPStyle().val = "TOCHeading";
             pPr.AddNewRPr().AddNewNoProof();
 
-            CT_R run = p.AddNewR();
+            run = p.AddNewR();
             run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
 
             run = p.AddNewR();
             CT_Text text = run.AddNewInstrText();
             text.space = "preserve";
-            text.Value = (" TOC \\h \\z");
+            text.Value = (" TOC \\h \\z ");
 
             p.AddNewR().AddNewFldChar().fldCharType = ST_FldCharType.separate;
         }
@@ -81,6 +81,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             pPr.AddNewRPr().AddNewNoProof();
             CT_R Run = p.AddNewR();
             Run.AddNewRPr().AddNewNoProof();
+            Run.rPr.AddNewSz().val = (ulong)RowSize * 2;
             Run.AddNewT().Value = title;
             Run = p.AddNewR();
             Run.AddNewRPr().AddNewNoProof();
@@ -91,10 +92,12 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             // pageref run
             Run = p.AddNewR();
             Run.AddNewRPr().AddNewNoProof();
+            Run.rPr.AddNewSz().val = (ulong)RowSize * 2;
+            Run.rPr.AddNewSzCs().val = (ulong)RowSize * 2;
             CT_Text text = Run.AddNewInstrText();
             text.space = "preserve";
             // bookmark reference
-            text.Value = (" PAGEREF _Toc" + bookmarkRef + " \\h \\z");
+            text.Value = (" PAGEREF _Toc" + bookmarkRef + " \\h \\z ");
             p.AddNewR().AddNewRPr().AddNewNoProof();
             Run = p.AddNewR();
             Run.AddNewRPr().AddNewNoProof();
@@ -102,6 +105,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             // page number run
             Run = p.AddNewR();
             Run.AddNewRPr().AddNewNoProof();
+            Run.rPr.AddNewSz().val = (ulong)RowSize * 2;
             Run.AddNewT().Value = page.ToString();
             Run = p.AddNewR();
             Run.AddNewRPr().AddNewNoProof();
