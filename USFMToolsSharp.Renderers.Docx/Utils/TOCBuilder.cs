@@ -7,6 +7,8 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
 {
     class TOCBuilder
     {
+        public static readonly string TOC_BOOKMARK = "_Toc{0}";
+
         public int HeaderSize = 24;
         public int RowSize = 12;
 
@@ -97,7 +99,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             CT_Text text = Run.AddNewInstrText();
             text.space = "preserve";
             // bookmark reference
-            text.Value = (" PAGEREF _Toc" + bookmarkRef + " \\h \\z ");
+            text.Value = ($" PAGEREF {string.Format(TOC_BOOKMARK, bookmarkRef)} \\h \\z ");
             p.AddNewR().AddNewRPr().AddNewNoProof();
             Run = p.AddNewR();
             Run.AddNewRPr().AddNewNoProof();

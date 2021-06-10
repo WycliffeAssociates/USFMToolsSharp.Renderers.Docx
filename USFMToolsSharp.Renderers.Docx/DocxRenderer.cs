@@ -611,7 +611,7 @@ namespace USFMToolsSharp.Renderers.Docx
             //Bookmark start
             CT_P para = newDoc.Document.body.AddNewP();
             CT_Bookmark bookmark = new CT_Bookmark();
-            bookmark.name = "_Toc" + bookmarkName;
+            bookmark.name = string.Format(TOCBuilder.TOC_BOOKMARK, bookmarkName);
             string bookmarkId = TOCEntries.Count.ToString();
             bookmark.id = bookmarkId;
             para.Items.Add(bookmark);
