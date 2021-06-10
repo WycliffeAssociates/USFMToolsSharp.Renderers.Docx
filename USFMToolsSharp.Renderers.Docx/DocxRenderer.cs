@@ -650,8 +650,40 @@ namespace USFMToolsSharp.Renderers.Docx
             CT_P pBreak = new CT_P();
             pBreak.AddNewR().AddNewBr().type = ST_BrType.page;
             newDoc.Document.body.Items.Insert(1, pBreak);
+            
+            frontHeader(position: 2);
 
             newDoc.EnforceUpdateFields();
         }
+
+        private void frontHeader(int position)
+        {
+            // Create page heading content for book
+            CT_Hdr header = new CT_Hdr();
+            CT_P headerParagraph = header.AddNewP();
+            CT_PPr ppr = headerParagraph.AddNewPPr();
+
+            // Create page header
+            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
+            documentHeader.SetHeaderFooter(header);
+
+            // Create new section and set its header
+            CT_P p = new CT_P();
+            CT_SectPr newSection = p.AddNewPPr().createSectPr();
+            newSection.type = new CT_SectType();
+            newSection.type.val = ST_SectionMark.continuous;
+            CT_HdrFtrRef headerRef = newSection.AddNewHeaderReference();
+            headerRef.type = ST_HdrFtr.@default;
+            headerRef.id = documentHeader.GetPackageRelationship().Id;
+            
+            newDoc.Document.body.Items.Insert(position, p);
+
+            // Set number of columns
+            newSection.cols.num = configDocx.columnCount.ToString();
+
+            // Increment page header count so each one gets a unique ID
+            pageHeaderCount++;
+        }
+
     }
 }
