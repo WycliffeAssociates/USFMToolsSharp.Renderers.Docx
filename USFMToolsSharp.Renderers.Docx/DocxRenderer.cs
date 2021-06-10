@@ -636,24 +636,19 @@ namespace USFMToolsSharp.Renderers.Docx
 
         private void RenderTOC()
         {
-            CT_SdtBlock block = new CT_SdtBlock();
-            TOCBuilder tocBuilder = new TOCBuilder(block);
-
-            //tocRenderer.BuildLowLevelTOC(block, TOCEntries);
-            
-            tocBuilder.init();
+            TOCBuilder tocBuilder = new TOCBuilder();
 
             foreach (var entry in TOCEntries)
             {
-                tocBuilder.AddRowTOC(1, entry.Key, 1, entry.Value);
+                tocBuilder.AddRow(1, entry.Key, entry.Value);
             }
 
-            var toc = tocBuilder.Build();
+            CT_SdtBlock toc = tocBuilder.Build();
+            newDoc.Document.body.Items.Insert(0, toc);
 
+            // add page break after TOC
             CT_P pBreak = new CT_P();
             pBreak.AddNewR().AddNewBr().type = ST_BrType.page;
-
-            newDoc.Document.body.Items.Insert(0, toc);
             newDoc.Document.body.Items.Insert(1, pBreak);
 
             newDoc.EnforceUpdateFields();
