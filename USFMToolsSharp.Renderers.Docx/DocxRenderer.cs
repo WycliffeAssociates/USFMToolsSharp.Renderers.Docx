@@ -605,10 +605,9 @@ namespace USFMToolsSharp.Renderers.Docx
             }
         }
 
-
         private string BookMark(string name)
         {
-            var bookmarkName = name.Replace(" ", "");
+            var bookmarkName = name.Replace(" ", ""); // remove spaces
             //Bookmark start
             CT_P para = newDoc.Document.body.AddNewP();
             CT_Bookmark bookmark = new CT_Bookmark();
@@ -651,19 +650,18 @@ namespace USFMToolsSharp.Renderers.Docx
             pBreak.AddNewR().AddNewBr().type = ST_BrType.page;
             newDoc.Document.body.Items.Insert(1, pBreak);
             
-            frontHeader(position: 2);
+            var p = CreateFrontHeader();
+            newDoc.Document.body.Items.Insert(2, p);
 
             newDoc.EnforceUpdateFields();
         }
 
-        private void frontHeader(int position)
+        private CT_P CreateFrontHeader()
         {
-            // Create page heading content for book
             CT_Hdr header = new CT_Hdr();
             CT_P headerParagraph = header.AddNewP();
-            CT_PPr ppr = headerParagraph.AddNewPPr();
+            headerParagraph.AddNewPPr();
 
-            // Create page header
             XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
             documentHeader.SetHeaderFooter(header);
 
@@ -676,13 +674,10 @@ namespace USFMToolsSharp.Renderers.Docx
             headerRef.type = ST_HdrFtr.@default;
             headerRef.id = documentHeader.GetPackageRelationship().Id;
             
-            newDoc.Document.body.Items.Insert(position, p);
-
-            // Set number of columns
-            newSection.cols.num = configDocx.columnCount.ToString();
-
             // Increment page header count so each one gets a unique ID
             pageHeaderCount++;
+
+            return p;
         }
 
     }
