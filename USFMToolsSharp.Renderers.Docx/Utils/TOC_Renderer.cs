@@ -5,21 +5,21 @@ using System.Text;
 
 namespace USFMToolsSharp.Renderers.Docx.Utils
 {
-    class TOC_Renderer
+    class TOC_Builder
     {
-        public CT_SdtBlock block;
+        private CT_SdtBlock block;
 
-        public TOC_Renderer()
+        public TOC_Builder()
         {
 
         }
 
-        public TOC_Renderer(CT_SdtBlock block)
+        public TOC_Builder(CT_SdtBlock block)
         {
             this.block = block;
         }
 
-        public void ctorTOC()
+        public TOC_Builder init()
         {
             CT_SdtPr sdtPr = block.AddNewSdtPr();
             CT_DecimalNumber id = sdtPr.AddNewId();
@@ -44,12 +44,34 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             p.rsidRDefault = b;
             p.AddNewPPr().AddNewPStyle().val = ("TOCHeading");
             p.AddNewR().AddNewT().Value = ("Table of Contents");
+            
+            // TOC Field
+            p = content.AddNewP();
+            CT_PPr pPr = p.AddNewPPr();
+            pPr.AddNewPStyle().val = "TOC1";
+            var tab = pPr.AddNewTabs().AddNewTab();
+            tab.leader = ST_TabTlc.dot;
+            tab.pos = "9350";
+            tab.val = ST_TabJc.right;
 
+            pPr.AddNewRPr().AddNewNoProof();
+
+            CT_R run = p.AddNewR();
+            run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
+
+            run = p.AddNewR();
+            CT_Text text = run.AddNewInstrText();
+            text.space = "preserve";
+            text.Value = " TOC \\h \\z";
+
+            p.AddNewR().AddNewFldChar().fldCharType = ST_FldCharType.separate;
+
+            return this;
         }
 
-        public void AddRowTOC(CT_SdtBlock block, int level, String title, int page, String bookmarkRef)
+        public void AddRowTOC(int level, String title, int page, String bookmarkRef)
         {
-            CT_SdtContentBlock contentBlock = block.sdtContent;
+            CT_SdtContentBlock contentBlock = this.block.sdtContent;
             CT_P p = contentBlock.AddNewP();
             byte[] b = Encoding.Unicode.GetBytes("00EF7E24");
             p.rsidR = b;
@@ -77,45 +99,29 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             CT_Text text = Run.AddNewInstrText();
             text.space = "preserve";// (Space.PRESERVE);
             // bookmark reference
-            text.Value = (" PAGEREF _Toc" + bookmarkRef + " \\h ");
-            //p.AddNewR().AddNewRPr().AddNewNoProof();
+            text.Value = (" PAGEREF _Toc" + bookmarkRef + " \\h \\z");
+            p.AddNewR().AddNewRPr().AddNewNoProof();
             Run = p.AddNewR();
             Run.AddNewRPr().AddNewNoProof();
-            var fieldChar = Run.AddNewFldChar();
-            fieldChar.fldCharType = (ST_FldCharType.separate);
-        //fieldChar.dirty = ST_OnOff.True;
+            Run.AddNewFldChar().fldCharType = (ST_FldCharType.separate);
             // page number run
             Run = p.AddNewR();
             Run.AddNewRPr().AddNewNoProof();
             Run.AddNewT().Value = page.ToString();
             Run = p.AddNewR();
             Run.AddNewRPr().AddNewNoProof();
-            fieldChar = Run.AddNewFldChar();
-        //fieldChar.dirty = ST_OnOff.True;
-            fieldChar.fldCharType = (ST_FldCharType.end);
+            Run.AddNewFldChar().fldCharType = (ST_FldCharType.end);
         }
 
-        public CT_SdtBlock CreateCustomTOC(CT_SdtBlock block)
+        public CT_SdtBlock Build()
         {
-            CT_SdtContentBlock tocContentBlock = block.AddNewSdtContent();
-            CT_P p = tocContentBlock.AddNewP();
-            CT_R Run = p.AddNewR();
-            Run.AddNewRPr().AddNewNoProof();
-            Run.AddNewFldChar().fldCharType = (ST_FldCharType.begin);
-            Run.AddNewRPr().AddNewNoProof();
-            CT_Text text = Run.AddNewInstrText();
-            text.space = "preserve";
+            // append "end" field char for TOC
+            CT_SdtContentBlock contentBlock = block.sdtContent;
+            CT_P p = contentBlock.AddNewP();
+            CT_R run = p.AddNewR();
+            run.AddNewRPr().AddNewNoProof();
+            run.AddNewFldChar().fldCharType = ST_FldCharType.end;
 
-            // bookmark reference
-            text.Value = (" TOC \\o \"1-2\" \\h");
-            Run = p.AddNewR();
-            Run.AddNewRPr().AddNewNoProof();
-            Run.AddNewFldChar().fldCharType = (ST_FldCharType.separate);
-
-            Run = p.AddNewR();
-            Run.AddNewRPr().AddNewNoProof();
-            Run.AddNewFldChar().fldCharType = (ST_FldCharType.end);
-            
             return block;
         }
 
