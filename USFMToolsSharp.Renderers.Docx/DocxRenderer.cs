@@ -689,15 +689,16 @@ namespace USFMToolsSharp.Renderers.Docx
             }
 
             CT_SdtBlock toc = tocBuilder.Build();
-            newDoc.Document.body.Items.Insert(0, toc);
 
             // add page break after TOC
             CT_P pBreak = new CT_P();
             pBreak.AddNewR().AddNewBr().type = ST_BrType.page;
-            newDoc.Document.body.Items.Insert(1, pBreak);
             
-            var p = CreateFrontHeader();
-            newDoc.Document.body.Items.Insert(2, p);
+            CT_P pHeader = CreateFrontHeader();
+
+            newDoc.Document.body.Items.Insert(0, toc);
+            newDoc.Document.body.Items.Insert(1, pBreak);
+            newDoc.Document.body.Items.Insert(2, pHeader);
 
             newDoc.EnforceUpdateFields();
         }
