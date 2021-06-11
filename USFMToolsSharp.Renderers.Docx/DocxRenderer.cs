@@ -551,12 +551,10 @@ namespace USFMToolsSharp.Renderers.Docx
         }
 
         /// <summary>
-        /// Creates an empty header for front pages. Append the returned
-        /// paragraph to the document body at the end of the front page,
-        /// after the page break paragraph.
+        /// Creates an empty header for front pages.
         /// 
+        /// The paragraph returned should be inserted in front of document
         /// e.g. newDoc.Document.body.Items.Insert(1, frontHeader);
-        /// where Items[0] is a page break
         /// </summary>
         /// <returns>A CT_P paragraph that contains the header</returns>
         private CT_P CreateFrontHeader()
@@ -641,7 +639,6 @@ namespace USFMToolsSharp.Renderers.Docx
 
         /// <summary>
         /// Renders a Table of Contents (TOC) in front of the document
-        /// based on the bookmarks in the document body.
         /// 
         /// Only invoke this method after parsing the markers content.
         /// Otherwise, it renders an empty TOC.
