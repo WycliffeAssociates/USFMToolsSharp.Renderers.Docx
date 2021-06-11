@@ -44,15 +44,18 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             byte[] b = Encoding.Unicode.GetBytes("00EF7E24");
             p.rsidR = b;
             p.rsidRDefault = b;
-            p.AddNewPPr().AddNewPStyle().val = ("TOCHeading");
+            CT_PPr pPr = p.AddNewPPr();
+            pPr.AddNewPStyle().val = ("TOCHeading");
+            pPr.AddNewJc().val = ST_Jc.center;
             CT_R run = p.AddNewR();
             run.AddNewRPr().AddNewSz().val = (ulong)HeaderSize * 2;
             run.AddNewT().Value = ("Table of Contents");
+            run.AddNewBr().type = ST_BrType.textWrapping; // line break
 
             // TOC Field
             p = content.AddNewP();
-            CT_PPr pPr = p.AddNewPPr();
-            pPr.AddNewPStyle().val = "TOCHeading";
+            pPr = p.AddNewPPr();
+            pPr.AddNewPStyle().val = "TOC1";
             pPr.AddNewRPr().AddNewNoProof();
 
             run = p.AddNewR();
