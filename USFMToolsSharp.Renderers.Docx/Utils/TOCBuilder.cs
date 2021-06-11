@@ -31,7 +31,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             CT_SdtPr sdtPr = block.AddNewSdtPr();
             CT_DecimalNumber id = sdtPr.AddNewId();
             id.val = ("4844945");
-            sdtPr.AddNewDocPartObj().AddNewDocPartGallery().val = ("Table of contents");
+            sdtPr.AddNewDocPartObj().AddNewDocPartGallery().val = ("Table of Contents");
             CT_SdtEndPr sdtEndPr = block.AddNewSdtEndPr();
             CT_RPr rPr = sdtEndPr.AddNewRPr();
             CT_Fonts fonts = rPr.AddNewRFonts();
@@ -79,7 +79,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             CT_TabStop tab = tabs.AddNewTab();
             tab.val = (ST_TabJc.right);
             tab.leader = (ST_TabTlc.dot);
-            tab.pos = "8290";
+            tab.pos = "8100";
             pPr.AddNewRPr().AddNewNoProof();
             CT_R Run = p.AddNewR();
             Run.AddNewRPr().AddNewNoProof();
