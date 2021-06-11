@@ -409,7 +409,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case TOC2Marker toc2Marker:
                     string text = toc2Marker.ShortTableOfContentsText;
-                    string bookMarkRef = BookMark(text);
+                    string bookMarkRef = AddTOCBookMark(text);
                     TOCEntries.Add(text, bookMarkRef);
                     break;
                 case XEndMarker _:
@@ -549,6 +549,40 @@ namespace USFMToolsSharp.Renderers.Docx
             // Increment page header count so each one gets a unique ID
             pageHeaderCount++;
         }
+
+        /// <summary>
+        /// Creates an empty header for front pages. Append the returned
+        /// paragraph to the document body at the end of the front page,
+        /// after the page break paragraph.
+        /// 
+        /// e.g. newDoc.Document.body.Items.Insert(1, frontHeader);
+        /// where Items[0] is a page break
+        /// </summary>
+        /// <returns>A CT_P paragraph that contains the header</returns>
+        private CT_P CreateFrontHeader()
+        {
+            CT_Hdr header = new CT_Hdr();
+            CT_P headerParagraph = header.AddNewP();
+            headerParagraph.AddNewPPr();
+
+            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
+            documentHeader.SetHeaderFooter(header);
+
+            // Create new section and set its header
+            CT_P p = new CT_P();
+            CT_SectPr newSection = p.AddNewPPr().createSectPr();
+            newSection.type = new CT_SectType();
+            newSection.type.val = ST_SectionMark.continuous;
+            CT_HdrFtrRef headerRef = newSection.AddNewHeaderReference();
+            headerRef.type = ST_HdrFtr.@default;
+            headerRef.id = documentHeader.GetPackageRelationship().Id;
+
+            // Increment page header count so each one gets a unique ID
+            pageHeaderCount++;
+
+            return p;
+        }
+
         public void getRenderedRows(Marker input, StyleConfig config, XWPFTable parentTable)
         {
             XWPFTableRow tableRowContainer = parentTable.CreateRow();
@@ -605,7 +639,12 @@ namespace USFMToolsSharp.Renderers.Docx
             }
         }
 
-        private string BookMark(string name)
+        /// <summary>
+        /// Inserts a hidden Table of Contents bookmark to the document body.
+        /// </summary>
+        /// <param name="name">The identifier name for a bookmark</param>
+        /// <returns>The bookmark reference value</returns>
+        private string AddTOCBookMark(string name)
         {
             var bookmarkName = name.Replace(" ", ""); // remove spaces
             //Bookmark start
@@ -633,6 +672,13 @@ namespace USFMToolsSharp.Renderers.Docx
             return bookmarkName;    
         }
 
+        /// <summary>
+        /// Renders a Table of Contents (TOC) in front of the document
+        /// based on the bookmarks in the document body.
+        /// 
+        /// Only invoke this method after parsing the markers content.
+        /// Otherwise, it renders an empty TOC.
+        /// </summary>
         private void RenderTOC()
         {
             TOCBuilder tocBuilder = new TOCBuilder();
@@ -654,30 +700,6 @@ namespace USFMToolsSharp.Renderers.Docx
             newDoc.Document.body.Items.Insert(2, p);
 
             newDoc.EnforceUpdateFields();
-        }
-
-        private CT_P CreateFrontHeader()
-        {
-            CT_Hdr header = new CT_Hdr();
-            CT_P headerParagraph = header.AddNewP();
-            headerParagraph.AddNewPPr();
-
-            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
-            documentHeader.SetHeaderFooter(header);
-
-            // Create new section and set its header
-            CT_P p = new CT_P();
-            CT_SectPr newSection = p.AddNewPPr().createSectPr();
-            newSection.type = new CT_SectType();
-            newSection.type.val = ST_SectionMark.continuous;
-            CT_HdrFtrRef headerRef = newSection.AddNewHeaderReference();
-            headerRef.type = ST_HdrFtr.@default;
-            headerRef.id = documentHeader.GetPackageRelationship().Id;
-            
-            // Increment page header count so each one gets a unique ID
-            pageHeaderCount++;
-
-            return p;
         }
 
     }
