@@ -7,6 +7,7 @@ using NPOI.OpenXmlFormats.Wordprocessing;
 using USFMToolsSharp.Renderers.Docx.Extensions;
 using System;
 using USFMToolsSharp.Renderers.Docx.Utils;
+using System.IO;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
@@ -42,7 +43,8 @@ namespace USFMToolsSharp.Renderers.Docx
             UnrenderableMarkers = new List<string>();
             CrossRefMarkers = new Dictionary<string, Marker>();
             TOCEntries = new Dictionary<string, string>();
-            newDoc = new XWPFDocument();
+            
+            newDoc = new XWPFDocument(ResourceUtil.GetResourceStream("template.docx"));
             newDoc.CreateFootnotes();
 
             setStartPageNumber();
@@ -134,6 +136,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     createBookHeaders(previousBookHeader);
 
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
+                    newChapter.Style = "Heading2";
                     newChapter.SetBidi(configDocx.rightToLeft);
                     newChapter.Alignment = configDocx.textAlign;
                     newChapter.SpacingBetween = configDocx.lineSpacing;
@@ -248,6 +251,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     // Write body header text
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
+                    newHeader.Style = "Heading1"; // for TOC entry
                     newHeader.SetBidi(configDocx.rightToLeft);
                     newHeader.SpacingAfter = 200;
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
@@ -406,11 +410,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         RenderMarker(marker, markerStyle, introParagraph);
                     }
-                    break;
-                case TOC2Marker toc2Marker:
-                    string text = toc2Marker.ShortTableOfContentsText;
-                    string bookMarkRef = AddTOCBookMark(text);
-                    TOCEntries.Add(text, bookMarkRef);
                     break;
                 case XEndMarker _:
                 case FEndMarker _:
@@ -640,39 +639,6 @@ namespace USFMToolsSharp.Renderers.Docx
         }
 
         /// <summary>
-        /// Inserts a hidden Table of Contents bookmark to the document body.
-        /// </summary>
-        /// <param name="name">The identifier name for a bookmark</param>
-        /// <returns>The bookmark reference value</returns>
-        private string AddTOCBookMark(string name)
-        {
-            var bookmarkName = name.Replace(" ", ""); // remove spaces
-            //Bookmark start
-            CT_P para = newDoc.Document.body.AddNewP();
-            CT_Bookmark bookmark = new CT_Bookmark();
-            bookmark.name = string.Format(TOCBuilder.TOC_BOOKMARK, bookmarkName);
-            string bookmarkId = TOCEntries.Count.ToString();
-            bookmark.id = bookmarkId;
-            para.Items.Add(bookmark);
-            para.ItemsElementName.Add(ParagraphItemsChoiceType.bookmarkStart);
-            CT_R run = para.AddNewR();
-            run.AddNewRPr().vanish = new CT_OnOff() { val = true };
-            var t = run.AddNewT();
-            t.Value = "This is the bookmark of " + name;
-
-            //Bookmark end
-            bookmark = new CT_Bookmark();
-            bookmark.id = bookmarkId;
-            para.Items.Add(bookmark);
-            para.ItemsElementName.Add(ParagraphItemsChoiceType.bookmarkEnd);
-
-            var pPr = para.AddNewPPr();
-            pPr.AddNewRPr().vanish = new CT_OnOff() { val = true };
-
-            return bookmarkName;    
-        }
-
-        /// <summary>
         /// Renders a Table of Contents (TOC) in front of the document
         /// based on the bookmarks in the document body.
         /// 
@@ -683,10 +649,10 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             TOCBuilder tocBuilder = new TOCBuilder();
 
-            foreach (var entry in TOCEntries)
-            {
-                tocBuilder.AddRow(1, entry.Key, entry.Value);
-            }
+            //foreach (var entry in TOCEntries)
+            //{
+            //    tocBuilder.AddRow(1, entry.Key, entry.Value);
+            //}
 
             CT_SdtBlock toc = tocBuilder.Build();
 
@@ -702,6 +668,5 @@ namespace USFMToolsSharp.Renderers.Docx
 
             newDoc.EnforceUpdateFields();
         }
-
     }
 }
