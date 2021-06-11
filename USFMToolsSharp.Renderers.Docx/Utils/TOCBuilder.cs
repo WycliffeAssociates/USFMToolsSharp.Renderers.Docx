@@ -69,6 +69,10 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             p.AddNewR().AddNewFldChar().fldCharType = ST_FldCharType.separate;
         }
 
+        /*
+         * (Optional) Adds a custom row to TOC.
+         * Will be wiped off when the user updates TOC.
+         */
         public void AddRow(int level, string title, string bookmarkRef, int page = 1)
         {
             CT_SdtContentBlock contentBlock = block.sdtContent;
