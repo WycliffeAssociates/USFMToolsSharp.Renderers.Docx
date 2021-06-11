@@ -8,16 +8,15 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
 {
     class ResourceUtil
     {
-        public static Stream GetResourceStream(string filename)
+        public static Stream GetResourceStream(string filename, string namespacename = "")
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "USFMToolsSharp.Renderers.Docx." + filename;
-            return assembly.GetManifestResourceStream(resourceName);
-        }
-
-        public static Stream GetResourceStream(string filename, string namespacename)
-        {
-            var assembly = Assembly.GetExecutingAssembly();
+            
+            if (namespacename == "")
+            {
+                namespacename = assembly.GetName().Name;
+            }
+            
             var resourceName = $"{namespacename}.{filename}";
             return assembly.GetManifestResourceStream(resourceName);
         }

@@ -44,6 +44,7 @@ namespace USFMToolsSharp.Renderers.Docx
             CrossRefMarkers = new Dictionary<string, Marker>();
             TOCEntries = new Dictionary<string, string>();
             
+            // template document has styles required to render & update TOC
             newDoc = new XWPFDocument(ResourceUtil.GetResourceStream("template.docx"));
             newDoc.CreateFootnotes();
 
@@ -136,7 +137,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     createBookHeaders(previousBookHeader);
 
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
-                    newChapter.Style = "Heading2";
+                    newChapter.Style = "Heading2"; // for TOC entry
                     newChapter.SetBidi(configDocx.rightToLeft);
                     newChapter.Alignment = configDocx.textAlign;
                     newChapter.SpacingBetween = configDocx.lineSpacing;
@@ -648,12 +649,6 @@ namespace USFMToolsSharp.Renderers.Docx
         private void RenderTOC()
         {
             TOCBuilder tocBuilder = new TOCBuilder();
-
-            //foreach (var entry in TOCEntries)
-            //{
-            //    tocBuilder.AddRow(1, entry.Key, entry.Value);
-            //}
-
             CT_SdtBlock toc = tocBuilder.Build();
 
             // add page break after TOC
