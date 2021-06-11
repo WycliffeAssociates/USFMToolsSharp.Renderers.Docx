@@ -44,11 +44,11 @@ namespace USFMToolsSharp.Renderers.Docx
             
             // template document has styles required to render & update TOC
             newDoc = new XWPFDocument();
-            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOCHeadingCustom", 1);
-            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOC1", 2);
-            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOC2", 3);
-            StylesBuilder.AddCustomHeadingStyle(newDoc, "Heading1", 4);
-            StylesBuilder.AddCustomHeadingStyle(newDoc, "Heading2", 5);
+            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOCHeadingCustom", 1, 9);
+            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOC1", 2, 0);
+            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOC2", 3, 0);
+            StylesBuilder.AddCustomHeadingStyle(newDoc, "Heading1", 4, 0);
+            StylesBuilder.AddCustomHeadingStyle(newDoc, "Heading2", 5, 1);
 
             newDoc.CreateFootnotes();
 

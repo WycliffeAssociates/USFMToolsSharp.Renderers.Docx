@@ -10,7 +10,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
     class StylesBuilder
     {
 
-        public static void AddCustomHeadingStyle(XWPFDocument docxDocument, string name, int headingLevel, int pointSize = 12)
+        public static void AddCustomHeadingStyle(XWPFDocument docxDocument, string name, int headingLevel, int outlineLevel, int pointSize = 12)
         {
 
             CT_Style ctStyle = new CT_Style();
@@ -34,7 +34,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
 
             // style defines a heading of the given level
             CT_PPr ppr = new CT_PPr();
-            ppr.outlineLvl = (indentNumber);
+            ppr.outlineLvl = new CT_DecimalNumber() { val = outlineLevel.ToString() };
             ctStyle.pPr = (ppr);
 
             //CT_RPr rpr = new CT_RPr();
