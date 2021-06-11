@@ -16,7 +16,6 @@ namespace USFMToolsSharp.Renderers.Docx
     {
         public List<string> UnrenderableMarkers;
         public Dictionary<string, Marker> CrossRefMarkers;
-        private Dictionary<string, string> TOCEntries;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
         private int pageHeaderCount = 1;
@@ -42,7 +41,6 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             UnrenderableMarkers = new List<string>();
             CrossRefMarkers = new Dictionary<string, Marker>();
-            TOCEntries = new Dictionary<string, string>();
             
             // template document has styles required to render & update TOC
             newDoc = new XWPFDocument(ResourceUtil.GetResourceStream("template.docx"));
@@ -78,9 +76,12 @@ namespace USFMToolsSharp.Renderers.Docx
             };
             finalSection.pgNumType = pageNum;
 
-            RenderTOC();
-            return newDoc;
+            if (configDocx.hasTOC)
+            {
+                RenderTOC();
+            }
 
+            return newDoc;
         }
         private void RenderMarker(Marker input, StyleConfig styles, XWPFParagraph parentParagraph = null)
         {
