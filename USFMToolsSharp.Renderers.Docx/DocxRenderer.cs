@@ -43,7 +43,13 @@ namespace USFMToolsSharp.Renderers.Docx
             CrossRefMarkers = new Dictionary<string, Marker>();
             
             // template document has styles required to render & update TOC
-            newDoc = new XWPFDocument(ResourceUtil.GetResourceStream("template.docx"));
+            newDoc = new XWPFDocument();
+            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOCHeadingCustom", 1);
+            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOC1", 2);
+            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOC2", 3);
+            StylesBuilder.AddCustomHeadingStyle(newDoc, "Heading1", 4);
+            StylesBuilder.AddCustomHeadingStyle(newDoc, "Heading2", 5);
+
             newDoc.CreateFootnotes();
 
             setStartPageNumber();

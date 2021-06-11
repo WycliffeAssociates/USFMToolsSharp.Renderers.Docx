@@ -45,7 +45,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             p.rsidR = b;
             p.rsidRDefault = b;
             CT_PPr pPr = p.AddNewPPr();
-            pPr.AddNewPStyle().val = ("TOCHeading");
+            pPr.AddNewPStyle().val = ("TOCHeadingCustom");
             pPr.AddNewJc().val = ST_Jc.center;
             CT_R run = p.AddNewR();
             run.AddNewRPr().AddNewSz().val = (ulong)HeaderSize * 2;
