@@ -44,12 +44,7 @@ namespace USFMToolsSharp.Renderers.Docx
             
             // template document has styles required to render & update TOC
             newDoc = new XWPFDocument();
-            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOCHeadingCustom", 1, 9);
-            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOC1", 2, 0);
-            StylesBuilder.AddCustomHeadingStyle(newDoc, "TOC2", 3, 0);
-            StylesBuilder.AddCustomHeadingStyle(newDoc, "Heading1", 4, 0);
-            StylesBuilder.AddCustomHeadingStyle(newDoc, "Heading2", 5, 1);
-
+            StylesBuilder.BuildStylesForTOC(newDoc);
             newDoc.CreateFootnotes();
 
             setStartPageNumber();
@@ -144,7 +139,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     createBookHeaders(previousBookHeader);
 
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
-                    newChapter.Style = "Heading2"; // for TOC entry
+                    //newChapter.Style = "Heading2"; // for TOC entry
                     newChapter.SetBidi(configDocx.rightToLeft);
                     newChapter.Alignment = configDocx.textAlign;
                     newChapter.SpacingBetween = configDocx.lineSpacing;

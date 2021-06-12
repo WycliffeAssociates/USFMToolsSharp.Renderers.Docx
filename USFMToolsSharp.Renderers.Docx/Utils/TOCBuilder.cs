@@ -14,19 +14,18 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
 
         private CT_SdtBlock block;
 
-        public TOCBuilder()
+        public TOCBuilder() : this(new CT_SdtBlock())
         {
-            block = new CT_SdtBlock();
-            init();
+
         }
 
         public TOCBuilder(CT_SdtBlock block)
         {
             this.block = block;
-            init();
+            CreateTOCHeader();
         }
 
-        private void init()
+        private void CreateTOCHeader()
         {
             CT_SdtPr sdtPr = block.AddNewSdtPr();
             CT_DecimalNumber id = sdtPr.AddNewId();
@@ -45,7 +44,7 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             p.rsidR = b;
             p.rsidRDefault = b;
             CT_PPr pPr = p.AddNewPPr();
-            pPr.AddNewPStyle().val = ("TOCHeadingCustom");
+            pPr.AddNewPStyle().val = ("TOCHeading");
             pPr.AddNewJc().val = ST_Jc.center;
             CT_R run = p.AddNewR();
             run.AddNewRPr().AddNewSz().val = (ulong)HeaderSize * 2;
