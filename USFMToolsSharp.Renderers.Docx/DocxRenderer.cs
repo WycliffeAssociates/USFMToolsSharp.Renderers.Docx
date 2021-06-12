@@ -77,7 +77,7 @@ namespace USFMToolsSharp.Renderers.Docx
             };
             finalSection.pgNumType = pageNum;
 
-            if (configDocx.hasTOC)
+            if (configDocx.renderTableOfContents)
             {
                 RenderTOC();
             }
@@ -640,7 +640,7 @@ namespace USFMToolsSharp.Renderers.Docx
         }
 
         /// <summary>
-        /// Renders a Table of Contents (TOC) in front of the document
+        /// Renders a Table of Contents (TOC) in front of the document.
         /// 
         /// Only invoke this method after parsing the markers content.
         /// Otherwise, it renders an empty TOC.

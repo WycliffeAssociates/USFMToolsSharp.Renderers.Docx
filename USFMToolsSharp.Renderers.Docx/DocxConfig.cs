@@ -14,7 +14,7 @@ namespace USFMToolsSharp.Renderers.Docx
         public bool separateChapters;
         public bool separateVerses;
         public bool showPageNumbers;
-        public bool hasTOC;
+        public bool renderTableOfContents;
 
         public int fontSize;
 
@@ -26,7 +26,7 @@ namespace USFMToolsSharp.Renderers.Docx
             lineSpacing = 1;
             showPageNumbers = true;
             fontSize = 12;
-            hasTOC = false;
+            renderTableOfContents = false;
         }
         public DocxConfig(int fontSize = 12, bool separateChapters = false, bool separateVerses = false, bool showPageNumbers = true) : this()
         {
