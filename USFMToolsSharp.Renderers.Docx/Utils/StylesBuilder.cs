@@ -12,6 +12,12 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
         private XWPFStyles documentStyles;
         private CT_Styles ctStyles;
 
+        public StylesBuilder()
+        {
+            documentStyles = new XWPFStyles();
+            ctStyles = new CT_Styles();
+        }
+
         public StylesBuilder(XWPFDocument docxDocument)
         {
             documentStyles = docxDocument.CreateStyles();
@@ -65,15 +71,12 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
             CT_RPr rpr = new CT_RPr();
             rpr.AddNewSz().val = (ulong)ptSize * 2;
             ctStyle.rPr = rpr;
-
-            XWPFStyle style = new XWPFStyle(ctStyle);
-            style.StyleType = (ST_StyleType.paragraph);
-
         }
 
-        public void Build()
+        public XWPFStyles Build()
         {
             documentStyles.SetStyles(ctStyles);
+            return documentStyles;
         }
 
         /// <summary>
@@ -84,16 +87,16 @@ namespace USFMToolsSharp.Renderers.Docx.Utils
         /// have it rendered in the TOC.
         /// </summary>
         /// <param name="doc"></param>
-        public static void BuildStylesForTOC(XWPFDocument doc)
+        public static XWPFStyles BuildStylesForTOC()
         {
-            var styleBuilder = new StylesBuilder(doc);
-            styleBuilder.AddDefaultStyle();
-            styleBuilder.AddCustomHeadingStyle("TOCHeading", 1, 9);
-            styleBuilder.AddCustomHeadingStyle("TOC1", 2, 0);
-            styleBuilder.AddCustomHeadingStyle("TOC2", 3, 0);
-            styleBuilder.AddCustomHeadingStyle("Heading1", 4, 0);
-            styleBuilder.AddCustomHeadingStyle("Heading2", 5, 1);
-            styleBuilder.Build();
+            var builder = new StylesBuilder();
+            builder.AddDefaultStyle();
+            builder.AddCustomHeadingStyle("TOCHeading", 1, 9);
+            builder.AddCustomHeadingStyle("TOC1", 2, 0);
+            builder.AddCustomHeadingStyle("TOC2", 3, 0);
+            builder.AddCustomHeadingStyle("Heading1", 4, 0);
+            builder.AddCustomHeadingStyle("Heading2", 5, 1);
+            return builder.Build();
         }
     }
 }
