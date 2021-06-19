@@ -6,8 +6,8 @@ using NPOI.XWPF.Model;
 using NPOI.OpenXmlFormats.Wordprocessing;
 using USFMToolsSharp.Renderers.Docx.Extensions;
 using System;
-using USFMToolsSharp.Renderers.Docx.Utils;
 using System.IO;
+using WycliffeAssociates.NPOI.OOXML.XWPF.Util;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
@@ -44,7 +44,7 @@ namespace USFMToolsSharp.Renderers.Docx
             
             // template document has styles required to render & update TOC
             newDoc = new XWPFDocument();
-            StylesBuilder.BuildStylesForTOC(newDoc);
+            DocumentStylesBuilder.BuildStylesForTOC(newDoc);
             newDoc.CreateFootnotes();
 
             setStartPageNumber();
@@ -642,12 +642,12 @@ namespace USFMToolsSharp.Renderers.Docx
         /// <summary>
         /// Renders a Table of Contents (TOC) in front of the document.
         /// 
-        /// Only invoke this method after parsing the markers content.
-        /// Otherwise, it renders an empty TOC.
+        /// Please set the paragraphs style to "Heading{#}" before 
+        /// invoking this method. Otherwise, it renders an empty TOC.
         /// </summary>
         private void RenderTOC()
         {
-            TOCBuilder tocBuilder = new TOCBuilder();
+            TOC tocBuilder = new TOC();
             CT_SdtBlock toc = tocBuilder.Build();
 
             // add page break after TOC
