@@ -1,12 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Text;
 using USFMToolsSharp.Models.Markers;
 using NPOI.XWPF.UserModel;
-using NPOI.XWPF.Model;
 using NPOI.OpenXmlFormats.Wordprocessing;
 using USFMToolsSharp.Renderers.Docx.Extensions;
-using System;
-using System.IO;
 using WycliffeAssociates.NPOI.OOXML.XWPF.Util;
 
 namespace USFMToolsSharp.Renderers.Docx
@@ -41,8 +37,6 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             UnrenderableMarkers = new List<string>();
             CrossRefMarkers = new Dictionary<string, Marker>();
-            
-            // template document has styles required to render & update TOC
             newDoc = new XWPFDocument();
             
             if (configDocx.renderTableOfContents)
@@ -144,7 +138,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     createBookHeaders(previousBookHeader);
 
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
-                    //newChapter.Style = "Heading2"; // for TOC entry
                     newChapter.SetBidi(configDocx.rightToLeft);
                     newChapter.Alignment = configDocx.textAlign;
                     newChapter.SpacingBetween = configDocx.lineSpacing;
@@ -259,7 +252,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     // Write body header text
                     markerStyle.fontSize = 24;
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
-                    newHeader.Style = "Heading1"; // for TOC entry
+                    newHeader.Style = "Heading1"; // for TOC pagination
                     newHeader.SetBidi(configDocx.rightToLeft);
                     newHeader.SpacingAfter = 200;
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
@@ -559,11 +552,10 @@ namespace USFMToolsSharp.Renderers.Docx
 
         /// <summary>
         /// Creates an empty header for front pages.
-        /// 
-        /// The paragraph returned should be inserted in front of document
-        /// e.g. newDoc.Document.body.Items.Insert(1, frontHeader);
+        /// The returned paragraph should be inserted in front of document
         /// </summary>
-        /// <returns>A CT_P paragraph that contains the header</returns>
+        /// <example>xwpfDoc.Document.body.Items.Insert(1, CreateFrontHeader());</example>
+        /// <returns>CT_P paragraph that contains a blank header</returns>
         private CT_P CreateFrontHeader()
         {
             CT_Hdr header = new CT_Hdr();

@@ -15,16 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="template.docx" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="template.docx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
     <PackageReference Include="USFMToolsSharp" Version="1.5.2" />
     <PackageReference Include="WycliffeAssociates.NPOI" Version="2.5.1" />
