@@ -44,7 +44,12 @@ namespace USFMToolsSharp.Renderers.Docx
             
             // template document has styles required to render & update TOC
             newDoc = new XWPFDocument();
-            DocumentStylesBuilder.BuildStylesForTOC(newDoc);
+            
+            if (configDocx.renderTableOfContents)
+            {
+                DocumentStylesBuilder.BuildStylesForTOC(newDoc);
+            }
+            
             newDoc.CreateFootnotes();
 
             setStartPageNumber();
