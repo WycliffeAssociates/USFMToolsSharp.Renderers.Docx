@@ -645,7 +645,7 @@ namespace USFMToolsSharp.Renderers.Docx
         private void RenderTOC()
         {
             TOC tocBuilder = new TOC();
-            CT_SdtBlock toc = tocBuilder.Build();
+            CT_SdtBlock tableOfContents = tocBuilder.Build();
 
             // add page break after TOC
             CT_P pBreak = new CT_P();
@@ -653,7 +653,7 @@ namespace USFMToolsSharp.Renderers.Docx
             
             CT_P pHeader = CreateFrontHeader();
 
-            newDoc.Document.body.Items.Insert(0, toc);
+            newDoc.Document.body.Items.Insert(0, tableOfContents);
             newDoc.Document.body.Items.Insert(1, pBreak);
             newDoc.Document.body.Items.Insert(2, pHeader);
 
