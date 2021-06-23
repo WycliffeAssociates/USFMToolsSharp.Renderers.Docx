@@ -157,7 +157,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         currentChapterLabel = chapterLabel + " " + simpleNumber;
                     }
                     chapterMarker.SetText(currentChapterLabel);
-                    chapterMarker.FontSize = 20;
+                    chapterMarker.FontSize = (int)(configDocx.fontSize * 1.5);
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
                     chapterVerses.SetBidi(configDocx.rightToLeft);
@@ -191,6 +191,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         newLine.AddBreak(BreakType.TEXTWRAPPING);
                     }
 
+                    markerStyle.fontSize = configDocx.fontSize;
                     XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
                     setRTL(verseMarker);
                     verseMarker.SetText(vMarker.VerseCharacter);
@@ -207,6 +208,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case QMarker qMarker:
+                    markerStyle.fontSize = configDocx.fontSize;
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle);
                     poetryParagraph.SetBidi(configDocx.rightToLeft);
                     poetryParagraph.Alignment = configDocx.textAlign;
@@ -222,6 +224,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case MMarker mMarker:
                     break;
                 case TextBlock textBlock:
+                    markerStyle.fontSize = configDocx.fontSize;
                     XWPFRun blockText = parentParagraph.CreateRun(markerStyle);
                     setRTL(blockText);
                     blockText.SetText(textBlock.Text);
@@ -250,7 +253,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     previousBookHeader = hMarker.HeaderText;
 
                     // Write body header text
-                    markerStyle.fontSize = 24;
+                    markerStyle.fontSize = (configDocx.fontSize * 2);
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
                     newHeader.Style = "Heading1"; // for TOC pagination
                     newHeader.SetBidi(configDocx.rightToLeft);
