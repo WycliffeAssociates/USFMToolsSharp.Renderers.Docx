@@ -98,7 +98,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     // If the previous marker was a chapter marker, don't create a new paragraph.
                     if (!(previousMarker is CMarker _))
                     {
-                        XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle);
+                        XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                         newParagraph.SetBidi(configDocx.rightToLeft);
                         newParagraph.Alignment = configDocx.textAlign;
                         newParagraph.SpacingBetween = configDocx.lineSpacing;
@@ -137,7 +137,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     createBookHeaders(previousBookHeader);
 
-                    XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle);
+                    XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle, configDocx);
                     newChapter.SetBidi(configDocx.rightToLeft);
                     newChapter.Alignment = configDocx.textAlign;
                     newChapter.SpacingBetween = configDocx.lineSpacing;
@@ -159,7 +159,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     chapterMarker.SetText(currentChapterLabel);
                     chapterMarker.FontSize = (int)(configDocx.fontSize * 1.5);
 
-                    XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle);
+                    XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle, configDocx);
                     chapterVerses.SetBidi(configDocx.rightToLeft);
                     chapterVerses.Alignment = configDocx.textAlign;
                     chapterVerses.SpacingBetween = configDocx.lineSpacing;
@@ -178,7 +178,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     // create a stub parent paragraph so we can keep rendering.
                     if (parentParagraph == null)
                     {
-                        parentParagraph = newDoc.CreateParagraph(markerStyle);
+                        parentParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                         parentParagraph.SetBidi(configDocx.rightToLeft);
                         parentParagraph.Alignment = configDocx.textAlign;
                         parentParagraph.SpacingBetween = configDocx.lineSpacing;
@@ -209,11 +209,11 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case QMarker qMarker:
                     markerStyle.fontSize = configDocx.fontSize;
-                    XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle);
+                    XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                     poetryParagraph.SetBidi(configDocx.rightToLeft);
                     poetryParagraph.Alignment = configDocx.textAlign;
                     poetryParagraph.SpacingBetween = configDocx.lineSpacing;
-                    poetryParagraph.IndentationLeft = qMarker.Depth * 500;
+                    poetryParagraph.IndentationLeft += qMarker.Depth * 500;
                     poetryParagraph.SpacingAfter = 200;
 
                     foreach (Marker marker in input.Contents)
@@ -254,8 +254,9 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     // Write body header text
                     markerStyle.fontSize = (configDocx.fontSize * 2);
-                    XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle);
+                    XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle, configDocx);
                     newHeader.Style = "Heading1"; // for TOC pagination
+
                     newHeader.SetBidi(configDocx.rightToLeft);
                     newHeader.SpacingAfter = 200;
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
@@ -402,7 +403,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     // If the previous marker was a chapter marker, don't create a new paragraph.
                     if (!(previousMarker is CMarker _))
                     {
-                        XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle);
+                        XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                         newParagraph.SetBidi(configDocx.rightToLeft);
                         newParagraph.Alignment = configDocx.textAlign;
                         newParagraph.SpacingBetween = configDocx.lineSpacing;

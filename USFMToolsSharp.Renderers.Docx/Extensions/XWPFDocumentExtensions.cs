@@ -14,5 +14,13 @@ namespace USFMToolsSharp.Renderers.Docx.Extensions
             para.Alignment = (styles.isAlignRight ? ParagraphAlignment.RIGHT : ParagraphAlignment.LEFT);
             return para;
         }
+
+        public static XWPFParagraph CreateParagraph(this XWPFDocument doc, StyleConfig styles, DocxConfig config)
+        {
+            XWPFParagraph para = doc.CreateParagraph(styles);
+            para.IndentationLeft = config.marginLeft * UnitValue.TWIP_PER_CM;
+            para.IndentationRight = config.marginRight * UnitValue.TWIP_PER_CM;
+            return para;
+        }
     }
 }
