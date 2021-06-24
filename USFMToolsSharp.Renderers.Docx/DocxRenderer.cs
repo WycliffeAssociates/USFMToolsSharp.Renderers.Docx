@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Text;
 using USFMToolsSharp.Models.Markers;
 using NPOI.XWPF.UserModel;
-using NPOI.XWPF.Model;
 using NPOI.OpenXmlFormats.Wordprocessing;
 using USFMToolsSharp.Renderers.Docx.Extensions;
-using System;
+using WycliffeAssociates.NPOI.OOXML.XWPF.Util;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
@@ -40,6 +38,12 @@ namespace USFMToolsSharp.Renderers.Docx
             UnrenderableMarkers = new List<string>();
             CrossRefMarkers = new Dictionary<string, Marker>();
             newDoc = new XWPFDocument();
+            
+            if (configDocx.renderTableOfContents)
+            {
+                DocumentStylesBuilder.BuildStylesForTOC(newDoc);
+            }
+            
             newDoc.CreateFootnotes();
 
             setStartPageNumber();
@@ -72,8 +76,12 @@ namespace USFMToolsSharp.Renderers.Docx
             };
             finalSection.pgNumType = pageNum;
 
-            return newDoc;
+            if (configDocx.renderTableOfContents)
+            {
+                RenderTOC();
+            }
 
+            return newDoc;
         }
         private void RenderMarker(Marker input, StyleConfig styles, XWPFParagraph parentParagraph = null)
         {
@@ -149,7 +157,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         currentChapterLabel = chapterLabel + " " + simpleNumber;
                     }
                     chapterMarker.SetText(currentChapterLabel);
-                    chapterMarker.FontSize = 20;
+                    chapterMarker.FontSize = (int)(configDocx.fontSize * 1.5);
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle, configDocx);
                     chapterVerses.SetBidi(configDocx.rightToLeft);
@@ -183,6 +191,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         newLine.AddBreak(BreakType.TEXTWRAPPING);
                     }
 
+                    markerStyle.fontSize = configDocx.fontSize;
                     XWPFRun verseMarker = parentParagraph.CreateRun(markerStyle);
                     setRTL(verseMarker);
                     verseMarker.SetText(vMarker.VerseCharacter);
@@ -199,6 +208,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case QMarker qMarker:
+                    markerStyle.fontSize = configDocx.fontSize;
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                     poetryParagraph.SetBidi(configDocx.rightToLeft);
                     poetryParagraph.Alignment = configDocx.textAlign;
@@ -214,6 +224,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case MMarker mMarker:
                     break;
                 case TextBlock textBlock:
+                    markerStyle.fontSize = configDocx.fontSize;
                     XWPFRun blockText = parentParagraph.CreateRun(markerStyle);
                     setRTL(blockText);
                     blockText.SetText(textBlock.Text);
@@ -242,8 +253,10 @@ namespace USFMToolsSharp.Renderers.Docx
                     previousBookHeader = hMarker.HeaderText;
 
                     // Write body header text
-                    markerStyle.fontSize = 24;
+                    markerStyle.fontSize = (configDocx.fontSize * 2);
                     XWPFParagraph newHeader = newDoc.CreateParagraph(markerStyle, configDocx);
+                    newHeader.Style = "Heading1"; // for TOC pagination
+
                     newHeader.SetBidi(configDocx.rightToLeft);
                     newHeader.SpacingAfter = 200;
                     XWPFRun headerTitle = newHeader.CreateRun(markerStyle);
@@ -540,6 +553,37 @@ namespace USFMToolsSharp.Renderers.Docx
             // Increment page header count so each one gets a unique ID
             pageHeaderCount++;
         }
+
+        /// <summary>
+        /// Creates an empty header for front pages.
+        /// The returned paragraph should be inserted in front of document
+        /// </summary>
+        /// <example>xwpfDoc.Document.body.Items.Insert(1, CreateFrontHeader());</example>
+        /// <returns>CT_P paragraph that contains a blank header</returns>
+        private CT_P CreateFrontHeader()
+        {
+            CT_Hdr header = new CT_Hdr();
+            CT_P headerParagraph = header.AddNewP();
+            headerParagraph.AddNewPPr();
+
+            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
+            documentHeader.SetHeaderFooter(header);
+
+            // Create new section and set its header
+            CT_P p = new CT_P();
+            CT_SectPr newSection = p.AddNewPPr().createSectPr();
+            newSection.type = new CT_SectType();
+            newSection.type.val = ST_SectionMark.continuous;
+            CT_HdrFtrRef headerRef = newSection.AddNewHeaderReference();
+            headerRef.type = ST_HdrFtr.@default;
+            headerRef.id = documentHeader.GetPackageRelationship().Id;
+
+            // Increment page header count so each one gets a unique ID
+            pageHeaderCount++;
+
+            return p;
+        }
+
         public void getRenderedRows(Marker input, StyleConfig config, XWPFTable parentTable)
         {
             XWPFTableRow tableRowContainer = parentTable.CreateRow();
@@ -596,5 +640,28 @@ namespace USFMToolsSharp.Renderers.Docx
             }
         }
 
+        /// <summary>
+        /// Renders a Table of Contents (TOC) in front of the document.
+        /// 
+        /// Please set the paragraphs style to "Heading{#}" before 
+        /// invoking this method. Otherwise, it renders an empty TOC.
+        /// </summary>
+        private void RenderTOC()
+        {
+            TOC tocBuilder = new TOC();
+            CT_SdtBlock tableOfContents = tocBuilder.Build();
+
+            // add page break after TOC
+            CT_P pBreak = new CT_P();
+            pBreak.AddNewR().AddNewBr().type = ST_BrType.page;
+            
+            CT_P pHeader = CreateFrontHeader();
+
+            newDoc.Document.body.Items.Insert(0, tableOfContents);
+            newDoc.Document.body.Items.Insert(1, pBreak);
+            newDoc.Document.body.Items.Insert(2, pHeader);
+
+            newDoc.EnforceUpdateFields();
+        }
     }
 }
