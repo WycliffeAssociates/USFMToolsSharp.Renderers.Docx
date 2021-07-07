@@ -4,8 +4,6 @@ using NPOI.XWPF.UserModel;
 using NPOI.OpenXmlFormats.Wordprocessing;
 using USFMToolsSharp.Renderers.Docx.Extensions;
 using WycliffeAssociates.NPOI.OOXML.XWPF.Util;
-using System;
-using System.IO;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
