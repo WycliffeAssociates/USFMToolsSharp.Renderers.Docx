@@ -4,6 +4,8 @@ using NPOI.XWPF.UserModel;
 using NPOI.OpenXmlFormats.Wordprocessing;
 using USFMToolsSharp.Renderers.Docx.Extensions;
 using WycliffeAssociates.NPOI.OOXML.XWPF.Util;
+using System;
+using System.IO;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
@@ -33,15 +35,21 @@ namespace USFMToolsSharp.Renderers.Docx
             configDocx = config;
         }
 
-        public XWPFDocument Render(USFMDocument input)
+        public XWPFDocument Render(USFMDocument input, USFMDocument frontMatter = null)
         {
             UnrenderableMarkers = new List<string>();
             CrossRefMarkers = new Dictionary<string, Marker>();
             newDoc = new XWPFDocument();
-            
+
+            if (frontMatter != null)
+            {
+                RenderFrontMatter(frontMatter);
+            }
+
             if (configDocx.renderTableOfContents)
             {
                 DocumentStylesBuilder.BuildStylesForTOC(newDoc);
+                RenderTOC();
             }
             
             newDoc.CreateFootnotes();
@@ -76,13 +84,9 @@ namespace USFMToolsSharp.Renderers.Docx
             };
             finalSection.pgNumType = pageNum;
 
-            if (configDocx.renderTableOfContents)
-            {
-                RenderTOC();
-            }
-
             return newDoc;
         }
+
         private void RenderMarker(Marker input, StyleConfig styles, XWPFParagraph parentParagraph = null)
         {
             // Keep track of the previous marker
@@ -657,11 +661,32 @@ namespace USFMToolsSharp.Renderers.Docx
             
             CT_P pHeader = CreateFrontHeader();
 
-            newDoc.Document.body.Items.Insert(0, tableOfContents);
-            newDoc.Document.body.Items.Insert(1, pBreak);
-            newDoc.Document.body.Items.Insert(2, pHeader);
+            newDoc.Document.body.Items.Add(tableOfContents);
+            newDoc.Document.body.Items.Add(pHeader);
+            newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
 
             newDoc.EnforceUpdateFields();
+        }
+
+        private void RenderFrontMatter(USFMDocument frontMatter)
+        {
+            CT_P pHeader = CreateFrontHeader();
+            CT_P pBreak = new CT_P();
+            pBreak.AddNewR().AddNewBr().type = ST_BrType.page;
+
+            DocxConfig currentConfig = configDocx;
+            configDocx = new DocxConfig(); // default config when rendering front matters
+
+            foreach (var marker in frontMatter.Contents)
+            {
+                RenderMarker(marker, new StyleConfig());
+            }
+
+            // revert to user config
+            configDocx = currentConfig;
+
+            newDoc.Document.body.Items.Add(pHeader);
+            newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
         }
     }
 }
