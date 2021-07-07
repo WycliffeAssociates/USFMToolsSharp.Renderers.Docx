@@ -33,15 +33,23 @@ namespace USFMToolsSharp.Renderers.Docx
             configDocx = config;
         }
 
+        public USFMDocument FrontMatter { get; set; } = null;
+
         public XWPFDocument Render(USFMDocument input)
         {
             UnrenderableMarkers = new List<string>();
             CrossRefMarkers = new Dictionary<string, Marker>();
             newDoc = new XWPFDocument();
-            
+
+            if (FrontMatter != null)
+            {
+                RenderFrontMatter(FrontMatter);
+            }
+
             if (configDocx.renderTableOfContents)
             {
                 DocumentStylesBuilder.BuildStylesForTOC(newDoc);
+                RenderTOC();
             }
             
             newDoc.CreateFootnotes();
@@ -76,13 +84,9 @@ namespace USFMToolsSharp.Renderers.Docx
             };
             finalSection.pgNumType = pageNum;
 
-            if (configDocx.renderTableOfContents)
-            {
-                RenderTOC();
-            }
-
             return newDoc;
         }
+
         private void RenderMarker(Marker input, StyleConfig styles, XWPFParagraph parentParagraph = null)
         {
             // Keep track of the previous marker
@@ -643,25 +647,39 @@ namespace USFMToolsSharp.Renderers.Docx
         /// <summary>
         /// Renders a Table of Contents (TOC) in front of the document.
         /// 
-        /// Please set the paragraphs style to "Heading{#}" before 
-        /// invoking this method. Otherwise, it renders an empty TOC.
+        /// Please set the paragraphs style to "Heading{#}". 
+        /// Otherwise, it renders an empty TOC.
         /// </summary>
         private void RenderTOC()
         {
             TOC tocBuilder = new TOC();
             CT_SdtBlock tableOfContents = tocBuilder.Build();
-
-            // add page break after TOC
-            CT_P pBreak = new CT_P();
-            pBreak.AddNewR().AddNewBr().type = ST_BrType.page;
-            
             CT_P pHeader = CreateFrontHeader();
 
-            newDoc.Document.body.Items.Insert(0, tableOfContents);
-            newDoc.Document.body.Items.Insert(1, pBreak);
-            newDoc.Document.body.Items.Insert(2, pHeader);
+            newDoc.Document.body.Items.Add(tableOfContents);
+            newDoc.Document.body.Items.Add(pHeader);
+            newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
 
             newDoc.EnforceUpdateFields();
+        }
+
+        private void RenderFrontMatter(USFMDocument frontMatter)
+        {
+            // reset default format before rendering front matters
+            DocxConfig currentConfig = configDocx;
+            configDocx = new DocxConfig(); 
+
+            foreach (var marker in frontMatter.Contents)
+            {
+                RenderMarker(marker, new StyleConfig());
+            }
+
+            // revert to user config format
+            configDocx = currentConfig;
+
+            CT_P pHeader = CreateFrontHeader();
+            newDoc.Document.body.Items.Add(pHeader);
+            newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
         }
     }
 }
