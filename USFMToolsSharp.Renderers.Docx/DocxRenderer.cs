@@ -655,11 +655,6 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             TOC tocBuilder = new TOC();
             CT_SdtBlock tableOfContents = tocBuilder.Build();
-
-            // add page break after TOC
-            CT_P pBreak = new CT_P();
-            pBreak.AddNewR().AddNewBr().type = ST_BrType.page;
-            
             CT_P pHeader = CreateFrontHeader();
 
             newDoc.Document.body.Items.Add(tableOfContents);
@@ -671,10 +666,6 @@ namespace USFMToolsSharp.Renderers.Docx
 
         private void RenderFrontMatter(USFMDocument frontMatter)
         {
-            CT_P pHeader = CreateFrontHeader();
-            CT_P pBreak = new CT_P();
-            pBreak.AddNewR().AddNewBr().type = ST_BrType.page;
-
             DocxConfig currentConfig = configDocx;
             configDocx = new DocxConfig(); // default config when rendering front matters
 
@@ -686,6 +677,7 @@ namespace USFMToolsSharp.Renderers.Docx
             // revert to user config
             configDocx = currentConfig;
 
+            CT_P pHeader = CreateFrontHeader();
             newDoc.Document.body.Items.Add(pHeader);
             newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
         }
