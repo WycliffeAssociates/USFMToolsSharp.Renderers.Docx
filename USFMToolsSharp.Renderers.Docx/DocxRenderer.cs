@@ -666,15 +666,16 @@ namespace USFMToolsSharp.Renderers.Docx
 
         private void RenderFrontMatter(USFMDocument frontMatter)
         {
+            // reset default format before rendering front matters
             DocxConfig currentConfig = configDocx;
-            configDocx = new DocxConfig(); // default config when rendering front matters
+            configDocx = new DocxConfig(); 
 
             foreach (var marker in frontMatter.Contents)
             {
                 RenderMarker(marker, new StyleConfig());
             }
 
-            // revert to user config
+            // revert to user config format
             configDocx = currentConfig;
 
             CT_P pHeader = CreateFrontHeader();
