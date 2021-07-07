@@ -647,8 +647,8 @@ namespace USFMToolsSharp.Renderers.Docx
         /// <summary>
         /// Renders a Table of Contents (TOC) in front of the document.
         /// 
-        /// Please set the paragraphs style to "Heading{#}" before 
-        /// invoking this method. Otherwise, it renders an empty TOC.
+        /// Please set the paragraphs style to "Heading{#}". 
+        /// Otherwise, it renders an empty TOC.
         /// </summary>
         private void RenderTOC()
         {
