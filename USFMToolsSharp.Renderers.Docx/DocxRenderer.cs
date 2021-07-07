@@ -14,7 +14,6 @@ namespace USFMToolsSharp.Renderers.Docx
         public Dictionary<string, Marker> CrossRefMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
-        private USFMDocument frontMatter = null;
         private int pageHeaderCount = 1;
         private string previousBookHeader = null;
         private const string chapterLabelDefault = "Chapter";
@@ -34,7 +33,7 @@ namespace USFMToolsSharp.Renderers.Docx
             configDocx = config;
         }
 
-        public void SetFrontMatter(USFMDocument front) => this.frontMatter = front;
+        public USFMDocument FrontMatter { get; set; } = null;
 
         public XWPFDocument Render(USFMDocument input)
         {
@@ -42,9 +41,9 @@ namespace USFMToolsSharp.Renderers.Docx
             CrossRefMarkers = new Dictionary<string, Marker>();
             newDoc = new XWPFDocument();
 
-            if (frontMatter != null)
+            if (FrontMatter != null)
             {
-                RenderFrontMatter(frontMatter);
+                RenderFrontMatter(FrontMatter);
             }
 
             if (configDocx.renderTableOfContents)
