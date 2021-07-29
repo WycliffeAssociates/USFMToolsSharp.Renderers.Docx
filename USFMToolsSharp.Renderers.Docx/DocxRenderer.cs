@@ -523,7 +523,7 @@ namespace USFMToolsSharp.Renderers.Docx
             }
 
             // Book name
-            run.AddNewT().Value = bookname;
+            run.AddNewT().Value = bookname == null ? "" : bookname;
             // Chapter name
             if (currentChapterLabel.Length > 0)
             {
