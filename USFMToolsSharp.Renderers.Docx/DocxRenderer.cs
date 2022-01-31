@@ -200,7 +200,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     setRTL(verseMarker);
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
-                    AppendSpace(parentParagraph);
+                    AppendNonBreakingSpace(parentParagraph);
 
                     foreach (Marker marker in input.Contents)
                     {
@@ -444,6 +444,21 @@ namespace USFMToolsSharp.Renderers.Docx
             CT_R ctr = run.GetCTR();
             CT_Text text = ctr.AddNewT();
             text.Value = " ";
+            text.space = "preserve";
+        }
+
+        /// <summary>
+        /// Appends a text run containing a non-breaking space.  The run is
+        /// space-preserved so that the space will be visible.
+        /// </summary>
+        /// <param name="paragraph">The parent paragraph to add the run to.</param>
+        private void AppendNonBreakingSpace(XWPFParagraph paragraph)
+        {
+            XWPFRun run = paragraph.CreateRun();
+            setRTL(run);
+            CT_R ctr = run.GetCTR();
+            CT_Text text = ctr.AddNewT();
+            text.Value = "\u00A0";
             text.space = "preserve";
         }
 
