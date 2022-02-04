@@ -16,6 +16,7 @@ namespace USFMToolsSharp.Renderers.Docx
         public Dictionary<string, Marker> CrossRefMarkers;
         private DocxConfig configDocx;
         private Body body;
+        private Footnotes footnotes;
         private WordprocessingDocument newDoc;
         private int pageHeaderCount = 1;
         private string previousBookHeader = null;
@@ -46,6 +47,8 @@ namespace USFMToolsSharp.Renderers.Docx
             {
                 var mainPart = newDoc.AddMainDocumentPart();
                 mainPart.Document = new Document();
+                var footnotesPart = mainPart.AddNewPart<FootnotesPart>();
+                footnotes = footnotesPart.Footnotes = new Footnotes();
                 body = mainPart.Document.AppendChild(new Body());
 
                 if (FrontMatter != null)
@@ -122,17 +125,18 @@ namespace USFMToolsSharp.Renderers.Docx
             spacing.After = (spaceAfter != 0 ? spaceAfter : 200).ToString();
             var bidi = paragraphProperties.AppendChild(new BiDi());
             bidi.Val = new OnOffValue(configDocx.rightToLeft);
+
             if (indentation != 0)
             {
                 var indentationElement = paragraphProperties.AppendChild(new Indentation());
                 indentationElement.Left = indentation.ToString();
             }
-            /*
+
             if (paragraphStyleId != null)
             {
                 paragraphProperties.ParagraphStyleId = new ParagraphStyleId { Val = paragraphStyleId };
             }
-            */
+
             return paragraph;
         }
         Run CreateRun(StyleConfig styleConfig, bool isSuperScript = false)
@@ -216,10 +220,8 @@ namespace USFMToolsSharp.Renderers.Docx
                         }
                     }
 
-                    /*
                     createBookHeaders(previousBookHeader);
 
-                    */
                     var newChapter = body.AppendChild(CreateParagraph(configDocx,styles));
                     var chapterMarker = newChapter.AppendChild(new Run());
                     string simpleNumber = cMarker.Number.ToString();
@@ -308,7 +310,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     }
                     break;
                 case HMarker hMarker:
-/*
                     // Add section header for previous book, if any
                     // (section page headers are set at the final paragraph of the section)
                     if (previousBookHeader != null)
@@ -322,46 +323,40 @@ namespace USFMToolsSharp.Renderers.Docx
                     previousBookHeader = hMarker.HeaderText;
 
                     // Write body header text
-                    markerStyle.fontSize = (configDocx.fontSize * 2);
+                    markerStyle.fontSize = configDocx.fontSize;
                     var newHeader = body.AppendChild(CreateParagraph(configDocx, markerStyle, paragraphStyleId:"Heading1", spaceAfter:200));
                     var headerTitle = newHeader.AppendChild(CreateRun(markerStyle));
 
                     headerTitle.AppendChild(new Text(hMarker.HeaderText));
-*/
 
                     break;
-                    /*
                 case FMarker fMarker:
-                    string footnoteId;
-                    footnoteId = nextFootnoteNum.ToString();
-                    nextFootnoteNum++;
-
-                    CT_FtnEdn footnote = new CT_FtnEdn();
-                    footnote.id = footnoteId;
-                    footnote.type = ST_FtnEdn.normal;
+                    var footnote = footnotes.AppendChild(new Footnote());
+                    footnote.Id = nextFootnoteNum;
+                    footnote.Type = FootnoteEndnoteValues.Normal;
                     StyleConfig footnoteMarkerStyle = (StyleConfig)styles.Clone();
                     footnoteMarkerStyle.fontSize = 12;
-                    CT_P footnoteParagraph = footnote.AddNewP();
-                    XWPFParagraph xFootnoteParagraph = new XWPFParagraph(footnoteParagraph, parentParagraph.Body);
-                    xFootnoteParagraph.SetBidi(configDocx.rightToLeft);
-                    footnoteParagraph.AddNewR().AddNewT().Value = "F" + footnoteId.ToString() + " ";
+                    var footnoteParagraph = footnote.AppendChild(new Paragraph());
+                    footnoteParagraph.AppendChild(new Run()).AppendChild(new Text($"F{nextFootnoteNum} "));
+
                     foreach (Marker marker in fMarker.Contents)
                     {
-                        RenderMarker(marker, footnoteMarkerStyle, xFootnoteParagraph);
+                        RenderMarker(marker, footnoteMarkerStyle, footnoteParagraph);
                     }
-                    parentParagraph.Document.AddFootnote(footnote);
 
-                    XWPFRun footnoteReferenceRun = parentParagraph.CreateRun();
-                    setRTL(footnoteReferenceRun);
-                    CT_RPr rpr = footnoteReferenceRun.GetCTR().AddNewRPr();
-                    rpr.rStyle = new CT_String();
-                    rpr.rStyle.val = "FootnoteReference";
-                    CT_FtnEdnRef footnoteReference = new CT_FtnEdnRef();
-                    footnoteReference.id = footnoteId;
-                    footnoteReference.isEndnote = false;
-                    footnoteReferenceRun.SetUnderline(UnderlinePatterns.Single);
-                    footnoteReferenceRun.AppendText("F");
-                    footnoteReferenceRun.GetCTR().Items.Add(footnoteReference);
+
+
+                    var referenceRun = parentParagraph.AppendChild(new Run());
+                    referenceRun.AppendChild(new Text("F"));
+                    var referenceRunProperties = referenceRun.AppendChild(new RunProperties());
+                    referenceRunProperties.AppendChild(new VerticalTextAlignment()).Val = VerticalPositionValues.Superscript;
+                    referenceRunProperties.AppendChild(new Underline());
+
+                    var footnoteReference = new FootnoteReference();
+                    footnoteReference.Id = nextFootnoteNum;
+                    referenceRun.AppendChild(footnoteReference);
+
+                    nextFootnoteNum++;
                     break;
                 case FPMarker fPMarker:
                     foreach (Marker marker in input.Contents)
@@ -378,14 +373,12 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case FRMarker fRMarker:
                     markerStyle.isBold = true;
-                    XWPFRun VerseReference = parentParagraph.CreateRun(markerStyle);
-                    setRTL(VerseReference);
-                    VerseReference.SetText(fRMarker.VerseReference);
+                    parentParagraph.AppendChild(CreateRun(markerStyle));
+                    parentParagraph.AppendChild(new Text(fRMarker.VerseReference));
                     break;
                 case FKMarker fKMarker:
-                    XWPFRun FootNoteKeyword = parentParagraph.CreateRun(markerStyle);
-                    setRTL(FootNoteKeyword);
-                    FootNoteKeyword.SetText($" {fKMarker.FootNoteKeyword.ToUpper()}: ");
+                    var FootNoteKeyword = parentParagraph.AppendChild(CreateRun(markerStyle));
+                    FootNoteKeyword.AppendChild(new Text($" {fKMarker.FootNoteKeyword.ToUpper()}: "));
                     break;
                 case FQMarker fQMarker:
                 case FQAMarker fQAMarker:
@@ -395,6 +388,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
+                    /*
                 // Cross References
                 case XMarker xMarker:
                     string crossId;
@@ -454,10 +448,11 @@ namespace USFMToolsSharp.Renderers.Docx
                         getRenderedRows(marker, markerStyle, tableContainer);
                     }
                     break;
+                    */
                 case BMarker bMarker:
-                    XWPFRun newLineBreak = parentParagraph.CreateRun();
-                    setRTL(newLineBreak);
-                    newLineBreak.AddBreak(BreakType.TEXTWRAPPING);
+                    var newLineBreak = parentParagraph.AppendChild(CreateRun(markerStyle));
+                    var breakObject = newLineBreak.AppendChild(new Break());
+                    breakObject.Type = BreakValues.TextWrapping;
                     break;
                 case IDMarker _:
                     // This is the start of a new book.
@@ -466,15 +461,11 @@ namespace USFMToolsSharp.Renderers.Docx
                     currentChapterLabel = "";
                     break;
                 case IPMarker _:
-                    XWPFParagraph introParagraph = parentParagraph;
+                    Paragraph introParagraph = parentParagraph;
                     // If the previous marker was a chapter marker, don't create a new paragraph.
                     if (!(previousMarker is CMarker _))
                     {
-                        XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
-                        newParagraph.SetBidi(configDocx.rightToLeft);
-                        newParagraph.Alignment = configDocx.textAlign;
-                        newParagraph.SpacingBetween = configDocx.lineSpacing;
-                        newParagraph.SpacingAfter = 200;
+                        var newParagraph = body.AppendChild(CreateParagraph(configDocx, markerStyle, spaceAfter:200));
                         introParagraph = newParagraph;
                     }
 
@@ -483,7 +474,6 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, introParagraph);
                     }
                     break;
-                    */
                 case XEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
