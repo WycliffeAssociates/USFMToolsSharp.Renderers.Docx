@@ -192,6 +192,16 @@ namespace USFMToolsSharp.Renderers.Docx
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, paragraph);
+                        var lastParagraph = body.Descendants<Paragraph>().LastOrDefault();
+                        if (lastParagraph != paragraph)
+                        {
+                            if (!lastParagraph.Descendants<Run>().Any())
+                            {
+                                paragraph = lastParagraph;
+                                continue;
+                            }
+                            paragraph = body.AppendChild(CreateParagraph(configDocx, styles));
+                        }
                     }
                     break;
                 case CLMarker clMarker:
@@ -288,7 +298,16 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case QMarker qMarker:
                     markerStyle.fontSize = configDocx.fontSize;
-                    var poetryParagraph = body.AppendChild(CreateParagraph(configDocx, markerStyle, spaceAfter: 200, indentation: qMarker.Depth * 500));
+                    var poetryParagraph = CreateParagraph(configDocx, markerStyle, spaceAfter: 200, indentation: qMarker.Depth * 500);
+
+                    if (!parentParagraph.Descendants<Run>().Any())
+                    {
+                        body.ReplaceChild(poetryParagraph, parentParagraph);
+                    }
+                    else
+                    {
+                        body.AppendChild(poetryParagraph);
+                    }
 
                     foreach (Marker marker in input.Contents)
                     {
@@ -315,7 +334,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     if (previousBookHeader != null)
                     {
                         // Create new section and page header
-                        //createBookHeaders(previousBookHeader);
+                        createBookHeaders(previousBookHeader);
                         // Print page break
                         var sectionParagraph = body.AppendChild(CreateParagraph(configDocx,markerStyle));
                         sectionParagraph.AppendChild(CreateBreakRun(BreakValues.Page));
