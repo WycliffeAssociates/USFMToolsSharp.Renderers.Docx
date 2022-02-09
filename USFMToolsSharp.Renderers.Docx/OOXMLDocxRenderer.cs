@@ -85,12 +85,12 @@ namespace USFMToolsSharp.Renderers.Docx
                 // paragraph.
 
                 var sectionProperties = body.AppendChild(new SectionProperties());
-                var columns = sectionProperties.AppendChild(new Columns());
-                columns.ColumnCount = (Int16Value)configDocx.columnCount;
-                var pageNumber = sectionProperties.AppendChild(new PageNumberType());
-                pageNumber.Format = NumberFormatValues.Decimal;
                 var sectionType = sectionProperties.AppendChild(new SectionType());
                 sectionType.Val = SectionMarkValues.Continuous;
+                var pageNumber = sectionProperties.AppendChild(new PageNumberType());
+                pageNumber.Format = NumberFormatValues.Decimal;
+                var columns = sectionProperties.AppendChild(new Columns());
+                columns.ColumnCount = (Int16Value)configDocx.columnCount;
             }
         }
 
@@ -120,11 +120,12 @@ namespace USFMToolsSharp.Renderers.Docx
             columns.ColumnCount = (Int16Value)configDocx.columnCount;
             columns.EqualWidth = true;
             */
+            var bidi = paragraphProperties.AppendChild(new BiDi());
+            bidi.Val = new OnOffValue(configDocx.rightToLeft);
+
             var spacing = paragraphProperties.AppendChild(new SpacingBetweenLines());
             spacing.Line = (configDocx.lineSpacing * 240).ToString();
             spacing.After = (spaceAfter != 0 ? spaceAfter : 200).ToString();
-            var bidi = paragraphProperties.AppendChild(new BiDi());
-            bidi.Val = new OnOffValue(configDocx.rightToLeft);
 
             if (indentation != 0)
             {
@@ -245,12 +246,12 @@ namespace USFMToolsSharp.Renderers.Docx
                         // Use the default chapter text for this section, e.g. "Chapter 1"
                         currentChapterLabel = chapterLabel + " " + simpleNumber;
                     }
+                    var runProperties = chapterMarker.AppendChild(new RunProperties());
+                    var fontSize = runProperties.AppendChild(new FontSize());
+                    fontSize.Val = ((int)(configDocx.fontSize * 3)).ToString();
                     chapterMarker.AppendChild(new Text(currentChapterLabel));
                     // TODO: Check this
                     //chapterMarker.RemoveBreak();
-                    var runProperties = chapterMarker.AppendChild(new RunProperties());
-                    var fontSize = runProperties.AppendChild(new FontSize());
-                    fontSize.Val = ((int)(configDocx.fontSize * 2 * 3)).ToString();
 
                     var chapterVerses = body.AppendChild(CreateParagraph(configDocx, markerStyle));
                     foreach (Marker marker in input.Contents)
@@ -366,10 +367,10 @@ namespace USFMToolsSharp.Renderers.Docx
 
 
                     var referenceRun = parentParagraph.AppendChild(new Run());
-                    referenceRun.AppendChild(new Text("F"));
                     var referenceRunProperties = referenceRun.AppendChild(new RunProperties());
-                    referenceRunProperties.AppendChild(new VerticalTextAlignment()).Val = VerticalPositionValues.Superscript;
                     referenceRunProperties.AppendChild(new Underline());
+                    referenceRunProperties.AppendChild(new VerticalTextAlignment()).Val = VerticalPositionValues.Superscript;
+                    referenceRun.AppendChild(new Text($"F{nextFootnoteNum}"));
 
                     var footnoteReference = new FootnoteReference();
                     footnoteReference.Id = nextFootnoteNum;
@@ -658,13 +659,11 @@ namespace USFMToolsSharp.Renderers.Docx
             headerRef.id = documentHeader.GetPackageRelationship().Id;
             */
 
-            // Set number of columns
-            //newSection.cols.num = configDocx.columnCount.ToString();
-            sectionProperties.AppendChild(new Columns()).ColumnCount = (Int16Value)configDocx.columnCount;
-
             var pageNumberType = sectionProperties.AppendChild(new PageNumberType());
             pageNumberType.Format = NumberFormatValues.Decimal;
             pageNumberType.ChapterSeparator = ChapterSeparatorValues.Hyphen;
+
+            sectionProperties.AppendChild(new Columns()).ColumnCount = (Int16Value)configDocx.columnCount;
 
             // Increment page header count so each one gets a unique ID
             pageHeaderCount++;
