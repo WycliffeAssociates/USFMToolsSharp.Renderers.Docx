@@ -140,7 +140,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
             return paragraph;
         }
-        Run CreateRun(StyleConfig styleConfig, bool isSuperScript = false)
+        Run CreateRun(StyleConfig styleConfig, bool isSuperScript = false, int? runSpacing = null)
         {
             var run = new Run();
             var runProperties = run.AppendChild(new RunProperties());
@@ -153,6 +153,10 @@ namespace USFMToolsSharp.Renderers.Docx
             {
                 var italic = runProperties.AppendChild(new Italic());
                 italic.Val = styleConfig.isItalics;
+            }
+            if (runSpacing.HasValue)
+            {
+               runProperties.AppendChild(new Spacing()).Val = runSpacing;
             }
             var fontSize = runProperties.AppendChild(new FontSize());
             fontSize.Val = (styleConfig.fontSize *2).ToString();
@@ -259,7 +263,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, chapterVerses);
                     }
 
-                    // TODO: come back to this RenderCrossReferences(markerStyle);
+                    RenderCrossReferences(markerStyle);
 
                     break;
                 case VMarker vMarker:
@@ -357,7 +361,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     StyleConfig footnoteMarkerStyle = (StyleConfig)styles.Clone();
                     footnoteMarkerStyle.fontSize = 12;
                     var footnoteParagraph = footnote.AppendChild(new Paragraph());
-                    footnoteParagraph.AppendChild(new Run()).AppendChild(new Text($"F{nextFootnoteNum} "));
+                    var footnoteRun = footnoteParagraph.AppendChild(CreateRun(footnoteMarkerStyle));
+                    footnoteRun.AppendChild(new Text($"F{nextFootnoteNum} ")).Space = SpaceProcessingModeValues.Preserve;
 
                     foreach (Marker marker in fMarker.Contents)
                     {
@@ -370,7 +375,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     var referenceRunProperties = referenceRun.AppendChild(new RunProperties());
                     referenceRunProperties.AppendChild(new Underline());
                     referenceRunProperties.AppendChild(new VerticalTextAlignment()).Val = VerticalPositionValues.Superscript;
-                    referenceRun.AppendChild(new Text($"F{nextFootnoteNum}"));
+                    referenceRun.AppendChild(new Text($"F"));
 
                     var footnoteReference = new FootnoteReference();
                     footnoteReference.Id = nextFootnoteNum;
@@ -408,7 +413,6 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
-                    /*
                 // Cross References
                 case XMarker xMarker:
                     string crossId;
@@ -424,18 +428,15 @@ namespace USFMToolsSharp.Renderers.Docx
                             crossId = xMarker.CrossRefCaller;
                             break;
                     }
-                    XWPFRun crossRefMarker = parentParagraph.CreateRun(markerStyle);
-                    setRTL(crossRefMarker);
-                    crossRefMarker.SetText(crossId);
-                    crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+                    var crossRefMarker = parentParagraph.AppendChild(CreateRun(markerStyle, isSuperScript: true));
+                    crossRefMarker.AppendChild(new Text(crossId));
 
                     CrossRefMarkers[crossId] = xMarker;
                     break;
                 case XOMarker xOMarker:
                     markerStyle.isBold = true;
-                    XWPFRun CrossVerseReference = parentParagraph.CreateRun(markerStyle);
-                    setRTL(CrossVerseReference);
-                    CrossVerseReference.SetText($" {xOMarker.OriginRef} ");
+                    var CrossVerseReference = parentParagraph.AppendChild(CreateRun(markerStyle));
+                    CrossVerseReference.AppendChild(new Text($" {xOMarker.OriginRef} "));
                     break;
                 case XTMarker xTMarker:
                     foreach (Marker marker in input.Contents)
@@ -452,23 +453,39 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 // Table Markers
                 case TableBlock table:
-                    XWPFTable tableContainer = newDoc.CreateTable();
-
-                    // Clear Borders
-                    tableContainer.SetBottomBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
-                    tableContainer.SetLeftBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
-                    tableContainer.SetRightBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
-                    tableContainer.SetTopBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
-                    // Clear Inside Borders
-                    tableContainer.SetInsideHBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
-                    tableContainer.SetInsideVBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
+                    var tableContainer = new Table();
+                    tableContainer.AppendChild(new TableProperties(new TableBorders(
+                        new TopBorder
+                        {
+                            Val = BorderValues.None
+                        },
+                        new BottomBorder
+                        {
+                            Val = BorderValues.None
+                        },
+                        new LeftBorder
+                        {
+                            Val = BorderValues.None
+                        },
+                        new RightBorder
+                        {
+                            Val = BorderValues.None
+                        },
+                        new InsideHorizontalBorder
+                        {
+                            Val = BorderValues.None
+                        },
+                        new InsideVerticalBorder
+                        {
+                            Val= BorderValues.None
+                        }
+                        )));
 
                     foreach (Marker marker in input.Contents)
                     {
                         getRenderedRows(marker, markerStyle, tableContainer);
                     }
                     break;
-                    */
                 case BMarker bMarker:
                     var newLineBreak = parentParagraph.AppendChild(CreateRun(markerStyle));
                     var breakObject = newLineBreak.AppendChild(new Break());
@@ -546,26 +563,23 @@ namespace USFMToolsSharp.Renderers.Docx
                 rpr.rtl.val = configDocx.rightToLeft;
             }
         }
+        */
 
         private void RenderCrossReferences(StyleConfig config)
         {
 
             if (CrossRefMarkers.Count > 0)
             {
-                XWPFParagraph renderCrossRefStart = newDoc.CreateParagraph();
-                renderCrossRefStart.BorderTop = Borders.Single;
-
                 StyleConfig markerStyle = (StyleConfig)config.Clone();
                 markerStyle.fontSize = 12;
 
                 foreach (var crossRefKVP in CrossRefMarkers)
                 {
-                    XWPFParagraph renderCrossRef = newDoc.CreateParagraph();
-                    renderCrossRef.SetBidi(configDocx.rightToLeft);
-                    XWPFRun crossRefMarker = renderCrossRef.CreateRun(markerStyle);
-                    setRTL(crossRefMarker);
-                    crossRefMarker.SetText(crossRefKVP.Key);
-                    crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
+                    var renderCrossRef = body.AppendChild(new Paragraph(new ParagraphProperties(
+                        new ParagraphBorders(new TopBorder() { Val = BorderValues.Single})),
+                        new BiDi() { Val = new OnOffValue(configDocx.rightToLeft)}));
+                    var crossRefMarker = renderCrossRef.AppendChild(CreateRun(markerStyle, isSuperScript:true));
+                    crossRefMarker.AppendChild(new Text(crossRefKVP.Key));
 
                     foreach (Marker input in crossRefKVP.Value.Contents)
                     {
@@ -576,7 +590,6 @@ namespace USFMToolsSharp.Renderers.Docx
                 CrossRefMarkers.Clear();
             }
         }
-        */
         public void setStartPageNumber()
         {
             var properties = body.AppendChild(new SectionProperties());
@@ -608,29 +621,20 @@ namespace USFMToolsSharp.Renderers.Docx
             {
                 // Page number
                 run.AppendChild(new FieldChar()).FieldCharType = FieldCharValues.Begin;
-                //run.AddNewFldChar().fldCharType = ST_FldCharType.begin;
                 run.AppendChild(new FieldCode(" PAGE "));
-                //run.AddNewInstrText().Value = " PAGE ";
-                //run.AddNewFldChar().fldCharType = ST_FldCharType.separate;
                 run.AppendChild(new FieldChar()).FieldCharType = FieldCharValues.Separate;
-                //run.AddNewInstrText().Value = "1";
 
                 run.AppendChild(new FieldCode("1"));
-                //run.AddNewFldChar().fldCharType = ST_FldCharType.end;
                 run.AppendChild(new FieldChar()).FieldCharType = FieldCharValues.End;
-                //run.AddNewT().Value = "  -  ";
                 run.AppendChild(new Text(" - "));
             }
 
             // Book name
-            //run.AddNewT().Value = bookname == null ? "" : bookname;
             run.AppendChild(new Text(bookname == null ? "" : bookname));
             // Chapter name
             if (currentChapterLabel.Length > 0)
             {
-                //run.AddNewT().Value = "  -  ";
                 run.AppendChild(new Text("  -  "));
-                //run.AddNewT().Value = currentChapterLabel;
                 run.AppendChild(new Text(currentChapterLabel));
             }
 
@@ -668,15 +672,15 @@ namespace USFMToolsSharp.Renderers.Docx
             // Increment page header count so each one gets a unique ID
             pageHeaderCount++;
         }
-        /*
 
+        /*
         /// <summary>
         /// Creates an empty header for front pages.
         /// The returned paragraph should be inserted in front of document
         /// </summary>
         /// <example>xwpfDoc.Document.body.Items.Insert(1, CreateFrontHeader());</example>
         /// <returns>CT_P paragraph that contains a blank header</returns>
-        private CT_P CreateFrontHeader()
+        private Paragraph CreateFrontHeader()
         {
             CT_Hdr header = new CT_Hdr();
             CT_P headerParagraph = header.AddNewP();
@@ -699,26 +703,26 @@ namespace USFMToolsSharp.Renderers.Docx
 
             return p;
         }
+        */
 
-        public void getRenderedRows(Marker input, StyleConfig config, XWPFTable parentTable)
+        public void getRenderedRows(Marker input, StyleConfig config, Table parentTable)
         {
-            XWPFTableRow tableRowContainer = parentTable.CreateRow();
+            var tableRowContainer = parentTable.AppendChild(new TableRow());
             foreach (Marker marker in input.Contents)
             {
                 getRenderedCell(marker, config, tableRowContainer);
             }
         }
-        public void getRenderedCell(Marker input, StyleConfig config, XWPFTableRow parentRow)
+        public void getRenderedCell(Marker input, StyleConfig config, TableRow parentRow)
         {
             StyleConfig markerStyle = (StyleConfig)config.Clone();
-            XWPFTableCell tableCellContainer = parentRow.CreateCell();
-            XWPFParagraph cellContents;
+            var tableCellContainer = parentRow.AppendChild(new TableCell());
+            Paragraph cellContents;
             switch (input)
             {
                 case THMarker tHMarker:
                     markerStyle.isBold = true;
-                    cellContents = tableCellContainer.AddParagraph(markerStyle);
-                    cellContents.SetBidi(configDocx.rightToLeft);
+                    cellContents = tableCellContainer.AppendChild(CreateParagraph(configDocx, markerStyle));
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
@@ -727,16 +731,14 @@ namespace USFMToolsSharp.Renderers.Docx
                 case THRMarker tHRMarker:
                     markerStyle.isAlignRight = true;
                     markerStyle.isBold = true;
-                    cellContents = tableCellContainer.AddParagraph(markerStyle);
-                    cellContents.SetBidi(configDocx.rightToLeft);
+                    cellContents = tableCellContainer.AppendChild(CreateParagraph(configDocx, markerStyle));
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
                     break;
                 case TCMarker tCMarker:
-                    cellContents = tableCellContainer.AddParagraph(markerStyle);
-                    cellContents.SetBidi(configDocx.rightToLeft);
+                    cellContents = tableCellContainer.AppendChild(CreateParagraph(configDocx, markerStyle));
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
@@ -744,8 +746,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case TCRMarker tCRMarker:
                     markerStyle.isAlignRight = true;
-                    cellContents = tableCellContainer.AddParagraph(markerStyle);
-                    cellContents.SetBidi(configDocx.rightToLeft);
+                    cellContents = tableCellContainer.AppendChild(CreateParagraph(configDocx, markerStyle));
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
@@ -764,15 +765,15 @@ namespace USFMToolsSharp.Renderers.Docx
         /// </summary>
         private void RenderTOC()
         {
-            TOC tocBuilder = new TOC();
-            CT_SdtBlock tableOfContents = tocBuilder.Build();
-            CT_P pHeader = CreateFrontHeader();
+            //CT_SdtBlock tableOfContents = tocBuilder.Build();
+            var tableOfContents = body.AppendChild(new SdtBlock());
+            //CT_P pHeader = CreateFrontHeader();
 
-            newDoc.Document.body.Items.Add(tableOfContents);
-            newDoc.Document.body.Items.Add(pHeader);
-            newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+            //newDoc.Document.body.Items.Add(tableOfContents);
+            //newDoc.Document.body.Items.Add(pHeader);
+            body.AppendChild(new Paragraph(CreateBreakRun(BreakValues.Page)));
 
-            newDoc.EnforceUpdateFields();
+            //newDoc.EnforceUpdateFields();
         }
 
         private void RenderFrontMatter(USFMDocument frontMatter)
@@ -789,10 +790,9 @@ namespace USFMToolsSharp.Renderers.Docx
             // revert to user config format
             configDocx = currentConfig;
 
-            CT_P pHeader = CreateFrontHeader();
-            newDoc.Document.body.Items.Add(pHeader);
-            newDoc.CreateParagraph().CreateRun().AddBreak(BreakType.PAGE);
+            //CT_P pHeader = CreateFrontHeader();
+            //newDoc.Document.body.Items.Add(pHeader);
+            body.AppendChild(new Paragraph(CreateBreakRun(BreakValues.Page)));
         }
-        */
     }
 }
