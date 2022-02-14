@@ -104,7 +104,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                         newParagraph.SetBidi(configDocx.rightToLeft);
-                        newParagraph.Alignment = configDocx.textAlign;
+                        newParagraph.Alignment = (ParagraphAlignment)configDocx.textAlign;
                         newParagraph.SpacingBetween = configDocx.lineSpacing;
                         newParagraph.SpacingAfter = 200;
                         paragraph = newParagraph;
@@ -143,7 +143,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle, configDocx);
                     newChapter.SetBidi(configDocx.rightToLeft);
-                    newChapter.Alignment = configDocx.textAlign;
+                    newChapter.Alignment = (ParagraphAlignment)configDocx.textAlign;
                     newChapter.SpacingBetween = configDocx.lineSpacing;
                     newChapter.SpacingBefore = 200;
                     newChapter.SpacingAfter = 200;
@@ -166,7 +166,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle, configDocx);
                     chapterVerses.SetBidi(configDocx.rightToLeft);
-                    chapterVerses.Alignment = configDocx.textAlign;
+                    chapterVerses.Alignment = (ParagraphAlignment)configDocx.textAlign;
                     chapterVerses.SpacingBetween = configDocx.lineSpacing;
                     foreach (Marker marker in input.Contents)
                     {
@@ -185,7 +185,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         parentParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                         parentParagraph.SetBidi(configDocx.rightToLeft);
-                        parentParagraph.Alignment = configDocx.textAlign;
+                        parentParagraph.Alignment = (ParagraphAlignment)configDocx.textAlign;
                         parentParagraph.SpacingBetween = configDocx.lineSpacing;
                         parentParagraph.SpacingAfter = 200;
                     }
@@ -216,7 +216,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     markerStyle.fontSize = configDocx.fontSize;
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                     poetryParagraph.SetBidi(configDocx.rightToLeft);
-                    poetryParagraph.Alignment = configDocx.textAlign;
+                    poetryParagraph.Alignment = (ParagraphAlignment)configDocx.textAlign;
                     poetryParagraph.SpacingBetween = configDocx.lineSpacing;
                     poetryParagraph.IndentationLeft += qMarker.Depth * 500;
                     poetryParagraph.SpacingAfter = 200;
@@ -252,7 +252,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         // Print page break
                         XWPFParagraph sectionParagraph = newDoc.CreateParagraph();
                         sectionParagraph.SetBidi(configDocx.rightToLeft);
-                        sectionParagraph.Alignment = configDocx.textAlign;
+                        sectionParagraph.Alignment = (ParagraphAlignment)configDocx.textAlign;
                         sectionParagraph.CreateRun().AddBreak(BreakType.PAGE);
                     }
                     previousBookHeader = hMarker.HeaderText;
@@ -410,7 +410,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                         newParagraph.SetBidi(configDocx.rightToLeft);
-                        newParagraph.Alignment = configDocx.textAlign;
+                        newParagraph.Alignment = (ParagraphAlignment)configDocx.textAlign;
                         newParagraph.SpacingBetween = configDocx.lineSpacing;
                         newParagraph.SpacingAfter = 200;
                         introParagraph = newParagraph;

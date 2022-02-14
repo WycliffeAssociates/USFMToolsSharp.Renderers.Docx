@@ -59,7 +59,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 if (configDocx.renderTableOfContents)
                 {
                     //DocumentStylesBuilder.BuildStylesForTOC(newDoc);
-                    // TODO: Combe back to this RenderTOC();
+                    RenderTOC();
                 }
                 
                 //newDoc.CreateFootnotes();
@@ -114,12 +114,7 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             var paragraph = new Paragraph();
             var paragraphProperties = paragraph.AppendChild(new ParagraphProperties());
-            /*
-            var sectionProperties = paragraphProperties.AppendChild(new SectionProperties());
-            var columns = sectionProperties.AppendChild(new Columns());
-            columns.ColumnCount = (Int16Value)configDocx.columnCount;
-            columns.EqualWidth = true;
-            */
+
             var bidi = paragraphProperties.AppendChild(new BiDi());
             bidi.Val = new OnOffValue(configDocx.rightToLeft);
 
@@ -127,16 +122,28 @@ namespace USFMToolsSharp.Renderers.Docx
             spacing.Line = (configDocx.lineSpacing * 240).ToString();
             spacing.After = (spaceAfter != 0 ? spaceAfter : 200).ToString();
 
+            int marginLeft = configDocx.marginLeft * 567;
+            int marginRight = configDocx.marginRight * 567;
             if (indentation != 0)
             {
-                var indentationElement = paragraphProperties.AppendChild(new Indentation());
-                indentationElement.Left = indentation.ToString();
+                if (configDocx.rightToLeft)
+                {
+                    marginRight += indentation;
+                }
+                else
+                {
+                    marginLeft += indentation;
+                }
             }
+            var indentationElement = paragraphProperties.AppendChild(new Indentation());
+            indentationElement.Left = marginLeft.ToString();
+            indentationElement.Right = marginRight.ToString();
 
             if (paragraphStyleId != null)
             {
                 paragraphProperties.ParagraphStyleId = new ParagraphStyleId { Val = paragraphStyleId };
             }
+            paragraphProperties.AppendChild(new Justification() { Val = (JustificationValues)configDocx.textAlign });
 
             return paragraph;
         }
@@ -324,7 +331,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case TextBlock textBlock:
                     markerStyle.fontSize = configDocx.fontSize;
                     var blockText = parentParagraph.AppendChild(CreateRun(markerStyle));
-                    blockText.AppendChild(new Text(textBlock.Text));
+                    blockText.AppendChild(new Text(textBlock.Text)).Space = SpaceProcessingModeValues.Preserve;
                     break;
                 case BDMarker bdMarker:
                     markerStyle.isBold = true;
@@ -523,47 +530,17 @@ namespace USFMToolsSharp.Renderers.Docx
             }
         }
 
-        /*
         /// <summary>
         /// Appends a text run containing a single space.  The run is
         /// space-preserved so that the space will be visible.
         /// </summary>
         /// <param name="paragraph">The parent paragraph to add the run to.</param>
-        private void AppendSpace(XWPFParagraph paragraph)
+        private void AppendSpace(Paragraph paragraph)
         {
-            XWPFRun run = paragraph.CreateRun();
-            setRTL(run);
-            CT_R ctr = run.GetCTR();
-            CT_Text text = ctr.AddNewT();
-            text.Value = " ";
-            text.space = "preserve";
+            var run = paragraph.AppendChild(new Run());
+            run.AppendChild(new RunProperties(new RightToLeftText().Val = new OnOffValue(configDocx.rightToLeft)));
+            run.AppendChild(new Text(" ")).Space = SpaceProcessingModeValues.Preserve;
         }
-
-        /// <summary>
-        /// Appends a text run containing a non-breaking space.  The run is
-        /// space-preserved so that the space will be visible.
-        /// </summary>
-        /// <param name="paragraph">The parent paragraph to add the run to.</param>
-        private void AppendNonBreakingSpace(XWPFParagraph paragraph)
-        {
-            XWPFRun run = paragraph.CreateRun();
-            setRTL(run);
-            CT_R ctr = run.GetCTR();
-            CT_Text text = ctr.AddNewT();
-            text.Value = "\u00A0";
-            text.space = "preserve";
-        }
-
-        private void setRTL(XWPFRun run)
-        {
-            if (configDocx.rightToLeft)
-            {
-                CT_RPr rpr = run.GetCTR().AddNewRPr();
-                rpr.rtl = new CT_OnOff();
-                rpr.rtl.val = configDocx.rightToLeft;
-            }
-        }
-        */
 
         private void RenderCrossReferences(StyleConfig config)
         {
@@ -769,10 +746,13 @@ namespace USFMToolsSharp.Renderers.Docx
             var tableOfContents = body.AppendChild(new SdtBlock());
             //CT_P pHeader = CreateFrontHeader();
 
-            //newDoc.Document.body.Items.Add(tableOfContents);
-            //newDoc.Document.body.Items.Add(pHeader);
-            body.AppendChild(new Paragraph(CreateBreakRun(BreakValues.Page)));
-
+            var paragraph = body.AppendChild(new Paragraph(
+                new Run(new FieldChar() { FieldCharType = FieldCharValues.Begin}),
+                new Run(new FieldCode() { Text ="TOC \\* MERGEFORMAT ", Space = SpaceProcessingModeValues.Preserve }),
+                new Run(new FieldChar() { FieldCharType = FieldCharValues.Separate}),
+                new Run(new FieldChar() { FieldCharType = FieldCharValues.End}),
+                CreateBreakRun(BreakValues.Page)
+                ));
             //newDoc.EnforceUpdateFields();
         }
 
