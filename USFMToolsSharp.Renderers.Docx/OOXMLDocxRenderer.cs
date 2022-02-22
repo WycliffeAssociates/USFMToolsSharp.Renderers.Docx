@@ -423,7 +423,6 @@ namespace USFMToolsSharp.Renderers.Docx
                 case HMarker hMarker:
                     // Add section header for previous book, if any
                     // (section page headers are set at the final paragraph of the section)
-                    Console.WriteLine(hMarker.HeaderText);
                     if (previousBookHeader != null)
                     {
                         // Create new section and page header
