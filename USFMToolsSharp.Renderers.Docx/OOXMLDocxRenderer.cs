@@ -6,6 +6,7 @@ using System.IO;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Linq;
+using System;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
@@ -27,6 +28,7 @@ namespace USFMToolsSharp.Renderers.Docx
         private int nextFootnoteNum = 1;
         private Marker thisMarker = null;
         private Marker previousMarker = null;
+        private Paragraph lastAppendedParagraph;
 
         public OOXMLDocxRenderer()
         {
@@ -39,8 +41,9 @@ namespace USFMToolsSharp.Renderers.Docx
 
         public USFMDocument FrontMatter { get; set; } = null;
 
-        public void Render(USFMDocument input, Stream outputStream)
+        public Stream Render(USFMDocument input)
         {
+            var outputStream = new MemoryStream();
             UnrenderableMarkers = new List<string>();
             CrossRefMarkers = new Dictionary<string, Marker>();
             using (newDoc = WordprocessingDocument.Create(outputStream, DocumentFormat.OpenXml.WordprocessingDocumentType.Document))
@@ -50,6 +53,9 @@ namespace USFMToolsSharp.Renderers.Docx
                 var footnotesPart = mainPart.AddNewPart<FootnotesPart>();
                 footnotes = footnotesPart.Footnotes = new Footnotes();
                 body = mainPart.Document.AppendChild(new Body());
+                var stylePart = mainPart.AddNewPart<StyleDefinitionsPart>();
+                var styles = stylePart.Styles = new Styles();
+                AddStyles(styles);
 
                 if (FrontMatter != null)
                 {
@@ -84,7 +90,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 // it's a direct child of the document, not a child of the last
                 // paragraph.
 
-                var sectionProperties = body.AppendChild(new SectionProperties());
+                var sectionProperties = AppendToBody(new SectionProperties());
                 var sectionType = sectionProperties.AppendChild(new SectionType());
                 sectionType.Val = SectionMarkValues.Continuous;
                 var pageNumber = sectionProperties.AppendChild(new PageNumberType());
@@ -92,6 +98,79 @@ namespace USFMToolsSharp.Renderers.Docx
                 var columns = sectionProperties.AppendChild(new Columns());
                 columns.ColumnCount = (Int16Value)configDocx.columnCount;
             }
+            return outputStream;
+        }
+        private Paragraph AppendToBody(Paragraph item)
+        {
+            lastAppendedParagraph = item;
+            return body.AppendChild(item);
+        }
+        private SectionProperties AppendToBody(SectionProperties item)
+        {
+            return body.AppendChild(item);
+        }
+
+        private void AddStyles(Styles styles)
+        {
+            Style normalStyle = new Style
+            {
+                StyleId = "Normal",
+                Default = true,
+                Type = StyleValues.Paragraph
+            };
+
+            normalStyle.AppendChild(new StyleName { Val = "Normal" });
+            normalStyle.AppendChild(new PrimaryStyle());
+            Style headingStyle = styles.AppendChild(new Style
+            {
+                StyleId = "BookHeading",
+                Type = StyleValues.Paragraph
+            });
+
+            headingStyle.AppendChild(new StyleName { Val = "Book Heading" });
+            headingStyle.AppendChild(new BasedOn() { Val = "Normal" });
+
+            headingStyle.AppendChild(new NextParagraphStyle { Val = "Normal" });
+
+            headingStyle.AppendChild(new LinkedStyle { Val = "Heading1Char" });
+
+            headingStyle.AppendChild(new UIPriority { Val = 9 });
+
+            headingStyle.AppendChild(new PrimaryStyle());
+
+
+            StyleParagraphProperties headingStyleParagraphProperties = headingStyle.AppendChild(new StyleParagraphProperties());
+            headingStyleParagraphProperties.AppendChild(new KeepNext());
+            headingStyleParagraphProperties.AppendChild(new KeepLines());
+
+            headingStyleParagraphProperties.AppendChild(new SpacingBetweenLines
+            {
+                Before = "240",
+                After = "0"
+            });
+
+            headingStyleParagraphProperties.AppendChild(new OutlineLevel { Val = 0 });
+
+            StyleRunProperties styleRunProperties = headingStyle.AppendChild(new StyleRunProperties());
+
+            styleRunProperties.AppendChild(new RunFonts
+            {
+                AsciiTheme = ThemeFontValues.MajorHighAnsi,
+                HighAnsiTheme = ThemeFontValues.MajorHighAnsi,
+                EastAsiaTheme = ThemeFontValues.MajorEastAsia,
+                ComplexScriptTheme = ThemeFontValues.MajorBidi
+            });
+
+            styleRunProperties.AppendChild(new FontSize { Val = "32" });
+            styleRunProperties.AppendChild(new FontSizeComplexScript { Val = "32" });
+        }
+
+        StyleDefinitionsPart BuildStyles()
+        {
+            var stylePart = newDoc.AddNewPart<StyleDefinitionsPart>();
+            var root = new Styles();
+            root.Save(stylePart);
+            return stylePart;
         }
 
         T EnsureExists<T>(OpenXmlElement input) where T: OpenXmlElement, new()
@@ -177,8 +256,7 @@ namespace USFMToolsSharp.Renderers.Docx
         Run CreateBreakRun(BreakValues type)
         {
             var run = new Run();
-            var runProperties = run.AppendChild(new RunProperties());
-            var breakElement = runProperties.AppendChild(new Break());
+            var breakElement = run.AppendChild(new Break());
             breakElement.Type = type;
             return run;
         }
@@ -198,21 +276,21 @@ namespace USFMToolsSharp.Renderers.Docx
                     // If the previous marker was a chapter marker, don't create a new paragraph.
                     if (!(previousMarker is CMarker _))
                     {
-                        paragraph = body.AppendChild(CreateParagraph(configDocx, styles));
+                        paragraph = AppendToBody(CreateParagraph(configDocx, styles));
                     }
 
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, paragraph);
-                        var lastParagraph = body.Descendants<Paragraph>().LastOrDefault();
-                        if (lastParagraph != paragraph)
+                        // TODO: This is horribly innefficient needs to be rethought
+                        if (lastAppendedParagraph != paragraph)
                         {
-                            if (!lastParagraph.Descendants<Run>().Any())
+                            if (!lastAppendedParagraph.Descendants<Run>().Any())
                             {
-                                paragraph = lastParagraph;
+                                paragraph = lastAppendedParagraph;
                                 continue;
                             }
-                            paragraph = body.AppendChild(CreateParagraph(configDocx, styles));
+                            paragraph = AppendToBody(CreateParagraph(configDocx, styles));
                         }
                     }
                     break;
@@ -235,7 +313,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         if (configDocx.separateChapters)
                         {
-                            var newParagraph = body.AppendChild(CreateParagraph(configDocx, styles));
+                            var newParagraph = AppendToBody(CreateParagraph(configDocx, styles));
                             var run =newParagraph.AppendChild(new Run());
                             var breakType = run.AppendChild(new Break());
                             breakType.Type = BreakValues.Page;
@@ -244,7 +322,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     createBookHeaders(previousBookHeader);
 
-                    var newChapter = body.AppendChild(CreateParagraph(configDocx,styles));
+                    var newChapter = AppendToBody(CreateParagraph(configDocx,styles));
                     var chapterMarker = newChapter.AppendChild(new Run());
                     string simpleNumber = cMarker.Number.ToString();
                     if (cMarker.CustomChapterLabel != simpleNumber)
@@ -264,7 +342,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     // TODO: Check this
                     //chapterMarker.RemoveBreak();
 
-                    var chapterVerses = body.AppendChild(CreateParagraph(configDocx, markerStyle));
+                    var chapterVerses = AppendToBody(CreateParagraph(configDocx, markerStyle));
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, chapterVerses);
@@ -280,7 +358,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     // create a stub parent paragraph so we can keep rendering.
                     if (parentParagraph == null)
                     {
-                        parentParagraph = body.AppendChild(CreateParagraph(configDocx, markerStyle));
+                        parentParagraph = AppendToBody(CreateParagraph(configDocx, markerStyle));
                     }
 
                     if (configDocx.separateVerses)
@@ -309,16 +387,18 @@ namespace USFMToolsSharp.Renderers.Docx
                     */
                     break;
                 case QMarker qMarker:
+
                     markerStyle.fontSize = configDocx.fontSize;
                     var poetryParagraph = CreateParagraph(configDocx, markerStyle, spaceAfter: 200, indentation: qMarker.Depth * 500);
 
-                    if (!parentParagraph.Descendants<Run>().Any())
+                    if (!parentParagraph.Descendants<Run>().Any() && parentParagraph.Parent != null)
                     {
-                        body.ReplaceChild(poetryParagraph, parentParagraph);
+                            body.RemoveChild(parentParagraph);
+                            AppendToBody(poetryParagraph);
                     }
                     else
                     {
-                        body.AppendChild(poetryParagraph);
+                        AppendToBody(poetryParagraph);
                     }
 
                     foreach (Marker marker in input.Contents)
@@ -343,19 +423,20 @@ namespace USFMToolsSharp.Renderers.Docx
                 case HMarker hMarker:
                     // Add section header for previous book, if any
                     // (section page headers are set at the final paragraph of the section)
+                    Console.WriteLine(hMarker.HeaderText);
                     if (previousBookHeader != null)
                     {
                         // Create new section and page header
                         createBookHeaders(previousBookHeader);
                         // Print page break
-                        var sectionParagraph = body.AppendChild(CreateParagraph(configDocx,markerStyle));
+                        var sectionParagraph = AppendToBody(CreateParagraph(configDocx,markerStyle));
                         sectionParagraph.AppendChild(CreateBreakRun(BreakValues.Page));
                     }
                     previousBookHeader = hMarker.HeaderText;
 
                     // Write body header text
                     markerStyle.fontSize = configDocx.fontSize;
-                    var newHeader = body.AppendChild(CreateParagraph(configDocx, markerStyle, paragraphStyleId:"Heading1", spaceAfter:200));
+                    var newHeader = AppendToBody(CreateParagraph(configDocx, markerStyle, paragraphStyleId:"BookHeading", spaceAfter:200));
                     var headerTitle = newHeader.AppendChild(CreateRun(markerStyle));
 
                     headerTitle.AppendChild(new Text(hMarker.HeaderText));
@@ -509,7 +590,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     // If the previous marker was a chapter marker, don't create a new paragraph.
                     if (!(previousMarker is CMarker _))
                     {
-                        var newParagraph = body.AppendChild(CreateParagraph(configDocx, markerStyle, spaceAfter:200));
+                        var newParagraph = AppendToBody(CreateParagraph(configDocx, markerStyle, spaceAfter:200));
                         introParagraph = newParagraph;
                     }
 
@@ -552,7 +633,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                 foreach (var crossRefKVP in CrossRefMarkers)
                 {
-                    var renderCrossRef = body.AppendChild(new Paragraph(new ParagraphProperties(
+                    var renderCrossRef = AppendToBody(new Paragraph(new ParagraphProperties(
                         new ParagraphBorders(new TopBorder() { Val = BorderValues.Single})),
                         new BiDi() { Val = new OnOffValue(configDocx.rightToLeft)}));
                     var crossRefMarker = renderCrossRef.AppendChild(CreateRun(markerStyle, isSuperScript:true));
@@ -569,7 +650,7 @@ namespace USFMToolsSharp.Renderers.Docx
         }
         public void setStartPageNumber()
         {
-            var properties = body.AppendChild(new SectionProperties());
+            var properties = AppendToBody(new SectionProperties());
             var numberType = properties.AppendChild(new PageNumberType());
             numberType.Format = NumberFormatValues.Decimal;
             numberType.Start = 1;
@@ -622,7 +703,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
 
             // Create page header
-            var sectionProperties = body.AppendChild(new Paragraph()).AppendChild(new ParagraphProperties()).AppendChild(new SectionProperties());
+            var sectionProperties = AppendToBody(new Paragraph()).AppendChild(new ParagraphProperties()).AppendChild(new SectionProperties());
             var headerReference = new HeaderReference();
             headerReference.Id = headerId;
             headerReference.Type = HeaderFooterValues.Default;
@@ -742,18 +823,111 @@ namespace USFMToolsSharp.Renderers.Docx
         /// </summary>
         private void RenderTOC()
         {
+            /*
             //CT_SdtBlock tableOfContents = tocBuilder.Build();
             var tableOfContents = body.AppendChild(new SdtBlock());
             //CT_P pHeader = CreateFrontHeader();
 
             var paragraph = body.AppendChild(new Paragraph(
                 new Run(new FieldChar() { FieldCharType = FieldCharValues.Begin}),
-                new Run(new FieldCode() { Text ="TOC \\* MERGEFORMAT ", Space = SpaceProcessingModeValues.Preserve }),
+                new Run(new FieldCode() { Text =" TOC  \\* MERGEFORMAT ", Space = SpaceProcessingModeValues.Preserve }),
                 new Run(new FieldChar() { FieldCharType = FieldCharValues.Separate}),
                 new Run(new FieldChar() { FieldCharType = FieldCharValues.End}),
                 CreateBreakRun(BreakValues.Page)
                 ));
             //newDoc.EnforceUpdateFields();
+            */
+            Paragraph paragraph = new Paragraph();
+
+            ParagraphProperties paragraphProperties = new ParagraphProperties();
+
+            ParagraphStyleId paragraphStyleId = new ParagraphStyleId();
+            paragraphStyleId.Val = "TOC1";
+
+            paragraphProperties.Append(paragraphStyleId);
+
+            Tabs tabs = new Tabs();
+
+            TabStop tabStop = new TabStop();
+            tabStop.Position = 9350;
+            tabStop.Val = TabStopValues.Right;
+            tabStop.Leader = TabStopLeaderCharValues.Dot;
+
+            tabs.Append(tabStop);
+
+            paragraphProperties.Append(tabs);
+
+            ParagraphMarkRunProperties paragraphMarkRunProperties = new ParagraphMarkRunProperties();
+
+            NoProof noProof = new NoProof();
+
+            paragraphMarkRunProperties.Append(noProof);
+
+            paragraphProperties.Append(paragraphMarkRunProperties);
+
+            paragraph.Append(paragraphProperties);
+
+            Run run = new Run();
+
+            FieldChar fieldChar = new FieldChar();
+            fieldChar.FieldCharType = FieldCharValues.Begin;
+
+            run.Append(fieldChar);
+
+            paragraph.Append(run);
+
+            run = new Run();
+
+            FieldCode fieldCode = new FieldCode(" TOC  \\* MERGEFORMAT ");
+            fieldCode.Space = SpaceProcessingModeValues.Preserve;
+
+            run.Append(fieldCode);
+
+            paragraph.Append(run);
+
+            run = new Run();
+
+            fieldChar = new FieldChar();
+            fieldChar.FieldCharType = FieldCharValues.Separate;
+
+            run.Append(fieldChar);
+
+            paragraph.Append(run);
+
+            run = new Run();
+
+            var runProperties = new RunProperties();
+
+            noProof = new NoProof();
+
+            runProperties.Append(noProof);
+
+            run.Append(runProperties);
+
+            TabChar tabChar = new TabChar();
+
+            run.Append(tabChar);
+
+            paragraph.Append(run);
+
+            run = new Run();
+
+            runProperties = new RunProperties();
+
+            noProof = new NoProof();
+
+            runProperties.Append(noProof);
+
+            run.Append(runProperties);
+
+            fieldChar = new FieldChar();
+            fieldChar.FieldCharType = FieldCharValues.End;
+
+            run.Append(fieldChar);
+
+            paragraph.Append(run);
+
+            AppendToBody(paragraph);
         }
 
         private void RenderFrontMatter(USFMDocument frontMatter)
@@ -772,7 +946,19 @@ namespace USFMToolsSharp.Renderers.Docx
 
             //CT_P pHeader = CreateFrontHeader();
             //newDoc.Document.body.Items.Add(pHeader);
-            body.AppendChild(new Paragraph(CreateBreakRun(BreakValues.Page)));
+            AppendToBody(new Paragraph(CreateBreakRun(BreakValues.Page)));
+        }
+        private Paragraph GetLastParagraph()
+        {
+            for(var i = body.ChildElements.Count - 1; i >= 0; i--)
+            {
+                if (body.ChildElements[i] is Paragraph)
+                {
+                    return (Paragraph)body.ChildElements[i];
+                }
+
+            }
+            return null;
         }
     }
 }
