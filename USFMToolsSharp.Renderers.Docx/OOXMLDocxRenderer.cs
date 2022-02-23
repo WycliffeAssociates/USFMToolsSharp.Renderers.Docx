@@ -50,6 +50,10 @@ namespace USFMToolsSharp.Renderers.Docx
             {
                 var mainPart = newDoc.AddMainDocumentPart();
                 mainPart.Document = new Document();
+                var settingsPart = mainPart.AddNewPart<DocumentSettingsPart>();
+                settingsPart.Settings = new Settings();
+                settingsPart.Settings.Append(new UpdateFieldsOnOpen() { Val = true });
+
                 var footnotesPart = mainPart.AddNewPart<FootnotesPart>();
                 footnotes = footnotesPart.Footnotes = new Footnotes();
                 body = mainPart.Document.AppendChild(new Body());
@@ -57,22 +61,17 @@ namespace USFMToolsSharp.Renderers.Docx
                 var styles = stylePart.Styles = new Styles();
                 AddStyles(styles);
 
+                if (configDocx.renderTableOfContents)
+                {
+                    RenderTOC();
+                }
+
                 if (FrontMatter != null)
                 {
                     // TODO: Come back to this RenderFrontMatter(FrontMatter);
                 }
 
-                if (configDocx.renderTableOfContents)
-                {
-                    //DocumentStylesBuilder.BuildStylesForTOC(newDoc);
-                    RenderTOC();
-                }
                 
-                //newDoc.CreateFootnotes();
-
-                //setStartPageNumber();
-
-                //SetColumnCount(mainPart.Document, configDocx.columnCount);
 
                 foreach (Marker marker in input.Contents)
                 {
@@ -836,97 +835,23 @@ namespace USFMToolsSharp.Renderers.Docx
                 ));
             //newDoc.EnforceUpdateFields();
             */
-            Paragraph paragraph = new Paragraph();
 
-            ParagraphProperties paragraphProperties = new ParagraphProperties();
-
-            ParagraphStyleId paragraphStyleId = new ParagraphStyleId();
-            paragraphStyleId.Val = "TOC1";
-
-            paragraphProperties.Append(paragraphStyleId);
-
-            Tabs tabs = new Tabs();
-
-            TabStop tabStop = new TabStop();
-            tabStop.Position = 9350;
-            tabStop.Val = TabStopValues.Right;
-            tabStop.Leader = TabStopLeaderCharValues.Dot;
-
-            tabs.Append(tabStop);
-
-            paragraphProperties.Append(tabs);
-
-            ParagraphMarkRunProperties paragraphMarkRunProperties = new ParagraphMarkRunProperties();
-
-            NoProof noProof = new NoProof();
-
-            paragraphMarkRunProperties.Append(noProof);
-
-            paragraphProperties.Append(paragraphMarkRunProperties);
-
-            paragraph.Append(paragraphProperties);
-
-            Run run = new Run();
-
-            FieldChar fieldChar = new FieldChar();
-            fieldChar.FieldCharType = FieldCharValues.Begin;
-
-            run.Append(fieldChar);
-
-            paragraph.Append(run);
-
-            run = new Run();
-
-            FieldCode fieldCode = new FieldCode(" TOC  \\* MERGEFORMAT ");
-            fieldCode.Space = SpaceProcessingModeValues.Preserve;
-
-            run.Append(fieldCode);
-
-            paragraph.Append(run);
-
-            run = new Run();
-
-            fieldChar = new FieldChar();
-            fieldChar.FieldCharType = FieldCharValues.Separate;
-
-            run.Append(fieldChar);
-
-            paragraph.Append(run);
-
-            run = new Run();
-
-            var runProperties = new RunProperties();
-
-            noProof = new NoProof();
-
-            runProperties.Append(noProof);
-
-            run.Append(runProperties);
-
-            TabChar tabChar = new TabChar();
-
-            run.Append(tabChar);
-
-            paragraph.Append(run);
-
-            run = new Run();
-
-            runProperties = new RunProperties();
-
-            noProof = new NoProof();
-
-            runProperties.Append(noProof);
-
-            run.Append(runProperties);
-
-            fieldChar = new FieldChar();
-            fieldChar.FieldCharType = FieldCharValues.End;
-
-            run.Append(fieldChar);
-
-            paragraph.Append(run);
-
-            AppendToBody(paragraph);
+            var sdtBlock = body.AppendChild(new SdtBlock());
+            sdtBlock.AppendChild(new SdtProperties(
+                new SdtContentDocPartObject(
+                    new DocPartGallery() { Val = "Table of Contents"},
+                    new DocPartUnique() { Val = true}
+                    )
+                ));
+            var sdtContent = sdtBlock.AppendChild(new SdtContentBlock());
+            sdtContent.AppendChild(new Paragraph(
+                new Run( new FieldChar() { FieldCharType = FieldCharValues.Begin}),
+                new Run(new FieldCode() { Space = SpaceProcessingModeValues.Preserve, Text =" TOC \\f \\o \"1-9\" \\h" }),
+                //new Run(new FieldCode() { Space = SpaceProcessingModeValues.Preserve, Text =" TOC " }),
+                new Run( new FieldChar() { FieldCharType = FieldCharValues.Separate}),
+                new Run( new FieldChar() { FieldCharType = FieldCharValues.End}),
+                CreateBreakRun(BreakValues.Page)
+                ));
         }
 
         private void RenderFrontMatter(USFMDocument frontMatter)
