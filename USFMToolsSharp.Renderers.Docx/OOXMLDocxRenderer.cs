@@ -92,8 +92,11 @@ namespace USFMToolsSharp.Renderers.Docx
                 var sectionProperties = AppendToBody(new SectionProperties());
                 var sectionType = sectionProperties.AppendChild(new SectionType());
                 sectionType.Val = SectionMarkValues.Continuous;
-                var pageNumber = sectionProperties.AppendChild(new PageNumberType());
-                pageNumber.Format = NumberFormatValues.Decimal;
+                if (configDocx.showPageNumbers)
+                {
+                    var pageNumber = sectionProperties.AppendChild(new PageNumberType());
+                    pageNumber.Format = NumberFormatValues.Decimal;
+                }
                 var columns = sectionProperties.AppendChild(new Columns());
                 columns.ColumnCount = (Int16Value)configDocx.columnCount;
             }
@@ -455,8 +458,6 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, footnoteMarkerStyle, footnoteParagraph);
                     }
 
-
-
                     var referenceRun = parentParagraph.AppendChild(new Run());
                     var referenceRunProperties = referenceRun.AppendChild(new RunProperties());
                     referenceRunProperties.AppendChild(new Underline());
@@ -729,7 +730,6 @@ namespace USFMToolsSharp.Renderers.Docx
             pageHeaderCount++;
         }
 
-        /*
         /// <summary>
         /// Creates an empty header for front pages.
         /// The returned paragraph should be inserted in front of document
@@ -738,28 +738,29 @@ namespace USFMToolsSharp.Renderers.Docx
         /// <returns>CT_P paragraph that contains a blank header</returns>
         private Paragraph CreateFrontHeader()
         {
-            CT_Hdr header = new CT_Hdr();
-            CT_P headerParagraph = header.AddNewP();
-            headerParagraph.AddNewPPr();
 
-            XWPFHeader documentHeader = (XWPFHeader)newDoc.CreateRelationship(XWPFRelation.HEADER, XWPFFactory.GetInstance(), pageHeaderCount);
-            documentHeader.SetHeaderFooter(header);
+
+            var header = new Header();
+            header.AppendChild(new Paragraph(new ParagraphProperties()));
+
+            var headerId = $"rId{pageHeaderCount}";
+
+            var headerPart = newDoc.MainDocumentPart.AddNewPart<HeaderPart>(headerId);
+            headerPart.Header = header;
 
             // Create new section and set its header
-            CT_P p = new CT_P();
-            CT_SectPr newSection = p.AddNewPPr().createSectPr();
-            newSection.type = new CT_SectType();
-            newSection.type.val = ST_SectionMark.continuous;
-            CT_HdrFtrRef headerRef = newSection.AddNewHeaderReference();
-            headerRef.type = ST_HdrFtr.@default;
-            headerRef.id = documentHeader.GetPackageRelationship().Id;
+            var p = new Paragraph();
+            var paragraphProperties = p.AppendChild(new ParagraphProperties());
+            var newSection = paragraphProperties.AppendChild(new SectionProperties());
+            newSection.AppendChild(new SectionType() { Val = SectionMarkValues.Continuous});
+            newSection.AppendChild(new HeaderReference() { Type = HeaderFooterValues.Default, Id = headerId });
+
 
             // Increment page header count so each one gets a unique ID
             pageHeaderCount++;
 
             return p;
         }
-        */
 
         public void getRenderedRows(Marker input, StyleConfig config, Table parentTable)
         {
@@ -821,20 +822,6 @@ namespace USFMToolsSharp.Renderers.Docx
         /// </summary>
         private void RenderTOC()
         {
-            /*
-            //CT_SdtBlock tableOfContents = tocBuilder.Build();
-            var tableOfContents = body.AppendChild(new SdtBlock());
-            //CT_P pHeader = CreateFrontHeader();
-
-            var paragraph = body.AppendChild(new Paragraph(
-                new Run(new FieldChar() { FieldCharType = FieldCharValues.Begin}),
-                new Run(new FieldCode() { Text =" TOC  \\* MERGEFORMAT ", Space = SpaceProcessingModeValues.Preserve }),
-                new Run(new FieldChar() { FieldCharType = FieldCharValues.Separate}),
-                new Run(new FieldChar() { FieldCharType = FieldCharValues.End}),
-                CreateBreakRun(BreakValues.Page)
-                ));
-            //newDoc.EnforceUpdateFields();
-            */
 
             var sdtBlock = body.AppendChild(new SdtBlock());
             sdtBlock.AppendChild(new SdtProperties(
@@ -849,9 +836,9 @@ namespace USFMToolsSharp.Renderers.Docx
                 new Run(new FieldCode() { Space = SpaceProcessingModeValues.Preserve, Text =" TOC \\f \\o \"1-9\" \\h" }),
                 //new Run(new FieldCode() { Space = SpaceProcessingModeValues.Preserve, Text =" TOC " }),
                 new Run( new FieldChar() { FieldCharType = FieldCharValues.Separate}),
-                new Run( new FieldChar() { FieldCharType = FieldCharValues.End}),
-                CreateBreakRun(BreakValues.Page)
+                new Run( new FieldChar() { FieldCharType = FieldCharValues.End})
                 ));
+            AppendToBody(CreateFrontHeader());
         }
 
         private void RenderFrontMatter(USFMDocument frontMatter)
@@ -868,8 +855,7 @@ namespace USFMToolsSharp.Renderers.Docx
             // revert to user config format
             configDocx = currentConfig;
 
-            //CT_P pHeader = CreateFrontHeader();
-            //newDoc.Document.body.Items.Add(pHeader);
+            AppendToBody(CreateFrontHeader());
             AppendToBody(new Paragraph(CreateBreakRun(BreakValues.Page)));
         }
         private Paragraph GetLastParagraph()
