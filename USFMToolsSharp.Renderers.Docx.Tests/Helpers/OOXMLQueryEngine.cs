@@ -52,6 +52,8 @@ namespace USFMToolsSharp.Renderers.Docx.Tests.Helpers
                 }
             }
 
+            var property = parsedPath[^1].property;
+
             switch (outputElement)
             {
                 case Text text:
@@ -59,16 +61,56 @@ namespace USFMToolsSharp.Renderers.Docx.Tests.Helpers
                 case FontSize size:
                     return size.Val;
                 case VerticalTextAlignment alignment:
+                    if (alignment.Val == VerticalPositionValues.Superscript)
+                    {
+                        return "superscript";
+                    }
+                    if (alignment.Val == VerticalPositionValues.Subscript)
+                    {
+                        return "subscript";
+                    }
+                    if (alignment.Val == VerticalPositionValues.Baseline)
+                    {
+                        return "baseline";
+                    }
                     return alignment.Val;
                 case BiDi bidi:
                     return bidi.Val;
                 case Columns columns:
                     return columns.ColumnCount;
                 case PageNumberType pageNumberType:
+                    if (property == "format")
+                    {
+                        return pageNumberType.Format;
+                    }
+                    if (property == "chapterSeperator") 
+                    {
+                        return pageNumberType.ChapterSeparator;
+                    }
                     return pageNumberType.Format;
                 case SpacingBetweenLines spacing:
+                    if (property == "before")
+                    {
+                        return spacing.Before;
+                    }
+                    else if (property == "after")
+                    {
+                        return spacing.After;
+                    }
+                    else if (property == "line")
+                    {
+                        return spacing.After;
+                    }
                     return $"{spacing.Line}:{spacing.After}";
                 case Indentation indentation:
+                    if (property == "left")
+                    {
+                        return indentation.Left;
+                    }
+                    else if (property == "right")
+                    {
+                        return indentation.Right;
+                    }
                     return $"{indentation.Left}:{indentation.Right}";
 
             }
@@ -78,7 +120,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests.Helpers
         public List<(string element, int count, string property)> ParseQuery(string input)
         {
             // Capture groups from the following regex: operator[level].property
-            var regex = new Regex(@"(?<operator>[^\[]+)(?<level>\[\d+\])?.?(?<property>[^\.]+)?");
+            var regex = new Regex(@"(?<operator>[^\[\.]+)(?<level>\[\d+\])?(?<sub>[^\.]+)?");
             var splitInput = input.Split("/");
             var output = new List<(string element, int count, string property)>(splitInput.Length);
             foreach (var item in splitInput)
@@ -86,6 +128,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests.Helpers
                 var match = regex.Match(item);
                 var @operator = match.Groups.GetValueOrDefault("operator").Value;
                 var levelAsString = match.Groups.GetValueOrDefault("level").Value;
+                var property = match.Groups.GetValueOrDefault("sub").Value;
                 if (levelAsString == null)
                 {
                     levelAsString = "0";
@@ -96,7 +139,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests.Helpers
                 {
                     level = 0;
                 }
-                output.Add((@operator, level, null));
+                output.Add((@operator, level, property));
             }
             return output;
         }

@@ -1,5 +1,8 @@
-﻿Label,USFM,Query,Value
-Test chapter rendering,\c 1,document/body/p[1]/r/t,Chapter 1
-Test Verse rendering,\c 1 \v 1,document/body/p[2]/r/t,1
-Test Verse number superscript,\c 1 \v 1,document/body/p[2]/r/t,1
-Test Simple Verse rendering,\c 1 \v 1 This is verse one,document/body/p[2]/r[1]/t,This is verse one
+﻿Label,USFM,Query,Value,Notes
+Test chapter rendering,\c 1,document/body/p[1]/r/t,Chapter 1,
+Test Verse rendering,\c 1 \v 1,document/body/p[2]/r/t,1,
+Test Simple Verse rendering,\c 1 \v 1 This is verse one,document/body/p[2]/r[1]/t,This is verse one,
+Verse number superscript,\c 1 \v 1,document/body/p[2]/r/rPr/vertAlign,superscript,
+Verse number Font size,\c 1 \v 1,document/body/p[2]/r/rPr/sz,24,
+Test default column count,\c 1 \v 1 This is verse one,document/body/p/pPr/sectPr/cols,1,
+Test default page number format,\c 1 \v 1 This is verse one,document/body/p/pPr/sectPr/pgNumType.format,Decimal,
