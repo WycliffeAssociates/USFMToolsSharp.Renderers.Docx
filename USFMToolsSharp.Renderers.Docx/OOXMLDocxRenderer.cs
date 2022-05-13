@@ -341,8 +341,6 @@ namespace USFMToolsSharp.Renderers.Docx
                     var fontSize = runProperties.AppendChild(new FontSize());
                     fontSize.Val = ((int)(configDocx.fontSize * 3)).ToString();
                     chapterMarker.AppendChild(new Text(currentChapterLabel));
-                    // TODO: Check this
-                    //chapterMarker.RemoveBreak();
 
                     var chapterVerses = AppendToBody(CreateParagraph(configDocx, markerStyle));
                     foreach (Marker marker in input.Contents)
@@ -379,14 +377,12 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
+                    List<Text> textBlocks = parentParagraph.Descendants<Text>().ToList();
 
-                    /*
-                    TODO: Come back to this
-                    if (parentParagraph.Text.EndsWith(" ") == false)
+                    if (textBlocks.Count() != 0 && !textBlocks[textBlocks.Count()-1].Text.EndsWith(" "))
                     {
                         AppendSpace(parentParagraph);
                     }
-                    */
                     break;
                 case QMarker qMarker:
 
@@ -494,6 +490,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case FQMarker fQMarker:
                 case FQAMarker fQAMarker:
+
                     markerStyle.isItalics = true;
                     foreach (Marker marker in input.Contents)
                     {
@@ -618,7 +615,6 @@ namespace USFMToolsSharp.Renderers.Docx
         private void AppendSpace(Paragraph paragraph)
         {
             var run = paragraph.AppendChild(new Run());
-            run.AppendChild(new RunProperties(new RightToLeftText().Val = new OnOffValue(configDocx.rightToLeft)));
             run.AppendChild(new Text(" ")).Space = SpaceProcessingModeValues.Preserve;
         }
 
@@ -709,16 +705,6 @@ namespace USFMToolsSharp.Renderers.Docx
             sectionProperties.Append(headerReference);
             var sectionType = sectionProperties.AppendChild(new SectionType());
             sectionType.Val = SectionMarkValues.Continuous;
-
-            /*
-            // Create new section and set its header
-            CT_SectPr newSection = newDoc.Document.body.AddNewP().AddNewPPr().createSectPr();
-            newSection.type = new CT_SectType();
-            newSection.type.val = ST_SectionMark.continuous;
-            CT_HdrFtrRef headerRef = newSection.AddNewHeaderReference();
-            headerRef.type = ST_HdrFtr.@default;
-            headerRef.id = documentHeader.GetPackageRelationship().Id;
-            */
 
             var pageNumberType = sectionProperties.AppendChild(new PageNumberType());
             pageNumberType.Format = NumberFormatValues.Decimal;
