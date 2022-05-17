@@ -24,31 +24,50 @@ namespace USFMToolsSharp.Renderers.Docx.Tests.Helpers
             var document = mainPart.Document;
             var parsedPath = ParseQuery(path);
             OpenXmlElement outputElement = null;
+            OpenXmlElementList elements;
             if (parsedPath[0].element == "document")
             {
-                var elements = document.ChildElements;
-                foreach (var pathItem in parsedPath.Skip(1))
+                elements = document.ChildElements;
+            }
+            else if (parsedPath[0].element == "footnotes")
+            {
+                elements = mainPart.FootnotesPart.Footnotes.ChildElements;
+            }
+            else if (parsedPath[0].element == "settings")
+            {
+                elements = mainPart.DocumentSettingsPart.Settings.ChildElements;
+            }
+            else if (parsedPath[0].element == "styles")
+            {
+                elements = mainPart.StyleDefinitionsPart.Styles.ChildElements;
+            }
+            else
+            {
+                return null;
+            }
+
+            foreach (var pathItem in parsedPath.Skip(1))
+            {
+                var count = 0;
+                bool found = false;
+                foreach(var element in elements) 
                 {
-                    var count = 0;
-                    bool found = false;
-                    foreach(var element in elements) 
+                    if (element.LocalName == pathItem.element)
                     {
-                        if (element.LocalName == pathItem.element)
+                        if (count == pathItem.count)
                         {
-                            if (count == pathItem.count)
-                            {
-                                elements = element.ChildElements;
-                                outputElement = element;
-                                found = true;
-                                break;
-                            }
-                            count++;
+                            elements = element.ChildElements;
+                            outputElement = element;
+                            found = true;
+                            break;
                         }
+                        count++;
                     }
-                    if (!found)
-                    {
-                        return null;
-                    }
+                }
+                if (!found)
+                {
+                    Console.WriteLine("Didn't find element");
+                    return null;
                 }
             }
 
@@ -112,6 +131,20 @@ namespace USFMToolsSharp.Renderers.Docx.Tests.Helpers
                         return indentation.Right;
                     }
                     return $"{indentation.Left}:{indentation.Right}";
+                case UpdateFieldsOnOpen updateFieldsOnOpen:
+                    return updateFieldsOnOpen.Val;
+                case Footnote footnote:
+                    if (property == "id")
+                    {
+                        return footnote.Id;
+                    }
+                    if (property == "type")
+                    {
+                        return footnote.Type;
+                    }
+                    return footnote.Id;
+                case FootnoteReference footnoteReference:
+                    return footnoteReference.Id;
 
             }
             return null;
@@ -120,7 +153,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests.Helpers
         public List<(string element, int count, string property)> ParseQuery(string input)
         {
             // Capture groups from the following regex: operator[level].property
-            var regex = new Regex(@"(?<operator>[^\[\.]+)(?<level>\[\d+\])?(?<sub>[^\.]+)?");
+            var regex = new Regex(@"(?<operator>[^\[\.]+)(?<level>\[\d+\])?\.?(?<sub>[^\.]+)?");
             var splitInput = input.Split("/");
             var output = new List<(string element, int count, string property)>(splitInput.Length);
             foreach (var item in splitInput)
@@ -134,8 +167,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests.Helpers
                     levelAsString = "0";
                 }
                 levelAsString = levelAsString.TrimStart('[').TrimEnd(']');
-                var level = 0;
-                if (!int.TryParse(levelAsString, out level))
+                if (!int.TryParse(levelAsString, out int level))
                 {
                     level = 0;
                 }
