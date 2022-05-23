@@ -70,85 +70,25 @@ namespace USFMToolsSharp.Renderers.Docx.Tests.Helpers
                     return null;
                 }
             }
+            if (outputElement == null)
+            {
+                return null;
+            }
 
             var property = parsedPath[^1].property;
-
-            switch (outputElement)
+            foreach(var element in outputElement.GetAttributes())
             {
-                case Text text:
-                    return text.InnerText;
-                case FontSize size:
-                    return size.Val;
-                case VerticalTextAlignment alignment:
-                    if (alignment.Val == VerticalPositionValues.Superscript)
-                    {
-                        return "superscript";
-                    }
-                    if (alignment.Val == VerticalPositionValues.Subscript)
-                    {
-                        return "subscript";
-                    }
-                    if (alignment.Val == VerticalPositionValues.Baseline)
-                    {
-                        return "baseline";
-                    }
-                    return alignment.Val;
-                case BiDi bidi:
-                    return bidi.Val;
-                case Columns columns:
-                    return columns.ColumnCount;
-                case PageNumberType pageNumberType:
-                    if (property == "format")
-                    {
-                        return pageNumberType.Format;
-                    }
-                    if (property == "chapterSeperator") 
-                    {
-                        return pageNumberType.ChapterSeparator;
-                    }
-                    return pageNumberType.Format;
-                case SpacingBetweenLines spacing:
-                    if (property == "before")
-                    {
-                        return spacing.Before;
-                    }
-                    else if (property == "after")
-                    {
-                        return spacing.After;
-                    }
-                    else if (property == "line")
-                    {
-                        return spacing.After;
-                    }
-                    return $"{spacing.Line}:{spacing.After}";
-                case Indentation indentation:
-                    if (property == "left")
-                    {
-                        return indentation.Left;
-                    }
-                    else if (property == "right")
-                    {
-                        return indentation.Right;
-                    }
-                    return $"{indentation.Left}:{indentation.Right}";
-                case UpdateFieldsOnOpen updateFieldsOnOpen:
-                    return updateFieldsOnOpen.Val;
-                case Footnote footnote:
-                    if (property == "id")
-                    {
-                        return footnote.Id;
-                    }
-                    if (property == "type")
-                    {
-                        return footnote.Type;
-                    }
-                    return footnote.Id;
-                case FootnoteReference footnoteReference:
-                    return footnoteReference.Id;
-
+                if (property == string.Empty && element.LocalName == "val")
+                {
+                    return element.Value;
+                }
+                if (element.LocalName == property)
+                {
+                    return element.Value;
+                }
             }
-            return null;
 
+            return outputElement.InnerText;
         }
         public List<(string element, int count, string property)> ParseQuery(string input)
         {

@@ -128,16 +128,16 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         [TestMethod]
         public void TestVerseRender()
         {
-            Assert.AreEqual("1 This is a simple verse. ", renderDoc("\\c 1 \\v 1 This is a simple verse.").Paragraphs[1].ParagraphText);
-            Assert.AreEqual("1 This is a simple verse. 2 Another one. ", renderDoc("\\c 1 \\v 1 This is a simple verse. \\v 2 Another one.").Paragraphs[1].ParagraphText);
-            Assert.AreEqual("2 Another one. ", renderDoc("\\c 1 \\v 1 This is a simple verse. \\c 2 \\v 2 Another one.").Paragraphs[3].ParagraphText);
+            Assert.AreEqual("1 This is a simple verse. ", renderDoc("\\c 1 \\v 1 This is a simple verse.").Paragraphs[1].ParagraphText);
+            Assert.AreEqual("1 This is a simple verse. 2 Another one. ", renderDoc("\\c 1 \\v 1 This is a simple verse. \\v 2 Another one.").Paragraphs[1].ParagraphText);
+            Assert.AreEqual("2 Another one. ", renderDoc("\\c 1 \\v 1 This is a simple verse. \\c 2 \\v 2 Another one.").Paragraphs[3].ParagraphText);
         }
 
         [TestMethod]
         public void TestSpaceBetweenVerses()
         {
             XWPFDocument doc = renderDoc("\\c 1 \\v 1 First Verse. \\v 2 Second verse.");
-            Assert.AreEqual("1 First Verse. 2 Second verse. ", doc.Paragraphs[1].ParagraphText);
+            Assert.AreEqual("1 First Verse. 2 Second verse. ", doc.Paragraphs[1].ParagraphText);
         }
 
         [TestMethod]
@@ -151,7 +151,7 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         public void TestSpaceBetweenVersesInParagraph()
         {
             XWPFDocument doc = renderDoc("\\c 1 \\p \\v 1 First Verse. \\v 2 Second verse.");
-            Assert.AreEqual("1 First Verse. 2 Second verse. ", doc.Paragraphs[1].ParagraphText);
+            Assert.AreEqual("1 First Verse. 2 Second verse. ", doc.Paragraphs[1].ParagraphText);
         }
 
         [TestMethod]

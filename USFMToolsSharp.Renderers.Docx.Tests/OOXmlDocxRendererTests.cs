@@ -32,6 +32,10 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
                     var tmp = queryEngine.QueryValue(test.Query);
                     if (test.Value != tmp)
                     {
+                        if (!Directory.Exists("debugfiles"))
+                        {
+                            Directory.CreateDirectory("debugfiles");
+                        }
                         var file = File.Create(Path.Join("debugfiles", test.Label + ".docx"));
                         stream.Position = 0;
                         stream.CopyTo(file);
@@ -41,6 +45,10 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
                 }
                 catch (Exception ex)
                 {
+                    if (!Directory.Exists("debugfiles"))
+                    {
+                        Directory.CreateDirectory("debugfiles");
+                    }
                     var file = File.Create(Path.Join("debugfiles", test.Label + ".docx"));
                     stream.Position = 0;
                     stream.CopyTo(file);

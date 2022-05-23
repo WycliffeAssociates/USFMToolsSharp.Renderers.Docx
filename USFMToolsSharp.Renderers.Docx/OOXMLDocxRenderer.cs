@@ -418,6 +418,13 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
+                case ITMarker itMarker:
+                    markerStyle.isItalics = true;
+                    foreach (Marker marker in input.Contents)
+                    {
+                        RenderMarker(marker, markerStyle, parentParagraph);
+                    }
+                    break;
                 case HMarker hMarker:
                     // Add section header for previous book, if any
                     // (section page headers are set at the final paragraph of the section)
