@@ -5,10 +5,16 @@ namespace USFMToolsSharp.Renderers.Docx
     public class DocxConfig
     {
 
-        public ParagraphAlignment textAlign;
+        public TextAlignment textAlign;
         public bool rightToLeft;
-        public int marginLeft; // cm unit
-        public int marginRight; // cm unit
+        /// <summary>
+        /// Left margin in CM
+        /// </summary>
+        public int marginLeft;
+        /// <summary>
+        /// Right margin in CM
+        /// </summary>
+        public int marginRight;
         public string rightToLeftLangCode;
         public int columnCount;
         public double lineSpacing;
@@ -22,7 +28,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
         public DocxConfig()
         {
-            textAlign = ParagraphAlignment.LEFT;
+            textAlign = TextAlignment.LEFT;
             rightToLeft = false;
             marginLeft = 0;
             marginRight = 0;
@@ -45,5 +51,18 @@ namespace USFMToolsSharp.Renderers.Docx
             this.showPageNumbers = showPageNumbers;
         }
         
+    }
+    public enum TextAlignment
+    {
+        LEFT = 1,
+        CENTER = 2,
+        RIGHT = 3,
+        BOTH = 4,
+        MEDIUM_KASHIDA = 5,
+        DISTRIBUTE = 6,
+        NUM_TAB = 7,
+        HIGH_KASHIDA = 8,
+        LOW_KASHIDA = 9,
+        THAI_DISTRIBUTE = 10
     }
 }

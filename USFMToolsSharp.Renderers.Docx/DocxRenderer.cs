@@ -104,7 +104,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                         newParagraph.SetBidi(configDocx.rightToLeft);
-                        newParagraph.Alignment = configDocx.textAlign;
+                        newParagraph.Alignment = (ParagraphAlignment)configDocx.textAlign;
                         newParagraph.SpacingBetween = configDocx.lineSpacing;
                         newParagraph.SpacingAfter = 200;
                         paragraph = newParagraph;
@@ -143,7 +143,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     XWPFParagraph newChapter = newDoc.CreateParagraph(markerStyle, configDocx);
                     newChapter.SetBidi(configDocx.rightToLeft);
-                    newChapter.Alignment = configDocx.textAlign;
+                    newChapter.Alignment = (ParagraphAlignment)configDocx.textAlign;
                     newChapter.SpacingBetween = configDocx.lineSpacing;
                     newChapter.SpacingBefore = 200;
                     newChapter.SpacingAfter = 200;
@@ -161,11 +161,12 @@ namespace USFMToolsSharp.Renderers.Docx
                         currentChapterLabel = chapterLabel + " " + simpleNumber;
                     }
                     chapterMarker.SetText(currentChapterLabel);
+                    chapterMarker.RemoveBreak();
                     chapterMarker.FontSize = (int)(configDocx.fontSize * 1.5);
 
                     XWPFParagraph chapterVerses = newDoc.CreateParagraph(markerStyle, configDocx);
                     chapterVerses.SetBidi(configDocx.rightToLeft);
-                    chapterVerses.Alignment = configDocx.textAlign;
+                    chapterVerses.Alignment = (ParagraphAlignment)configDocx.textAlign;
                     chapterVerses.SpacingBetween = configDocx.lineSpacing;
                     foreach (Marker marker in input.Contents)
                     {
@@ -184,7 +185,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         parentParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                         parentParagraph.SetBidi(configDocx.rightToLeft);
-                        parentParagraph.Alignment = configDocx.textAlign;
+                        parentParagraph.Alignment = (ParagraphAlignment)configDocx.textAlign;
                         parentParagraph.SpacingBetween = configDocx.lineSpacing;
                         parentParagraph.SpacingAfter = 200;
                     }
@@ -200,7 +201,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     setRTL(verseMarker);
                     verseMarker.SetText(vMarker.VerseCharacter);
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
-                    AppendSpace(parentParagraph);
+                    AppendNonBreakingSpace(parentParagraph);
 
                     foreach (Marker marker in input.Contents)
                     {
@@ -215,7 +216,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     markerStyle.fontSize = configDocx.fontSize;
                     XWPFParagraph poetryParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                     poetryParagraph.SetBidi(configDocx.rightToLeft);
-                    poetryParagraph.Alignment = configDocx.textAlign;
+                    poetryParagraph.Alignment = (ParagraphAlignment)configDocx.textAlign;
                     poetryParagraph.SpacingBetween = configDocx.lineSpacing;
                     poetryParagraph.IndentationLeft += qMarker.Depth * 500;
                     poetryParagraph.SpacingAfter = 200;
@@ -251,7 +252,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         // Print page break
                         XWPFParagraph sectionParagraph = newDoc.CreateParagraph();
                         sectionParagraph.SetBidi(configDocx.rightToLeft);
-                        sectionParagraph.Alignment = configDocx.textAlign;
+                        sectionParagraph.Alignment = (ParagraphAlignment)configDocx.textAlign;
                         sectionParagraph.CreateRun().AddBreak(BreakType.PAGE);
                     }
                     previousBookHeader = hMarker.HeaderText;
@@ -409,7 +410,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     {
                         XWPFParagraph newParagraph = newDoc.CreateParagraph(markerStyle, configDocx);
                         newParagraph.SetBidi(configDocx.rightToLeft);
-                        newParagraph.Alignment = configDocx.textAlign;
+                        newParagraph.Alignment = (ParagraphAlignment)configDocx.textAlign;
                         newParagraph.SpacingBetween = configDocx.lineSpacing;
                         newParagraph.SpacingAfter = 200;
                         introParagraph = newParagraph;
@@ -444,6 +445,21 @@ namespace USFMToolsSharp.Renderers.Docx
             CT_R ctr = run.GetCTR();
             CT_Text text = ctr.AddNewT();
             text.Value = " ";
+            text.space = "preserve";
+        }
+
+        /// <summary>
+        /// Appends a text run containing a non-breaking space.  The run is
+        /// space-preserved so that the space will be visible.
+        /// </summary>
+        /// <param name="paragraph">The parent paragraph to add the run to.</param>
+        private void AppendNonBreakingSpace(XWPFParagraph paragraph)
+        {
+            XWPFRun run = paragraph.CreateRun();
+            setRTL(run);
+            CT_R ctr = run.GetCTR();
+            CT_Text text = ctr.AddNewT();
+            text.Value = "\u00A0";
             text.space = "preserve";
         }
 
