@@ -13,9 +13,7 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 3.1.x
-    - name: Restore dependencies
-      run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore -c Release
+      run: dotnet build -c Release
     - name: Test
-      run: dotnet test --verbosity normal
+      run: dotnet test -c Release
