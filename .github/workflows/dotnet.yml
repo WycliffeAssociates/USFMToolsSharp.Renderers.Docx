@@ -1,6 +1,8 @@
 name: .NET build, test, nuget push
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches: [ master ]
 
 jobs:
   build:
