@@ -27,3 +27,5 @@ jobs:
         cd ./USFMToolsSharp.Renderers.Docx/bin/Release/ && \
         PKG_NAME=$(ls *.nupkg) && \
         dotnet nuget push $PKG_NAME -k $NUGET_TOKEN -s https://api.nuget.org/v3/index.json
+      env:
+        NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
