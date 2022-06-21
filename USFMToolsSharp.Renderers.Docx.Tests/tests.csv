@@ -1,5 +1,5 @@
 Label,USFM,Query,Value,FontSize,ColumnCount,RightToLeft
-Test chapter rendering,\c 1,document/body/p[1]/r/t,Chapter 1,,,
+Test chapter rendering,\c 1,document/body/p[1]/r/t,1,,,
 Test Verse rendering,\c 1 \v 1,document/body/p[2]/r/t,1,,,
 Test Simple Verse rendering,\c 1 \v 1 This is verse one,document/body/p[2]/r[1]/t,This is verse one,,,
 Verse number superscript,\c 1 \v 1,document/body/p[2]/r/rPr/vertAlign,superscript,,,

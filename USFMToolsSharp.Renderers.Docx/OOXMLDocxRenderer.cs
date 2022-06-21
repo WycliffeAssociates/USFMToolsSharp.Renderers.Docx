@@ -21,8 +21,7 @@ namespace USFMToolsSharp.Renderers.Docx
         private WordprocessingDocument newDoc;
         private int pageHeaderCount = 1;
         private string previousBookHeader = null;
-        private const string chapterLabelDefault = "Chapter";
-        private string chapterLabel = chapterLabelDefault;
+        private string chapterLabel = string.Empty;
         private string currentChapterLabel = "";
         private bool beforeFirstChapter = true;
         private int nextFootnoteNum = 1;
@@ -335,7 +334,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     else
                     {
                         // Use the default chapter text for this section, e.g. "Chapter 1"
-                        currentChapterLabel = chapterLabel + " " + simpleNumber;
+                        if (!string.IsNullOrEmpty(chapterLabel))
+                        {
+                            currentChapterLabel = chapterLabel + " " + simpleNumber;
+                        }
+                        else
+                        {
+                            currentChapterLabel = simpleNumber;
+                        }
                     }
                     var runProperties = chapterMarker.AppendChild(new RunProperties());
                     var fontSize = runProperties.AppendChild(new FontSize());
@@ -585,7 +591,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case IDMarker _:
                     // This is the start of a new book.
                     beforeFirstChapter = true;
-                    chapterLabel = chapterLabelDefault;
+                    chapterLabel = string.Empty;
                     currentChapterLabel = "";
                     break;
                 case IPMarker _:
