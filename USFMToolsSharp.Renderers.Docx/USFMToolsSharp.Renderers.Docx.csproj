@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/WycliffeAssociates/USFMToolsSharp.Renderers.Docx</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -10,7 +10,7 @@
     <Company>Wycliffe Associates</Company>
     <PackageProjectUrl>https://github.com/WycliffeAssociates/USFMToolsSharp.Renderers.Docx</PackageProjectUrl>
     <RepositoryType />
-    <AssemblyVersion>0.11.0</AssemblyVersion>
+    <AssemblyVersion>1.1.0</AssemblyVersion>
     <Description>A USFM to DOCX renderer</Description>
   </PropertyGroup>
 
