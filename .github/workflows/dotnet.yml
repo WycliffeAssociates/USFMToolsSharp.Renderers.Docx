@@ -20,7 +20,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore -c Release
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test -c Release
     - name: Push to Nuget if tagged
       if: contains( github.ref, 'refs/tags/v' )
       run:  |
