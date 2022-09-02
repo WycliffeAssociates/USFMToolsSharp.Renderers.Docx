@@ -7,6 +7,9 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Linq;
 using System;
+using NPOI.SS.Formula.Functions;
+using Columns = DocumentFormat.OpenXml.Wordprocessing.Columns;
+using Text = DocumentFormat.OpenXml.Wordprocessing.Text;
 
 namespace USFMToolsSharp.Renderers.Docx
 {
@@ -113,16 +116,24 @@ namespace USFMToolsSharp.Renderers.Docx
 
         private void AddStyles(Styles styles)
         {
-            Style normalStyle = new Style
+            var normalStyle = new Style
             {
                 StyleId = "Normal",
                 Default = true,
                 Type = StyleValues.Paragraph
             };
+            var paragraphProperties = normalStyle.AppendChild(new ParagraphProperties());
+
+            var bidi = paragraphProperties.AppendChild(new BiDi());
+            bidi.Val = new OnOffValue(configDocx.rightToLeft);
+
+            var runProperties = normalStyle.AppendChild(new RunProperties());
+            runProperties.AppendChild(new FontSize() { Val = (configDocx.fontSize * 2).ToString() });
+            
 
             normalStyle.AppendChild(new StyleName { Val = "Normal" });
             normalStyle.AppendChild(new PrimaryStyle());
-            Style headingStyle = styles.AppendChild(new Style
+            var headingStyle = styles.AppendChild(new Style
             {
                 StyleId = "BookHeading",
                 Type = StyleValues.Paragraph
@@ -130,13 +141,9 @@ namespace USFMToolsSharp.Renderers.Docx
 
             headingStyle.AppendChild(new StyleName { Val = "Book Heading" });
             headingStyle.AppendChild(new BasedOn() { Val = "Normal" });
-
             headingStyle.AppendChild(new NextParagraphStyle { Val = "Normal" });
-
             headingStyle.AppendChild(new LinkedStyle { Val = "Heading1Char" });
-
             headingStyle.AppendChild(new UIPriority { Val = 9 });
-
             headingStyle.AppendChild(new PrimaryStyle());
 
 
@@ -164,6 +171,95 @@ namespace USFMToolsSharp.Renderers.Docx
 
             styleRunProperties.AppendChild(new FontSize { Val = "32" });
             styleRunProperties.AppendChild(new FontSizeComplexScript { Val = "32" });
+
+            var chapterNumber = CreateRunStyle("chapterNumber", "Chapter Number", "normal",
+                new StyleConfig() { fontSize = configDocx.fontSize * 3 });
+            var verseNumber = CreateRunStyle("verseNumber", "Verse Number", "normal",
+                new StyleConfig() { fontSize = configDocx.fontSize }, isSuperScript: true);
+            var boldMarker = CreateRunStyle("boldText", "Bold Text", "normal",
+                new StyleConfig() { isBold = true});
+            var italicMarker = CreateRunStyle("italicText", "Italic Text", "normal",
+                new StyleConfig() { isItalics = true});
+            var footNote = CreateRunStyle("footnote", "Footnotes", "normal",
+                new StyleConfig() { fontSize = 12});
+            var footnoteReference = CreateRunStyle("footnoteReference", "Footnote References", "normal",
+                new StyleConfig(), isSuperScript:true, isUnderline: true);
+            var footnoteQuotation = CreateRunStyle("footnoteQuotation", "Footnote Quotation", "normal",
+                new StyleConfig() {isItalics = true});
+            
+            styles.AppendChild(chapterNumber);
+            styles.AppendChild(verseNumber);
+            styles.AppendChild(boldMarker);
+            styles.AppendChild(italicMarker);
+            styles.AppendChild(footNote);
+            styles.AppendChild(footnoteQuotation);
+            styles.AppendChild(footnoteReference);
+        }
+
+        private Style CreateParagaphStyle(string styleId, string styleName, string baseStyle)
+        {
+            var style = new Style()
+            {
+                StyleId = styleId,
+                StyleName = new StyleName(){Val = styleName},
+                Type = StyleValues.Paragraph,
+            };
+            if (baseStyle != null)
+            {
+                style.AppendChild(new BasedOn() { Val = baseStyle });
+            }
+            
+            var paragraphProperties = style.AppendChild(new ParagraphProperties());
+            paragraphProperties.AppendChild(new Justification() { Val = (JustificationValues)configDocx.textAlign });
+            
+            var bidi = paragraphProperties.AppendChild(new BiDi());
+            bidi.Val = new OnOffValue(configDocx.rightToLeft);
+            return style;
+        }
+
+        private Style CreateRunStyle(string styleId, string styleName, string baseStyle, StyleConfig styleConfig,
+            bool isSuperScript = false, bool isUnderline = false, int? runSpacing = null)
+        {
+            var style = new Style()
+            {
+                StyleId = styleId,
+                StyleName = new StyleName(){Val = styleName},
+                Type = StyleValues.Paragraph,
+            };
+            if (baseStyle != null)
+            {
+                style.AppendChild(new BasedOn() { Val = baseStyle });
+            }
+            var runProperties = style.AppendChild(new RunProperties());
+            if (styleConfig.isBold)
+            {
+                var bold = runProperties.AppendChild(new Bold());
+                bold.Val = styleConfig.isBold;
+            }
+            if (styleConfig.isItalics)
+            {
+                var italic = runProperties.AppendChild(new Italic());
+                italic.Val = styleConfig.isItalics;
+            }
+
+            if (isUnderline)
+            {
+                runProperties.AppendChild(new Underline());
+            }
+            if (runSpacing.HasValue)
+            {
+               runProperties.AppendChild(new Spacing()).Val = runSpacing;
+            }
+            var fontSize = runProperties.AppendChild(new FontSize());
+            fontSize.Val = (styleConfig.fontSize *2).ToString();
+            if (isSuperScript)
+            {
+                var verticalAlignment = runProperties.AppendChild(new VerticalTextAlignment());
+                verticalAlignment.Val = VerticalPositionValues.Superscript;
+            }
+            
+
+            return style;
         }
 
         StyleDefinitionsPart BuildStyles()
@@ -197,7 +293,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
             var bidi = paragraphProperties.AppendChild(new BiDi());
             bidi.Val = new OnOffValue(configDocx.rightToLeft);
-
+            
             var spacing = paragraphProperties.AppendChild(new SpacingBetweenLines());
             spacing.Line = (configDocx.lineSpacing * 240).ToString();
             spacing.After = (spaceAfter != 0 ? spaceAfter : 200).ToString();
@@ -460,7 +556,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     footnoteMarkerStyle.fontSize = 12;
                     var footnoteParagraph = footnote.AppendChild(new Paragraph());
                     var footnoteRun = footnoteParagraph.AppendChild(CreateRun(footnoteMarkerStyle));
-                    footnoteRun.AppendChild(new Text($"F{nextFootnoteNum} ")).Space = SpaceProcessingModeValues.Preserve;
+                    footnoteRun.AppendChild(new Text($"F{nextFootnoteNum.ToString()} ")).Space = SpaceProcessingModeValues.Preserve;
 
                     foreach (Marker marker in fMarker.Contents)
                     {
