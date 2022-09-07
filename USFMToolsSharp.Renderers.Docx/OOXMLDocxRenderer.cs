@@ -126,6 +126,8 @@ namespace USFMToolsSharp.Renderers.Docx
 
             var bidi = paragraphProperties.AppendChild(new BiDi());
             bidi.Val = new OnOffValue(configDocx.rightToLeft);
+            
+            paragraphProperties.AppendChild(new Justification() { Val = (JustificationValues)configDocx.textAlign });
 
             var runProperties = normalStyle.AppendChild(new RunProperties());
             runProperties.AppendChild(new FontSize() { Val = (configDocx.fontSize * 2).ToString() });
@@ -180,6 +182,8 @@ namespace USFMToolsSharp.Renderers.Docx
                 new StyleConfig() { isBold = true});
             var italicMarker = CreateRunStyle("italicText", "Italic Text", "normal",
                 new StyleConfig() { isItalics = true});
+            var footNoteMarker = CreateRunStyle("footnoteMarker", "Footnote Marker", "normal",
+                new StyleConfig() { fontSize = 12 });
             var footNote = CreateRunStyle("footnote", "Footnotes", "normal",
                 new StyleConfig() { fontSize = 12});
             var footnoteReference = CreateRunStyle("footnoteReference", "Footnote References", "normal",
@@ -192,6 +196,7 @@ namespace USFMToolsSharp.Renderers.Docx
             styles.AppendChild(boldMarker);
             styles.AppendChild(italicMarker);
             styles.AppendChild(footNote);
+            styles.AppendChild(footNoteMarker);
             styles.AppendChild(footnoteQuotation);
             styles.AppendChild(footnoteReference);
         }
@@ -262,14 +267,6 @@ namespace USFMToolsSharp.Renderers.Docx
             return style;
         }
 
-        StyleDefinitionsPart BuildStyles()
-        {
-            var stylePart = newDoc.AddNewPart<StyleDefinitionsPart>();
-            var root = new Styles();
-            root.Save(stylePart);
-            return stylePart;
-        }
-
         T EnsureExists<T>(OpenXmlElement input) where T: OpenXmlElement, new()
         {
             var tmp = input.Descendants<T>().FirstOrDefault();
@@ -290,9 +287,6 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             var paragraph = new Paragraph();
             var paragraphProperties = paragraph.AppendChild(new ParagraphProperties());
-
-            var bidi = paragraphProperties.AppendChild(new BiDi());
-            bidi.Val = new OnOffValue(configDocx.rightToLeft);
             
             var spacing = paragraphProperties.AppendChild(new SpacingBetweenLines());
             spacing.Line = (configDocx.lineSpacing * 240).ToString();
@@ -319,7 +313,10 @@ namespace USFMToolsSharp.Renderers.Docx
             {
                 paragraphProperties.ParagraphStyleId = new ParagraphStyleId { Val = paragraphStyleId };
             }
-            paragraphProperties.AppendChild(new Justification() { Val = (JustificationValues)configDocx.textAlign });
+            else
+            {
+                paragraphProperties.ParagraphStyleId = new ParagraphStyleId { Val = "normal" };
+            }
 
             return paragraph;
         }
@@ -350,6 +347,15 @@ namespace USFMToolsSharp.Renderers.Docx
             }
             return run;
         }
+        
+        Run CreateRun( string style)
+        {
+            var run = new Run();
+            var runProperties = run.AppendChild(new RunProperties());
+            runProperties.RunStyle = new RunStyle() { Val = style };
+            return run;
+        }
+        
         Run CreateBreakRun(BreakValues type)
         {
             var run = new Run();
@@ -420,8 +426,8 @@ namespace USFMToolsSharp.Renderers.Docx
                     createBookHeaders(previousBookHeader);
 
                     var newChapter = AppendToBody(CreateParagraph(configDocx,styles));
-                    var chapterMarker = newChapter.AppendChild(new Run());
-                    string simpleNumber = cMarker.Number.ToString();
+                    var chapterMarker = newChapter.AppendChild(CreateRun("chapterNumber"));
+                    var simpleNumber = cMarker.Number.ToString();
                     if (cMarker.CustomChapterLabel != simpleNumber)
                     {
                         // Use the custom label for this section, e.g. "Psalm One" instead of "Chapter 1"
@@ -439,9 +445,7 @@ namespace USFMToolsSharp.Renderers.Docx
                             currentChapterLabel = simpleNumber;
                         }
                     }
-                    var runProperties = chapterMarker.AppendChild(new RunProperties());
-                    var fontSize = runProperties.AppendChild(new FontSize());
-                    fontSize.Val = ((int)(configDocx.fontSize * 3)).ToString();
+                    
                     chapterMarker.AppendChild(new Text(currentChapterLabel));
 
                     var chapterVerses = AppendToBody(CreateParagraph(configDocx, markerStyle));
@@ -470,8 +474,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         breakElement.Type = BreakValues.TextWrapping;
                     }
 
-                    markerStyle.fontSize = configDocx.fontSize;
-                    var verseMarker = parentParagraph.AppendChild(CreateRun(markerStyle, isSuperScript: true));
+                    var verseMarker = parentParagraph.AppendChild(CreateRun("verseNumber"));
                     verseMarker.AppendChild(new Text(vMarker.VerseCharacter));
                     verseMarker.AppendChild(new Text("\u00A0"));
 
@@ -555,7 +558,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     StyleConfig footnoteMarkerStyle = (StyleConfig)styles.Clone();
                     footnoteMarkerStyle.fontSize = 12;
                     var footnoteParagraph = footnote.AppendChild(new Paragraph());
-                    var footnoteRun = footnoteParagraph.AppendChild(CreateRun(footnoteMarkerStyle));
+                    var footnoteRun = footnoteParagraph.AppendChild(CreateRun("footnoteMarker"));
                     footnoteRun.AppendChild(new Text($"F{nextFootnoteNum.ToString()} ")).Space = SpaceProcessingModeValues.Preserve;
 
                     foreach (Marker marker in fMarker.Contents)
@@ -563,10 +566,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, footnoteMarkerStyle, footnoteParagraph);
                     }
 
-                    var referenceRun = parentParagraph.AppendChild(new Run());
-                    var referenceRunProperties = referenceRun.AppendChild(new RunProperties());
-                    referenceRunProperties.AppendChild(new Underline());
-                    referenceRunProperties.AppendChild(new VerticalTextAlignment()).Val = VerticalPositionValues.Superscript;
+                    var referenceRun = parentParagraph.AppendChild(CreateRun("footnoteReference"));
                     referenceRun.AppendChild(new Text($"F"));
 
                     var footnoteReference = new FootnoteReference();
