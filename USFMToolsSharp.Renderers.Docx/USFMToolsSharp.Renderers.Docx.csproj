@@ -17,7 +17,7 @@
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.15.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
-    <PackageReference Include="USFMToolsSharp" Version="1.7.0" />
+    <PackageReference Include="USFMToolsSharp" Version="1.9.0" />
     <PackageReference Include="WycliffeAssociates.NPOI" Version="2.5.1" />
     <PackageReference Include="WycliffeAssociates.NPOI.OOXML" Version="2.5.1" />
   </ItemGroup>
