@@ -351,6 +351,11 @@ namespace USFMToolsSharp.Renderers.Docx
                     var chapterVerses = AppendToBody(CreateParagraph(configDocx, markerStyle));
                     foreach (Marker marker in input.Contents)
                     {
+                        if (chapterVerses.Parent == null)
+                        {
+                            // If we had to remove the paragraph due to a q marker, then we need to create a new one.
+                            chapterVerses = AppendToBody(CreateParagraph(configDocx, markerStyle));
+                        }
                         RenderMarker(marker, markerStyle, chapterVerses);
                     }
 
@@ -358,7 +363,6 @@ namespace USFMToolsSharp.Renderers.Docx
 
                     break;
                 case VMarker vMarker:
-
                     // If there is no parent paragraph, then we're maybe
                     // missing a chapter marker prior to this verse.  Let's
                     // create a stub parent paragraph so we can keep rendering.
@@ -395,15 +399,13 @@ namespace USFMToolsSharp.Renderers.Docx
                     markerStyle.fontSize = configDocx.fontSize;
                     var poetryParagraph = CreateParagraph(configDocx, markerStyle, spaceAfter: 200, indentation: qMarker.Depth * 500);
 
+                    // If the parent paragraph is empty, then we can remove it and use the poetry paragraph instead.
                     if (!parentParagraph.Descendants<Run>().Any() && parentParagraph.Parent != null)
                     {
-                            body.RemoveChild(parentParagraph);
-                            AppendToBody(poetryParagraph);
+                        body.RemoveChild(parentParagraph);
                     }
-                    else
-                    {
-                        AppendToBody(poetryParagraph);
-                    }
+                    
+                    AppendToBody(poetryParagraph);
 
                     foreach (Marker marker in input.Contents)
                     {
