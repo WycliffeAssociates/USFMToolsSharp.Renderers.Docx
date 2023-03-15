@@ -351,12 +351,12 @@ namespace USFMToolsSharp.Renderers.Docx
                     var chapterVerses = AppendToBody(CreateParagraph(configDocx, markerStyle));
                     foreach (Marker marker in input.Contents)
                     {
-                        if (chapterVerses.Parent == null)
+                        RenderMarker(marker, markerStyle, chapterVerses);
+                        // If another paragraph got added, then we need to create a new one
+                        if (lastAppendedParagraph != chapterVerses)
                         {
-                            // If we had to remove the paragraph due to a q marker, then we need to create a new one.
                             chapterVerses = AppendToBody(CreateParagraph(configDocx, markerStyle));
                         }
-                        RenderMarker(marker, markerStyle, chapterVerses);
                     }
 
                     RenderCrossReferences(markerStyle);
