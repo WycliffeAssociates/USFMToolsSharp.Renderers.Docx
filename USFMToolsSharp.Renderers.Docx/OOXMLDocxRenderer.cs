@@ -352,13 +352,17 @@ namespace USFMToolsSharp.Renderers.Docx
                     foreach (Marker marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, chapterVerses);
+                        // If another paragraph got added, then we need to create a new one
+                        if (lastAppendedParagraph != chapterVerses)
+                        {
+                            chapterVerses = AppendToBody(CreateParagraph(configDocx, markerStyle));
+                        }
                     }
 
                     RenderCrossReferences(markerStyle);
 
                     break;
                 case VMarker vMarker:
-
                     // If there is no parent paragraph, then we're maybe
                     // missing a chapter marker prior to this verse.  Let's
                     // create a stub parent paragraph so we can keep rendering.
@@ -395,15 +399,13 @@ namespace USFMToolsSharp.Renderers.Docx
                     markerStyle.fontSize = configDocx.fontSize;
                     var poetryParagraph = CreateParagraph(configDocx, markerStyle, spaceAfter: 200, indentation: qMarker.Depth * 500);
 
+                    // If the parent paragraph is empty, then we can remove it and use the poetry paragraph instead.
                     if (!parentParagraph.Descendants<Run>().Any() && parentParagraph.Parent != null)
                     {
-                            body.RemoveChild(parentParagraph);
-                            AppendToBody(poetryParagraph);
+                        body.RemoveChild(parentParagraph);
                     }
-                    else
-                    {
-                        AppendToBody(poetryParagraph);
-                    }
+                    
+                    AppendToBody(poetryParagraph);
 
                     foreach (Marker marker in input.Contents)
                     {
