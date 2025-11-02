@@ -36,9 +36,72 @@ Yes please! A couple things would be very helpful
 
 # Usage
 
-There are two main renderer classes that you'll want to use:
+There are two main renderer classes that you can use:
 
-## DocxRenderer
+## OOXMLDocxRenderer (Recommended)
+
+This is the **preferred** renderer class. It transforms a USFMDocument into a Stream using OpenXML and is actively maintained.
+
+### Basic Example:
+```csharp
+using USFMToolsSharp;
+using USFMToolsSharp.Renderers.Docx;
+
+var parser = new USFMParser();
+var contents = File.ReadAllText("01-GEN.usfm");
+USFMDocument document = parser.ParseFromString(contents);
+
+OOXMLDocxRenderer renderer = new OOXMLDocxRenderer();
+Stream docxStream = renderer.Render(document);
+
+using (var fs = new FileStream("output.docx", FileMode.Create, FileAccess.Write))
+{
+    docxStream.Position = 0;
+    docxStream.CopyTo(fs);
+}
+```
+
+### Using Configuration:
+```csharp
+var config = new DocxConfig
+{
+    fontSize = 14,
+    separateChapters = false,
+    showPageNumbers = true,
+    renderTableOfContents = true
+};
+
+OOXMLDocxRenderer renderer = new OOXMLDocxRenderer(config);
+renderer.FrontMatter = frontMatterDoc;  // Optional
+Stream docxStream = renderer.Render(document);
+```
+
+### Adding Front Matter:
+```csharp
+var frontMatterParser = new USFMParser();
+var frontMatterContents = File.ReadAllText("front-matter.usfm");
+USFMDocument frontMatterDoc = frontMatterParser.ParseFromString(frontMatterContents);
+
+var config = new DocxConfig
+{
+    fontSize = 14,
+    renderTableOfContents = true
+};
+
+OOXMLDocxRenderer renderer = new OOXMLDocxRenderer(config);
+renderer.FrontMatter = frontMatterDoc;
+Stream docxStream = renderer.Render(document);
+
+using (var fs = new FileStream("output.docx", FileMode.Create, FileAccess.Write))
+{
+    docxStream.Position = 0;
+    docxStream.CopyTo(fs);
+}
+```
+
+## DocxRenderer (Obsolete)
+
+**Note:** This renderer is obsolete. Please use `OOXMLDocxRenderer` for new projects.
 
 This class transforms a USFMDocument into a XWPFDocument (using NPOI).
 
@@ -90,44 +153,6 @@ USFMDocument frontMatterDoc = frontMatterParser.ParseFromString(frontMatterConte
 DocxRenderer docxRenderer = new DocxRenderer(config);
 docxRenderer.FrontMatter = frontMatterDoc;
 XWPFDocument docxOutput = docxRenderer.Render(document);
-```
-
-## OOXMLDocxRenderer
-
-This class transforms a USFMDocument into a Stream using OpenXML.
-
-### Basic Example:
-```csharp
-using USFMToolsSharp;
-using USFMToolsSharp.Renderers.Docx;
-
-var parser = new USFMParser();
-var contents = File.ReadAllText("01-GEN.usfm");
-USFMDocument document = parser.ParseFromString(contents);
-
-OOXMLDocxRenderer renderer = new OOXMLDocxRenderer();
-Stream docxStream = renderer.Render(document);
-
-using (var fs = new FileStream("output.docx", FileMode.Create, FileAccess.Write))
-{
-    docxStream.Position = 0;
-    docxStream.CopyTo(fs);
-}
-```
-
-### Using Configuration:
-```csharp
-var config = new DocxConfig
-{
-    fontSize = 14,
-    separateChapters = false,
-    showPageNumbers = true,
-    renderTableOfContents = true
-};
-
-OOXMLDocxRenderer renderer = new OOXMLDocxRenderer(config);
-renderer.FrontMatter = frontMatterDoc;  // Optional
-Stream docxStream = renderer.Render(document);
 ```
 
 ## Configuration Options
