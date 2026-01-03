@@ -416,6 +416,10 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case TextBlock textBlock:
                     markerStyle.fontSize = configDocx.fontSize;
+                    if (parentParagraph == null)
+                    {
+                        parentParagraph = body.AppendChild(CreateParagraph(configDocx, markerStyle));
+                    }
                     var blockText = parentParagraph.AppendChild(CreateRun(markerStyle));
                     blockText.AppendChild(new Text(textBlock.Text)).Space = SpaceProcessingModeValues.Preserve;
                     break;
@@ -462,7 +466,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     footnoteMarkerStyle.fontSize = 12;
                     var footnoteParagraph = footnote.AppendChild(new Paragraph());
                     var footnoteRun = footnoteParagraph.AppendChild(CreateRun(footnoteMarkerStyle));
-                    footnoteRun.AppendChild(new Text($"F{nextFootnoteNum} ")).Space = SpaceProcessingModeValues.Preserve;
+                    footnoteRun.AppendChild(new Text($"F{nextFootnoteNum.ToString()} ")).Space = SpaceProcessingModeValues.Preserve;
 
                     foreach (Marker marker in fMarker.Contents)
                     {
@@ -521,7 +525,7 @@ namespace USFMToolsSharp.Renderers.Docx
                             crossId = "";
                             break;
                         case "+":
-                            crossId = $"{CrossRefMarkers.Count + 1}";
+                            crossId = $"{(CrossRefMarkers.Count + 1).ToString()}";
                             break;
                         default:
                             crossId = xMarker.CrossRefCaller;
@@ -610,6 +614,25 @@ namespace USFMToolsSharp.Renderers.Docx
                         RenderMarker(marker, markerStyle, introParagraph);
                     }
                     break;
+                case RQMarker _:
+                    if (parentParagraph == null)
+                    {
+                        parentParagraph = body.AppendChild(CreateParagraph(configDocx, markerStyle));
+                        foreach (var marker in input.Contents)
+                        {
+                            RenderMarker(marker, markerStyle);
+                        }
+                    }
+                    break;
+                case MSMarker _msMarker:
+                    if (parentParagraph == null)
+                    {
+                        parentParagraph = body.AppendChild(CreateParagraph(configDocx, markerStyle));
+                        var run = parentParagraph.AppendChild(CreateRun(markerStyle));
+                        run.AddChild(new Text(_msMarker.Heading));
+                    }
+                    break;
+                case RQEndMarker _:
                 case XEndMarker _:
                 case FEndMarker _:
                 case IDEMarker _:
@@ -706,7 +729,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 run.AppendChild(new Text(currentChapterLabel));
             }
 
-            var headerId = $"rId{pageHeaderCount}";
+            var headerId = $"rId{pageHeaderCount.ToString()}";
 
             var headerPart = newDoc.MainDocumentPart.AddNewPart<HeaderPart>(headerId);
             headerPart.Header = header;
