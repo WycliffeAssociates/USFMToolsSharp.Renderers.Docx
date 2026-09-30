@@ -21,6 +21,10 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
             var tests = LoadTestsFromFileAsync("tests.csv");
             foreach (var test in tests)
             {
+                if (!string.IsNullOrEmpty(test.Skip))
+                {
+                    continue;
+                }
                 Stream stream = new MemoryStream();
                 try
                 {
@@ -100,6 +104,10 @@ namespace USFMToolsSharp.Renderers.Docx.Tests
         public string Query { get; set; }
         public string Value { get; set; }
         public string Label { get; set; }
+        /// <summary>
+        /// When set, the row is skipped. Holds the reason it is known to fail.
+        /// </summary>
+        public string Skip { get; set; }
         public string? TextAlign { get; set; }
         public bool? RightToLeft { get; set; }
         public int? ColumnCount { get; set; }

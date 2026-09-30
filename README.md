@@ -15,16 +15,35 @@ You can install this package from nuget https://www.nuget.org/packages/USFMTools
 
 # Requirements
 
-We targeted .net standard 2.0 so .net core 2.0, .net framework 4.6.1, and mono 5.4 and
-higher are the bare minimum.
+This package targets .NET 10 and requires USFMToolsSharp 2.0 or later.
+
+USFMToolsSharp 2.x parses a document into several hierarchies. Both renderers walk the
+default hierarchy (`USFMDocument.Hierarchies[0]`), which nests markers the same way the
+1.x tree did, so the rendered document is unchanged from earlier versions.
+
+## Upgrading from 1.x
+
+Version 2.0 of this package has a few breaking API changes that follow from USFMToolsSharp 2.0:
+
+- `CrossRefMarkers` is now a `Dictionary<string, HierarchyNode>` instead of `Dictionary<string, Marker>`.
+  Use `node.Marker` (or `node.As<XMarker>()`) to get at the marker and `node.Contents` for its children.
+- `getRenderedRows` and `getRenderedCell` take a `HierarchyNode` instead of a `Marker`.
+- Consumers must target .NET 10 or later.
 
 # Building
 
-With Visual Studio just build the solution. With the .net core tooling use `dotnet build`
+With Visual Studio just build the solution. With the .NET tooling:
+
+```
+dotnet build
+dotnet test
+```
 
 # Dependencies
 
-[WycliffeAssociates.NPOI](https://www.nuget.org/packages/WycliffeAssociates.NPOI/)
+- [USFMToolsSharp](https://www.nuget.org/packages/USFMToolsSharp/) 2.0+
+- [DocumentFormat.OpenXml](https://www.nuget.org/packages/DocumentFormat.OpenXml/) (used by `OOXMLDocxRenderer`)
+- [WycliffeAssociates.NPOI](https://www.nuget.org/packages/WycliffeAssociates.NPOI/) (used by `DocxRenderer`)
 
 # Contributing
 

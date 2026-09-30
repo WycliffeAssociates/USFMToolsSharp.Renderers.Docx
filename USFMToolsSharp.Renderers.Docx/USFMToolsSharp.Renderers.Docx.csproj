@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.1.1</Version>
+    <TargetFramework>net10.0</TargetFramework>
+    <Version>2.0.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/WycliffeAssociates/USFMToolsSharp.Renderers.Docx</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -10,14 +10,14 @@
     <Company>Wycliffe Associates</Company>
     <PackageProjectUrl>https://github.com/WycliffeAssociates/USFMToolsSharp.Renderers.Docx</PackageProjectUrl>
     <RepositoryType />
-    <AssemblyVersion>1.1.1</AssemblyVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
     <Description>A USFM to DOCX renderer</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.15.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
-    <PackageReference Include="USFMToolsSharp" Version="1.7.0" />
+    <PackageReference Include="USFMToolsSharp" Version="2.0.0" />
     <PackageReference Include="WycliffeAssociates.NPOI" Version="2.5.1" />
     <PackageReference Include="WycliffeAssociates.NPOI.OOXML" Version="2.5.1" />
   </ItemGroup>
