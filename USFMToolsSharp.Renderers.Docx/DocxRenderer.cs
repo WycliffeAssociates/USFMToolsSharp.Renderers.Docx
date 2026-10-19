@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using USFMToolsSharp.Models;
 using USFMToolsSharp.Models.Markers;
 using NPOI.XWPF.UserModel;
 using NPOI.OpenXmlFormats.Wordprocessing;
@@ -10,8 +11,10 @@ namespace USFMToolsSharp.Renderers.Docx
 
     public class DocxRenderer
     {
+        private const int DefaultHierarchyIndex = 0;
+
         public List<string> UnrenderableMarkers;
-        public Dictionary<string, Marker> CrossRefMarkers;
+        public Dictionary<string, HierarchyNode> CrossRefMarkers;
         private DocxConfig configDocx;
         private XWPFDocument newDoc;
         private int pageHeaderCount = 1;
@@ -38,7 +41,7 @@ namespace USFMToolsSharp.Renderers.Docx
         public XWPFDocument Render(USFMDocument input)
         {
             UnrenderableMarkers = new List<string>();
-            CrossRefMarkers = new Dictionary<string, Marker>();
+            CrossRefMarkers = new Dictionary<string, HierarchyNode>();
             newDoc = new XWPFDocument();
 
             if (FrontMatter != null)
@@ -58,7 +61,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
             newDoc.ColumnCount = configDocx.columnCount;
 
-            foreach (Marker marker in input.Contents)
+            foreach (var marker in GetTopLevelNodes(input))
             {
                 RenderMarker(marker, new StyleConfig());
             }
@@ -87,14 +90,25 @@ namespace USFMToolsSharp.Renderers.Docx
             return newDoc;
         }
 
-        private void RenderMarker(Marker input, StyleConfig styles, XWPFParagraph parentParagraph = null)
+        /// <summary>
+        /// The top-level nodes of the document's default hierarchy, which nests markers
+        /// the same way the USFMToolsSharp 1.x tree did.
+        /// </summary>
+        private static List<HierarchyNode> GetTopLevelNodes(USFMDocument document)
+        {
+            return document.Hierarchies.Count == 0
+                ? new List<HierarchyNode>()
+                : document.Hierarchies[DefaultHierarchyIndex].Contents;
+        }
+
+        private void RenderMarker(HierarchyNode input, StyleConfig styles, XWPFParagraph parentParagraph = null)
         {
             // Keep track of the previous marker
             previousMarker = thisMarker;
-            thisMarker = input;
+            thisMarker = input.Marker;
 
             StyleConfig markerStyle = (StyleConfig)styles.Clone();
-            switch (input)
+            switch (input.Marker)
             {
                 case PMarker _:
 
@@ -110,7 +124,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         paragraph = newParagraph;
                     }
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, paragraph);
                     }
@@ -168,7 +182,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     chapterVerses.SetBidi(configDocx.rightToLeft);
                     chapterVerses.Alignment = (ParagraphAlignment)configDocx.textAlign;
                     chapterVerses.SpacingBetween = configDocx.lineSpacing;
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, chapterVerses);
                     }
@@ -203,7 +217,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     verseMarker.Subscript = VerticalAlign.SUPERSCRIPT;
                     AppendNonBreakingSpace(parentParagraph);
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
@@ -221,7 +235,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     poetryParagraph.IndentationLeft += qMarker.Depth * 500;
                     poetryParagraph.SpacingAfter = 200;
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, poetryParagraph);
                     }
@@ -236,7 +250,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case BDMarker bdMarker:
                     markerStyle.isBold = true;
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
@@ -283,7 +297,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     XWPFParagraph xFootnoteParagraph = new XWPFParagraph(footnoteParagraph, parentParagraph.Body);
                     xFootnoteParagraph.SetBidi(configDocx.rightToLeft);
                     footnoteParagraph.AddNewR().AddNewT().Value = "F" + footnoteId.ToString() + " ";
-                    foreach (Marker marker in fMarker.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, footnoteMarkerStyle, xFootnoteParagraph);
                     }
@@ -302,14 +316,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     footnoteReferenceRun.GetCTR().Items.Add(footnoteReference);
                     break;
                 case FPMarker fPMarker:
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case FTMarker fTMarker:
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
@@ -328,7 +342,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case FQMarker fQMarker:
                 case FQAMarker fQAMarker:
                     markerStyle.isItalics = true;
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
@@ -353,7 +367,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     crossRefMarker.SetText(crossId);
                     crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
-                    CrossRefMarkers[crossId] = xMarker;
+                    CrossRefMarkers[crossId] = input;
                     break;
                 case XOMarker xOMarker:
                     markerStyle.isBold = true;
@@ -362,14 +376,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     CrossVerseReference.SetText($" {xOMarker.OriginRef} ");
                     break;
                 case XTMarker xTMarker:
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case XQMarker xQMarker:
                     markerStyle.isItalics = true;
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
@@ -387,7 +401,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     tableContainer.SetInsideHBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
                     tableContainer.SetInsideVBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "#FFFFFFF");
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         getRenderedRows(marker, markerStyle, tableContainer);
                     }
@@ -416,7 +430,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         introParagraph = newParagraph;
                     }
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, introParagraph);
                     }
@@ -428,7 +442,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case VPEndMarker _:
                     break;
                 default:
-                    UnrenderableMarkers.Add(input.Identifier);
+                    UnrenderableMarkers.Add(input.Marker.Identifier);
                     break;
             }
         }
@@ -484,7 +498,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 StyleConfig markerStyle = (StyleConfig)config.Clone();
                 markerStyle.fontSize = 12;
 
-                foreach (KeyValuePair<string, Marker> crossRefKVP in CrossRefMarkers)
+                foreach (KeyValuePair<string, HierarchyNode> crossRefKVP in CrossRefMarkers)
                 {
                     XWPFParagraph renderCrossRef = newDoc.CreateParagraph();
                     renderCrossRef.SetBidi(configDocx.rightToLeft);
@@ -493,7 +507,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     crossRefMarker.SetText(crossRefKVP.Key);
                     crossRefMarker.Subscript = VerticalAlign.SUPERSCRIPT;
 
-                    foreach (Marker input in crossRefKVP.Value.Contents)
+                    foreach (var input in crossRefKVP.Value.Contents)
                     {
                         RenderMarker(input, markerStyle, renderCrossRef);
                     }
@@ -604,26 +618,26 @@ namespace USFMToolsSharp.Renderers.Docx
             return p;
         }
 
-        public void getRenderedRows(Marker input, StyleConfig config, XWPFTable parentTable)
+        public void getRenderedRows(HierarchyNode input, StyleConfig config, XWPFTable parentTable)
         {
             XWPFTableRow tableRowContainer = parentTable.CreateRow();
-            foreach (Marker marker in input.Contents)
+            foreach (var marker in input.Contents)
             {
                 getRenderedCell(marker, config, tableRowContainer);
             }
         }
-        public void getRenderedCell(Marker input, StyleConfig config, XWPFTableRow parentRow)
+        public void getRenderedCell(HierarchyNode input, StyleConfig config, XWPFTableRow parentRow)
         {
             StyleConfig markerStyle = (StyleConfig)config.Clone();
             XWPFTableCell tableCellContainer = parentRow.CreateCell();
             XWPFParagraph cellContents;
-            switch (input)
+            switch (input.Marker)
             {
                 case THMarker tHMarker:
                     markerStyle.isBold = true;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
                     cellContents.SetBidi(configDocx.rightToLeft);
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
@@ -633,7 +647,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     markerStyle.isBold = true;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
                     cellContents.SetBidi(configDocx.rightToLeft);
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
@@ -641,7 +655,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case TCMarker tCMarker:
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
                     cellContents.SetBidi(configDocx.rightToLeft);
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
@@ -650,7 +664,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     markerStyle.isAlignRight = true;
                     cellContents = tableCellContainer.AddParagraph(markerStyle);
                     cellContents.SetBidi(configDocx.rightToLeft);
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
@@ -685,7 +699,7 @@ namespace USFMToolsSharp.Renderers.Docx
             DocxConfig currentConfig = configDocx;
             configDocx = new DocxConfig(); 
 
-            foreach (var marker in frontMatter.Contents)
+            foreach (var marker in GetTopLevelNodes(frontMatter))
             {
                 RenderMarker(marker, new StyleConfig());
             }
