@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using USFMToolsSharp.Models;
 using USFMToolsSharp.Models.Markers;
 using USFMToolsSharp.Renderers.Docx.Extensions;
 using DocumentFormat.OpenXml.Packaging;
@@ -13,8 +14,10 @@ namespace USFMToolsSharp.Renderers.Docx
 
     public class OOXMLDocxRenderer
     {
+        private const int DefaultHierarchyIndex = 0;
+
         public List<string> UnrenderableMarkers;
-        public Dictionary<string, Marker> CrossRefMarkers;
+        public Dictionary<string, HierarchyNode> CrossRefMarkers;
         private DocxConfig configDocx;
         private Body body;
         private Footnotes footnotes;
@@ -44,7 +47,7 @@ namespace USFMToolsSharp.Renderers.Docx
         {
             var outputStream = new MemoryStream();
             UnrenderableMarkers = new List<string>();
-            CrossRefMarkers = new Dictionary<string, Marker>();
+            CrossRefMarkers = new Dictionary<string, HierarchyNode>();
             using (newDoc = WordprocessingDocument.Create(outputStream, DocumentFormat.OpenXml.WordprocessingDocumentType.Document))
             {
                 var mainPart = newDoc.AddMainDocumentPart();
@@ -72,7 +75,7 @@ namespace USFMToolsSharp.Renderers.Docx
 
                 
 
-                foreach (Marker marker in input.Contents)
+                foreach (var marker in GetTopLevelNodes(input))
                 {
                     RenderMarker(marker, new StyleConfig());
                 }
@@ -263,14 +266,25 @@ namespace USFMToolsSharp.Renderers.Docx
         }
 
 
-        private void RenderMarker(Marker input, StyleConfig styles, Paragraph parentParagraph = null)
+        /// <summary>
+        /// The top-level nodes of the document's default hierarchy, which nests markers
+        /// the same way the USFMToolsSharp 1.x tree did.
+        /// </summary>
+        private static List<HierarchyNode> GetTopLevelNodes(USFMDocument document)
+        {
+            return document.Hierarchies.Count == 0
+                ? new List<HierarchyNode>()
+                : document.Hierarchies[DefaultHierarchyIndex].Contents;
+        }
+
+        private void RenderMarker(HierarchyNode input, StyleConfig styles, Paragraph parentParagraph = null)
         {
             // Keep track of the previous marker
             previousMarker = thisMarker;
-            thisMarker = input;
+            thisMarker = input.Marker;
 
             StyleConfig markerStyle = (StyleConfig)styles.Clone();
-            switch (input)
+            switch (input.Marker)
             {
                 case PMarker _:
                     Paragraph paragraph = parentParagraph;
@@ -280,7 +294,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         paragraph = AppendToBody(CreateParagraph(configDocx, styles));
                     }
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, paragraph);
                         // TODO: This is horribly innefficient needs to be rethought
@@ -349,7 +363,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     chapterMarker.AppendChild(new Text(currentChapterLabel));
 
                     var chapterVerses = AppendToBody(CreateParagraph(configDocx, markerStyle));
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, chapterVerses);
                         // If another paragraph got added, then we need to create a new one
@@ -383,7 +397,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     verseMarker.AppendChild(new Text(vMarker.VerseCharacter));
                     verseMarker.AppendChild(new Text("\u00A0"));
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
@@ -407,7 +421,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     
                     AppendToBody(poetryParagraph);
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, poetryParagraph);
                     }
@@ -421,14 +435,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     break;
                 case BDMarker bdMarker:
                     markerStyle.isBold = true;
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case ITMarker itMarker:
                     markerStyle.isItalics = true;
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
@@ -464,7 +478,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     var footnoteRun = footnoteParagraph.AppendChild(CreateRun(footnoteMarkerStyle));
                     footnoteRun.AppendChild(new Text($"F{nextFootnoteNum} ")).Space = SpaceProcessingModeValues.Preserve;
 
-                    foreach (Marker marker in fMarker.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, footnoteMarkerStyle, footnoteParagraph);
                     }
@@ -482,14 +496,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     nextFootnoteNum++;
                     break;
                 case FPMarker fPMarker:
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case FTMarker fTMarker:
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
@@ -507,7 +521,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case FQAMarker fQAMarker:
 
                     markerStyle.isItalics = true;
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
@@ -530,7 +544,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     var crossRefMarker = parentParagraph.AppendChild(CreateRun(markerStyle, isSuperScript: true));
                     crossRefMarker.AppendChild(new Text(crossId));
 
-                    CrossRefMarkers[crossId] = xMarker;
+                    CrossRefMarkers[crossId] = input;
                     break;
                 case XOMarker xOMarker:
                     markerStyle.isBold = true;
@@ -538,14 +552,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     CrossVerseReference.AppendChild(new Text($" {xOMarker.OriginRef} "));
                     break;
                 case XTMarker xTMarker:
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
                     break;
                 case XQMarker xQMarker:
                     markerStyle.isItalics = true;
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, parentParagraph);
                     }
@@ -580,7 +594,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         }
                         )));
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         getRenderedRows(marker, markerStyle, tableContainer);
                     }
@@ -605,7 +619,7 @@ namespace USFMToolsSharp.Renderers.Docx
                         introParagraph = newParagraph;
                     }
 
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, introParagraph);
                     }
@@ -617,7 +631,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case VPEndMarker _:
                     break;
                 default:
-                    UnrenderableMarkers.Add(input.Identifier);
+                    UnrenderableMarkers.Add(input.Marker.Identifier);
                     break;
             }
         }
@@ -649,7 +663,7 @@ namespace USFMToolsSharp.Renderers.Docx
                     var crossRefMarker = renderCrossRef.AppendChild(CreateRun(markerStyle, isSuperScript:true));
                     crossRefMarker.AppendChild(new Text(crossRefKVP.Key));
 
-                    foreach (Marker input in crossRefKVP.Value.Contents)
+                    foreach (var input in crossRefKVP.Value.Contents)
                     {
                         RenderMarker(input, markerStyle, renderCrossRef);
                     }
@@ -763,25 +777,25 @@ namespace USFMToolsSharp.Renderers.Docx
             return p;
         }
 
-        public void getRenderedRows(Marker input, StyleConfig config, Table parentTable)
+        public void getRenderedRows(HierarchyNode input, StyleConfig config, Table parentTable)
         {
             var tableRowContainer = parentTable.AppendChild(new TableRow());
-            foreach (Marker marker in input.Contents)
+            foreach (var marker in input.Contents)
             {
                 getRenderedCell(marker, config, tableRowContainer);
             }
         }
-        public void getRenderedCell(Marker input, StyleConfig config, TableRow parentRow)
+        public void getRenderedCell(HierarchyNode input, StyleConfig config, TableRow parentRow)
         {
             StyleConfig markerStyle = (StyleConfig)config.Clone();
             var tableCellContainer = parentRow.AppendChild(new TableCell());
             Paragraph cellContents;
-            switch (input)
+            switch (input.Marker)
             {
                 case THMarker tHMarker:
                     markerStyle.isBold = true;
                     cellContents = tableCellContainer.AppendChild(CreateParagraph(configDocx, markerStyle));
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
@@ -790,14 +804,14 @@ namespace USFMToolsSharp.Renderers.Docx
                     markerStyle.isAlignRight = true;
                     markerStyle.isBold = true;
                     cellContents = tableCellContainer.AppendChild(CreateParagraph(configDocx, markerStyle));
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
                     break;
                 case TCMarker tCMarker:
                     cellContents = tableCellContainer.AppendChild(CreateParagraph(configDocx, markerStyle));
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
@@ -805,7 +819,7 @@ namespace USFMToolsSharp.Renderers.Docx
                 case TCRMarker tCRMarker:
                     markerStyle.isAlignRight = true;
                     cellContents = tableCellContainer.AppendChild(CreateParagraph(configDocx, markerStyle));
-                    foreach (Marker marker in input.Contents)
+                    foreach (var marker in input.Contents)
                     {
                         RenderMarker(marker, markerStyle, cellContents);
                     }
@@ -848,7 +862,7 @@ namespace USFMToolsSharp.Renderers.Docx
             DocxConfig currentConfig = configDocx;
             configDocx = new DocxConfig(); 
 
-            foreach (var marker in frontMatter.Contents)
+            foreach (var marker in GetTopLevelNodes(frontMatter))
             {
                 RenderMarker(marker, new StyleConfig());
             }
