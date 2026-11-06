@@ -124,9 +124,9 @@ namespace USFMToolsSharp.Renderers.Docx
                         paragraph = newParagraph;
                     }
 
-                    foreach (var marker in input.Contents)
+                    foreach (var node in input.Contents)
                     {
-                        RenderMarker(marker, markerStyle, paragraph);
+                        RenderMarker(node, markerStyle, paragraph);
                     }
                     break;
                 case CLMarker clMarker:
